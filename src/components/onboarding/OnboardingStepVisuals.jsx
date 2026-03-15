@@ -98,7 +98,7 @@ export default function OnboardingStepVisuals({ brandData, onBack, onConfirm }) 
                 onClick={() => toggleSelect(shot.id)}
                 className={`relative rounded-xl overflow-hidden aspect-square border-2 transition-all ${selected.has(shot.id) ? 'border-violet-500 shadow-md' : 'border-transparent opacity-60'}`}
               >
-                {shot.generating || !shot.image_url ? (
+                {!shot.image_url ? (
                   <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                     <Loader2 className="w-5 h-5 text-violet-400 animate-spin" />
                   </div>
