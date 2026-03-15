@@ -595,7 +595,7 @@ function ResizableDraggableLayer({ x, y, width, onDragMouseDown, onResizeMouseDo
 }
 
 // ─── Plain DraggableLayer (no resize) ────────────────────────────────────────
-function DraggableLayer({ x, y, onMouseDown, children, selected, onSelect, style = {}, noBorder = false }) {
+function DraggableLayer({ x, y, onMouseDown, children, selected, onSelect, onRemove, style = {}, noBorder = false }) {
   return (
     <div
       onMouseDown={onMouseDown}
@@ -611,6 +611,19 @@ function DraggableLayer({ x, y, onMouseDown, children, selected, onSelect, style
       }}
     >
       {children}
+      {!noBorder && onRemove && (
+        <div
+          onClick={(e) => { e.stopPropagation(); onRemove(); }}
+          onMouseDown={e => e.stopPropagation()}
+          style={{
+            position: 'absolute', top: -8, right: -8,
+            width: 16, height: 16, borderRadius: '50%',
+            background: '#ef4444', cursor: 'pointer', zIndex: 20,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: '1.5px solid white', fontSize: 10, color: 'white', fontWeight: 700, lineHeight: 1,
+          }}
+        >×</div>
+      )}
     </div>
   );
 }
