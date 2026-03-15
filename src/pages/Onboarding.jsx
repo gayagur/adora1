@@ -43,8 +43,8 @@ URL: ${cleanUrl}
 
 Extract:
 - brand_name: company/brand name
-- brand_colors: 2-4 hex codes that match the brand identity
-- logo_url: the most likely URL of the brand logo. Look for: og:image, a <img> in the header/nav with "logo" in the class/alt/src, or the favicon URL. Return a full absolute URL or null.
+- brand_colors: 3-5 EXACT hex codes used on the website. Look at the actual CSS/computed styles for primary buttons, headers, backgrounds, links, and key UI elements. Do NOT guess — extract the real hex values. Format: ["#RRGGBB", ...]
+- logo_url: the direct URL of the brand logo image. Look specifically for: <img> tags inside <header> or <nav> with "logo" in class/id/alt/src, or a linked image from the home page header. Prefer SVG or PNG. Return a full absolute URL or null.
 - description: what the product or service does (2-3 sentences, clear and specific)
 - target_audience: precise description of who they serve
 - tone_of_voice: communication style (e.g. "Professional and authoritative", "Casual and friendly")
