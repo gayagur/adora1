@@ -75,15 +75,30 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
             <Loader2 className="w-7 h-7 text-violet-400 animate-spin" />
             <p className="text-xs text-gray-400">Generating…</p>
           </div>
-        ) : asset.preview_image ? (
+        ) : currentImage ? (
           <>
-            <img src={asset.preview_image} alt={asset.headline} className="w-full h-full object-cover" />
+            <img src={currentImage} alt={asset.headline} className="w-full h-full object-cover" />
             {/* Hover overlay */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
               <div className="bg-white rounded-xl px-3 py-1.5 text-xs font-medium text-gray-800 shadow-lg flex items-center gap-1.5">
                 <Pencil className="w-3 h-3" /> Edit
               </div>
             </div>
+            {/* Carousel indicators */}
+            {carouselImages.length > 1 && (
+              <div className="absolute bottom-2 left-0 right-0 flex items-center justify-center gap-1">
+                {carouselImages.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCarouselIndex(i);
+                    }}
+                    className={`h-1.5 rounded-full transition-all ${i === carouselIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`}
+                  />
+                ))}
+              </div>
+            )}
           </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -95,6 +110,7 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
         <div className="absolute top-2.5 left-2.5">
           <span className="px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-sm text-[11px] font-medium text-gray-700 shadow-sm">
             {PLATFORM_ICONS[asset.platform]} {ASSET_LABELS[asset.asset_type] || asset.asset_type}
+            {carouselImages.length > 1 && <span className="ml-1">({carouselIndex + 1}/{carouselImages.length})</span>}
           </span>
         </div>
       </div>
