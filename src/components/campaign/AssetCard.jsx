@@ -31,19 +31,19 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
 
   const downloadImage = async (e) => {
     e.stopPropagation();
-    if (!asset.preview_image) return;
+    if (!currentImage) return;
     try {
-      const res = await fetch(asset.preview_image, { mode: 'cors' });
+      const res = await fetch(currentImage, { mode: 'cors' });
       const blob = await res.blob();
       const u = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = u; a.download = `${asset.platform}-${asset.asset_type}.png`;
+      a.href = u; a.download = `${asset.platform}-${asset.asset_type}${carouselImages.length > 0 ? `-${carouselIndex + 1}` : ''}.png`;
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(u);
       toast.success('Downloaded');
     } catch {
       // CORS fallback — open in new tab
-      window.open(asset.preview_image, '_blank');
+      window.open(currentImage, '_blank');
       toast.success('Opened in new tab');
     }
   };
