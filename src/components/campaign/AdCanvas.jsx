@@ -15,7 +15,14 @@ const LOGO_POSITIONS = [
   { id: 'center',       label: 'Watermark',     x: 0.5,  y: 0.5  },
 ];
 
-export default function AdCanvas({ imageUrl, logoUrl, headline, cta, brandColors, onExport }) {
+// Truncate to max N words
+function truncateWords(text, max) {
+  if (!text) return '';
+  const words = text.trim().split(/\s+/);
+  return words.slice(0, max).join(' ') + (words.length > max ? '…' : '');
+}
+
+export default function AdCanvas({ imageUrl, logoUrl, headline, subtext, cta, brandColors, onExport }) {
   const canvasRef = useRef(null);
   const [layout, setLayout] = useState(LAYOUTS[1]);
   const [logoPos, setLogoPos] = useState(LOGO_POSITIONS[1]);
