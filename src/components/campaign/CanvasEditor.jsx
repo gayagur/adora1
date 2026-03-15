@@ -72,26 +72,30 @@ function useResize(initialWidth, canvasRef) {
   const startX = useRef(0);
   const startW = useRef(0);
 
-  const onResizeMouseDown = useCallback((e) => {
+  const onResizePointerDown = useCallback((e) => {
     e.stopPropagation();
     e.preventDefault();
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     resizing.current = true;
-    startX.current = e.clientX;
+    const clientX = e.clientX || e.touches?.[0]?.clientX;
+    startX.current = clientX;
     startW.current = width;
 
     const onMove = (ev) => {
       if (!resizing.current) return;
-      const dx = ((ev.clientX - startX.current) / rect.width) * 100;
+      const x = ev.clientX || ev.touches?.[0]?.clientX;
+      const dx = ((x - startX.current) / rect.width) * 100;
       setWidth(Math.max(10, Math.min(95, startW.current + dx)));
     };
-    const onUp = () => { resizing.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+    const onUp = () => { resizing.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('touchmove', onMove); window.removeEventListener('mouseup', onUp); window.removeEventListener('touchend', onUp); };
     window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, { passive: false });
     window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchend', onUp);
   }, [width, canvasRef]);
 
-  return [width, setWidth, onResizeMouseDown];
+  return [width, setWidth, onResizePointerDown];
 }
 
 const BACKGROUNDS = {
