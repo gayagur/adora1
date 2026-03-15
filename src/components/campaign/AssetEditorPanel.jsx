@@ -123,27 +123,54 @@ Return ONLY the improved text, nothing else.`,
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-white border-b border-gray-100 flex items-center justify-between px-6 py-4">
-          <div>
-            <h2 className="font-semibold text-gray-900">Edit Asset</h2>
-            <p className="text-xs text-gray-400 capitalize">{asset.platform} · {asset.asset_type}</p>
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-6 pt-4 pb-0">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="font-semibold text-gray-900">Edit Asset</h2>
+              <p className="text-xs text-gray-400 capitalize">{asset.platform} · {asset.asset_type}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-1.5 h-8 px-4 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium transition-colors disabled:opacity-60"
+              >
+                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                Save
+              </button>
+              <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-1.5 h-8 px-4 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium transition-colors disabled:opacity-60"
-            >
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-              Save
-            </button>
-            <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-              <X className="w-4 h-4 text-gray-500" />
-            </button>
+          {/* Tabs */}
+          <div className="flex gap-1">
+            {[{ id: 'edit', label: 'Edit' }, { id: 'canvas', label: 'Canvas Editor', icon: Layers }].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id ? 'border-violet-600 text-violet-600' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
+              >
+                {tab.icon && <tab.icon className="w-3.5 h-3.5" />}
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        {activeTab === 'canvas' && (
+          <div className="p-6">
+            <AdCanvas
+              imageUrl={draft.preview_image}
+              logoUrl={brand?.logo_url}
+              headline={draft.headline}
+              cta={draft.cta}
+              brandColors={brand?.brand_colors}
+            />
+          </div>
+        )}
+
+        <div className={`p-6 space-y-6 ${activeTab !== 'edit' ? 'hidden' : ''}`}>
           {/* Image section */}
           <div>
             <SectionLabel>Visual</SectionLabel>
