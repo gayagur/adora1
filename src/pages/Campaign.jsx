@@ -103,7 +103,7 @@ Generate:
     await base44.entities.CampaignAsset.update(assetId, {
       ...copyResult,
       preview_image: images[0],
-      carousel_images: isCarousel ? images : undefined,
+      carousel_images: isCarousel ? images : [],
       status: 'ready',
     });
 
