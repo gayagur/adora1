@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { Download, Type, Image as ImageIcon, Layers, Upload } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { LAYOUT_TEMPLATES, enforceGridAlignment, getSafeAreaBounds } from './layoutTemplates';
 
 // ─── Load Google Fonts ────────────────────────────────────────────────────────
 const FONTS = [
