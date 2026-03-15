@@ -322,6 +322,7 @@ export default function CanvasEditor({
   const [editingText, setEditingText] = useState(null);
   const [imgScale, setImgScale] = useState(48);
   const [saving, setSaving] = useState(false);
+  const [showDrawer, setShowDrawer] = useState(false);
 
   // Highlight
   const [highlightStyle, setHighlightStyle] = useState('none');
