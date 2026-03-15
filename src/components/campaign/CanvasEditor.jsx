@@ -290,13 +290,19 @@ export default function CanvasEditor({
 
                 {/* BG Image */}
                 {bgImage && (
-                  <DraggableLayer x={imgPos.x} y={imgPos.y} onMouseDown={imgDrag}
-                    selected={selectedLayer === 'img'} onSelect={() => setSelectedLayer('img')}
-                    style={{ width: `${imgScale}%`, pointerEvents: 'all' }} noBorder={exporting}>
-                    <img src={bgImage} alt="" crossOrigin="anonymous"
+                  <ResizableDraggableLayer
+                    x={imgPos.x} y={imgPos.y}
+                    width={imgWidth}
+                    onDragMouseDown={imgDrag}
+                    onResizeMouseDown={imgResize}
+                    selected={selectedLayer === 'img'}
+                    onSelect={() => setSelectedLayer('img')}
+                    noBorder={exporting}
+                  >
+                    <img src={bgImage} alt=""
                       className="w-full rounded-lg shadow-2xl block"
                       style={{ objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
-                  </DraggableLayer>
+                  </ResizableDraggableLayer>
                 )}
 
                 {/* Overlay */}
