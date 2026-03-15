@@ -1,6 +1,6 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import html2canvas from 'html2canvas';
-import { Download, Eye, EyeOff, RotateCcw, Type, Image as ImageIcon, Layers } from 'lucide-react';
+import { Download, Type, Image as ImageIcon, Layers } from 'lucide-react';
 
 // --- Draggable Layer Hook ---
 function useDrag(initialPos, canvasRef) {
@@ -30,12 +30,11 @@ function useDrag(initialPos, canvasRef) {
   return [pos, setPos, onMouseDown];
 }
 
-// ─── CANVAS BACKGROUNDS ─────────────────────────────────────────────────────
 const BACKGROUNDS = {
   dark:    { background: 'linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)' },
   light:   { background: 'linear-gradient(160deg, #f8f9ff 0%, #eef0ff 50%, #e8ebff 100%)' },
   white:   { background: '#ffffff' },
-  brand:   null, // set dynamically from accentColor
+  brand:   null,
   overlay: { background: 'linear-gradient(135deg,#1e1e2e,#2d1b6e)' },
 };
 
@@ -46,7 +45,24 @@ const ASPECT_RATIOS = [
   { id: '4/5',  label: '4:5',       pad: 125 },
 ];
 
-// ─── MAIN CANVAS EDITOR ────────────────────────────────────────────────────
+const HIGHLIGHT_STYLES = [
+  { id: 'none',     label: 'None' },
+  { id: 'soft_box', label: 'Soft Box' },
+  { id: 'marker',   label: 'Marker' },
+  { id: 'blur',     label: 'Blur Strip' },
+  { id: 'gradient', label: 'Gradient' },
+];
+
+function getHighlightStyle(style, color, opacity, padding, radius) {
+  if (style === 'none') return {};
+  const base = { padding: `${padding}px ${padding * 2}px`, borderRadius: radius, display: 'inline-block' };
+  if (style === 'soft_box') return { ...base, backgroundColor: `${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}` };
+  if (style === 'marker') return { ...base, backgroundColor: `${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`, borderRadius: 2 };
+  if (style === 'blur') return { ...base, backdropFilter: 'blur(8px)', backgroundColor: `${color}${Math.round(opacity * 0.6 * 255).toString(16).padStart(2, '0')}` };
+  if (style === 'gradient') return { ...base, background: `linear-gradient(90deg, ${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}, transparent)` };
+  return {};
+}
+
 export default function CanvasEditor({
   initialHeadline = '', initialSubtext = '', initialCta = '',
   initialImage = null, logoUrl = null, brandColors = [],
@@ -54,7 +70,6 @@ export default function CanvasEditor({
 }) {
   const canvasRef = useRef(null);
 
-  // State
   const [headline, setHeadline] = useState(initialHeadline);
   const [subtext, setSubtext] = useState(initialSubtext);
   const [cta, setCta] = useState(initialCta);
@@ -67,61 +82,49 @@ export default function CanvasEditor({
   const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIOS[0]);
   const [showLogo, setShowLogo] = useState(!!logoUrl);
   const [logoOpacity, setLogoOpacity] = useState(1);
-  const [logoScale, setLogoScale] = useState(14); // % of canvas width
+  const [logoScale, setLogoScale] = useState(20); // % of canvas width
   const [bgOverlay, setBgOverlay] = useState(0.45);
   const [selectedLayer, setSelectedLayer] = useState(null);
   const [exporting, setExporting] = useState(false);
-  const [editingText, setEditingText] = useState(null); // 'headline' | 'subtext' | 'cta'
+  const [editingText, setEditingText] = useState(null);
+  const [imgScale, setImgScale] = useState(48);
 
-  // Draggable layer positions (% of canvas)
+  // Text highlight state
+  const [highlightStyle, setHighlightStyle] = useState('none');
+  const [highlightColor, setHighlightColor] = useState('#000000');
+  const [highlightOpacity, setHighlightOpacity] = useState(0.5);
+  const [highlightPadding, setHighlightPadding] = useState(6);
+  const [highlightRadius, setHighlightRadius] = useState(6);
+
   const [headlinePos, setHeadlinePos, headlineDrag] = useDrag({ x: 8, y: 35 }, canvasRef);
   const [subtextPos, setSubtextPos, subtextDrag] = useDrag({ x: 8, y: 52 }, canvasRef);
   const [ctaPos, setCtaPos, ctaDrag] = useDrag({ x: 8, y: 66 }, canvasRef);
-  const [logoPos, setLogoPos, logoDrag] = useDrag({ x: 5, y: 4 }, canvasRef);
+  const [logoPos, setLogoPos, logoDrag] = useDrag({ x: 4, y: 4 }, canvasRef);
   const [imgPos, setImgPos, imgDrag] = useDrag({ x: 52, y: 0 }, canvasRef);
-  const [imgScale, setImgScale] = useState(48); // % width
 
-  const accentBg = accentColor + '22';
   const bgObj = bgStyle === 'brand'
     ? { background: `linear-gradient(135deg, ${accentColor}cc, ${accentColor}44)` }
     : BACKGROUNDS[bgStyle] || BACKGROUNDS.dark;
 
-  // Apply a layout preset
+  const highlightCss = getHighlightStyle(highlightStyle, highlightColor, highlightOpacity, highlightPadding, highlightRadius);
+
   const applyLayout = (preset) => {
     if (preset === 'hero') {
-      setHeadlinePos({ x: 5, y: 30 });
-      setSubtextPos({ x: 5, y: 50 });
-      setCtaPos({ x: 5, y: 64 });
-      setImgPos({ x: 50, y: 0 });
-      setImgScale(50);
-      setLogoPos({ x: 4, y: 4 });
-      setBgStyle('dark');
-      setHeadlineColor('#ffffff');
+      setHeadlinePos({ x: 5, y: 30 }); setSubtextPos({ x: 5, y: 50 }); setCtaPos({ x: 5, y: 64 });
+      setImgPos({ x: 50, y: 0 }); setImgScale(50); setLogoPos({ x: 4, y: 4 });
+      setBgStyle('dark'); setHeadlineColor('#ffffff');
     } else if (preset === 'split') {
-      setHeadlinePos({ x: 5, y: 38 });
-      setSubtextPos({ x: 5, y: 56 });
-      setCtaPos({ x: 5, y: 68 });
-      setImgPos({ x: 50, y: 0 });
-      setImgScale(50);
-      setBgStyle('white');
-      setHeadlineColor('#111111');
+      setHeadlinePos({ x: 5, y: 38 }); setSubtextPos({ x: 5, y: 56 }); setCtaPos({ x: 5, y: 68 });
+      setImgPos({ x: 50, y: 0 }); setImgScale(50);
+      setBgStyle('white'); setHeadlineColor('#111111');
     } else if (preset === 'centered') {
-      setHeadlinePos({ x: 50, y: 35 });
-      setSubtextPos({ x: 50, y: 52 });
-      setCtaPos({ x: 50, y: 64 });
-      setImgPos({ x: 20, y: 5 });
-      setImgScale(60);
-      setBgStyle('overlay');
-      setHeadlineColor('#ffffff');
-      setBgOverlay(0.55);
+      setHeadlinePos({ x: 50, y: 35 }); setSubtextPos({ x: 50, y: 52 }); setCtaPos({ x: 50, y: 64 });
+      setImgPos({ x: 20, y: 5 }); setImgScale(60);
+      setBgStyle('overlay'); setHeadlineColor('#ffffff'); setBgOverlay(0.55);
     } else if (preset === 'product') {
-      setHeadlinePos({ x: 50, y: 8 });
-      setSubtextPos({ x: 50, y: 22 });
-      setImgPos({ x: 10, y: 30 });
-      setImgScale(80);
-      setCtaPos({ x: 50, y: 88 });
-      setBgStyle('light');
-      setHeadlineColor('#111111');
+      setHeadlinePos({ x: 50, y: 8 }); setSubtextPos({ x: 50, y: 22 }); setImgPos({ x: 10, y: 30 });
+      setImgScale(80); setCtaPos({ x: 50, y: 88 });
+      setBgStyle('light'); setHeadlineColor('#111111');
     }
   };
 
@@ -130,9 +133,15 @@ export default function CanvasEditor({
     setExporting(true);
     setSelectedLayer(null);
     setEditingText(null);
-    await new Promise(r => setTimeout(r, 80));
-    const el = canvasRef.current;
-    const canvas = await html2canvas(el, { useCORS: true, allowTaint: true, scale: 2, logging: false, backgroundColor: null });
+    await new Promise(r => setTimeout(r, 100));
+    const canvas = await html2canvas(canvasRef.current, {
+      useCORS: true,
+      allowTaint: false,
+      scale: 2,
+      logging: false,
+      backgroundColor: null,
+      imageTimeout: 15000,
+    });
     const url = canvas.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = url;
@@ -141,19 +150,17 @@ export default function CanvasEditor({
     setExporting(false);
   };
 
-  const colorSwatches = [...new Set([...brandColors, '#ffffff', '#111111', '#7c3aed', '#2563eb', '#059669', '#ef4444'])].slice(0, 8);
+  const colorSwatches = [...new Set([...brandColors, '#ffffff', '#111111', '#000000', '#7c3aed', '#2563eb', '#059669', '#ef4444'])].slice(0, 8);
 
   return (
     <div className="fixed inset-0 z-50 bg-[#111318] flex flex-col" onClick={() => { setSelectedLayer(null); setEditingText(null); }}>
-      {/* ── Top Bar ── */}
+      {/* Top Bar */}
       <div className="h-12 flex items-center justify-between px-4 border-b border-white/10 shrink-0" onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-3">
           <button onClick={onClose} className="text-white/50 hover:text-white text-sm font-medium transition-colors">← Back</button>
           <div className="w-px h-4 bg-white/10" />
           <span className="text-white/70 text-sm font-medium">Canvas Editor</span>
         </div>
-
-        {/* Aspect ratio */}
         <div className="flex items-center gap-1 bg-white/10 rounded-lg p-0.5">
           {ASPECT_RATIOS.map(ar => (
             <button key={ar.id} onClick={() => setAspectRatio(ar)}
@@ -162,7 +169,6 @@ export default function CanvasEditor({
             </button>
           ))}
         </div>
-
         <button onClick={handleExport} disabled={exporting}
           className="flex items-center gap-1.5 h-8 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors disabled:opacity-50">
           <Download className="w-3.5 h-3.5" />
@@ -170,10 +176,10 @@ export default function CanvasEditor({
         </button>
       </div>
 
-      {/* ── Main 3-column layout ── */}
+      {/* 3-column */}
       <div className="flex flex-1 overflow-hidden" onClick={e => e.stopPropagation()}>
 
-        {/* LEFT SIDEBAR — Assets */}
+        {/* LEFT SIDEBAR */}
         <div className="w-52 shrink-0 border-r border-white/10 overflow-y-auto p-3 space-y-4">
           <SideSection label="Templates">
             {[
@@ -197,7 +203,7 @@ export default function CanvasEditor({
               <button key={url} onClick={() => setBgImage(url)}
                 className={`relative w-full rounded-lg overflow-hidden border-2 transition-all ${bgImage === url ? 'border-violet-400' : 'border-transparent'}`}
                 style={{ paddingBottom: '56%' }}>
-                <img src={url} alt={label} className="absolute inset-0 w-full h-full object-cover object-top" />
+                <img src={url} alt={label} className="absolute inset-0 w-full h-full object-cover object-top" crossOrigin="anonymous" />
                 <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-0.5">
                   <p className="text-[9px] text-white/90 truncate">{label}</p>
                 </div>
@@ -222,7 +228,7 @@ export default function CanvasEditor({
             >
               <div className="absolute inset-0">
 
-                {/* BG Image */}
+                {/* BG Image layer */}
                 {bgImage && (
                   <DraggableLayer
                     x={imgPos.x} y={imgPos.y}
@@ -232,11 +238,13 @@ export default function CanvasEditor({
                     style={{ width: `${imgScale}%`, pointerEvents: 'all' }}
                     noBorder={exporting}
                   >
-                    <img src={bgImage} alt="" className="w-full rounded-lg shadow-2xl block" style={{ objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
+                    <img src={bgImage} alt="" crossOrigin="anonymous"
+                      className="w-full rounded-lg shadow-2xl block"
+                      style={{ objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
                   </DraggableLayer>
                 )}
 
-                {/* Dark overlay (overlay mode) */}
+                {/* Overlay */}
                 {bgStyle === 'overlay' && (
                   <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${bgOverlay})`, pointerEvents: 'none' }} />
                 )}
@@ -250,24 +258,25 @@ export default function CanvasEditor({
                     onSelect={() => setSelectedLayer('headline')}
                     noBorder={exporting}
                   >
-                    {editingText === 'headline' ? (
-                      <textarea
-                        autoFocus
-                        className="bg-transparent outline-none resize-none font-bold leading-tight text-center w-full"
-                        style={{ color: headlineColor, fontSize: headlineSize, minWidth: 200, lineHeight: 1.2 }}
-                        value={headline}
-                        onChange={e => setHeadline(e.target.value)}
-                        onBlur={() => setEditingText(null)}
-                        onClick={e => e.stopPropagation()}
-                        rows={2}
-                      />
-                    ) : (
-                      <p
-                        className="font-bold leading-tight cursor-text"
-                        style={{ color: headlineColor, fontSize: headlineSize, textShadow: bgStyle === 'dark' || bgStyle === 'overlay' ? '0 2px 16px rgba(0,0,0,0.6)' : 'none', maxWidth: 420, lineHeight: 1.2 }}
-                        onDoubleClick={(e) => { e.stopPropagation(); setEditingText('headline'); setSelectedLayer('headline'); }}
-                      >{headline}</p>
-                    )}
+                    <div style={highlightCss}>
+                      {editingText === 'headline' ? (
+                        <textarea autoFocus
+                          className="bg-transparent outline-none resize-none font-bold leading-tight w-full"
+                          style={{ color: headlineColor, fontSize: headlineSize, minWidth: 200, lineHeight: 1.2 }}
+                          value={headline}
+                          onChange={e => setHeadline(e.target.value)}
+                          onBlur={() => setEditingText(null)}
+                          onClick={e => e.stopPropagation()}
+                          rows={2}
+                        />
+                      ) : (
+                        <p className="font-bold leading-tight cursor-text"
+                          style={{ color: headlineColor, fontSize: headlineSize, maxWidth: 420, lineHeight: 1.2,
+                            textShadow: highlightStyle === 'none' && (bgStyle === 'dark' || bgStyle === 'overlay') ? '0 2px 16px rgba(0,0,0,0.6)' : 'none' }}
+                          onDoubleClick={(e) => { e.stopPropagation(); setEditingText('headline'); setSelectedLayer('headline'); }}
+                        >{headline}</p>
+                      )}
+                    </div>
                   </DraggableLayer>
                 )}
 
@@ -281,8 +290,7 @@ export default function CanvasEditor({
                     noBorder={exporting}
                   >
                     {editingText === 'subtext' ? (
-                      <textarea
-                        autoFocus
+                      <textarea autoFocus
                         className="bg-transparent outline-none resize-none leading-snug"
                         style={{ color: headlineColor === '#ffffff' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)', fontSize: subtextSize, minWidth: 160 }}
                         value={subtext}
@@ -292,8 +300,7 @@ export default function CanvasEditor({
                         rows={2}
                       />
                     ) : (
-                      <p
-                        className="leading-snug cursor-text"
+                      <p className="leading-snug cursor-text"
                         style={{ color: headlineColor === '#ffffff' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)', fontSize: subtextSize, maxWidth: 380 }}
                         onDoubleClick={(e) => { e.stopPropagation(); setEditingText('subtext'); setSelectedLayer('subtext'); }}
                       >{subtext}</p>
@@ -311,8 +318,7 @@ export default function CanvasEditor({
                     noBorder={exporting}
                   >
                     {editingText === 'cta' ? (
-                      <input
-                        autoFocus
+                      <input autoFocus
                         className="outline-none bg-transparent font-semibold text-white text-center"
                         style={{ backgroundColor: accentColor, padding: '8px 20px', borderRadius: 999, fontSize: subtextSize * 0.9 }}
                         value={cta}
@@ -321,8 +327,7 @@ export default function CanvasEditor({
                         onClick={e => e.stopPropagation()}
                       />
                     ) : (
-                      <span
-                        className="inline-flex items-center font-semibold text-white cursor-text"
+                      <span className="inline-flex items-center font-semibold text-white cursor-text"
                         style={{ backgroundColor: accentColor, padding: '8px 20px', borderRadius: 999, fontSize: subtextSize * 0.9 }}
                         onDoubleClick={(e) => { e.stopPropagation(); setEditingText('cta'); setSelectedLayer('cta'); }}
                       >{cta}</span>
@@ -338,36 +343,43 @@ export default function CanvasEditor({
                     selected={selectedLayer === 'logo'}
                     onSelect={() => setSelectedLayer('logo')}
                     noBorder={exporting}
+                    style={{ width: `${logoScale}%`, minWidth: 40 }}
                   >
                     <img
                       src={logoUrl}
-                      alt=""
-                      style={{ width: `${logoScale * 4}px`, maxWidth: 160, opacity: logoOpacity, objectFit: 'contain', filter: (bgStyle === 'dark' || bgStyle === 'overlay') ? 'brightness(0) invert(1)' : 'none' }}
+                      alt="logo"
+                      crossOrigin="anonymous"
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        display: 'block',
+                        opacity: logoOpacity,
+                        objectFit: 'contain',
+                        filter: (bgStyle === 'dark' || bgStyle === 'overlay') ? 'brightness(0) invert(1)' : 'none',
+                      }}
                     />
                   </DraggableLayer>
                 )}
 
               </div>
             </div>
-
-            {/* Hint */}
             <p className="text-center text-white/25 text-xs mt-3">Double-click text to edit · Drag to reposition</p>
           </div>
         </div>
 
-        {/* RIGHT SIDEBAR — Controls */}
+        {/* RIGHT SIDEBAR */}
         <div className="w-60 shrink-0 border-l border-white/10 overflow-y-auto p-3 space-y-4" onClick={e => e.stopPropagation()}>
 
           <SideSection label="Background">
             <div className="grid grid-cols-3 gap-1">
               {Object.keys(BACKGROUNDS).map(k => (
                 <button key={k} onClick={() => setBgStyle(k)}
-                  className={`px-2 py-1.5 rounded-md text-[10px] font-semibold capitalize transition-colors ${bgStyle === k ? 'bg-violet-600 text-white' : 'bg-white/8 text-white/50 hover:bg-white/15 hover:text-white'}`}>
+                  className={`px-2 py-1.5 rounded-md text-[10px] font-semibold capitalize transition-colors ${bgStyle === k ? 'bg-violet-600 text-white' : 'bg-white/5 text-white/50 hover:bg-white/15 hover:text-white'}`}>
                   {k}
                 </button>
               ))}
             </div>
-            {(bgStyle === 'overlay') && (
+            {bgStyle === 'overlay' && (
               <div className="mt-2">
                 <p className="text-[10px] text-white/40 mb-1">Overlay opacity</p>
                 <input type="range" min={0} max={0.85} step={0.05} value={bgOverlay}
@@ -376,18 +388,36 @@ export default function CanvasEditor({
             )}
           </SideSection>
 
-          <SideSection label="Image Layer">
-            {bgImage && (
-              <>
-                <SliderControl label="Width" min={20} max={100} value={imgScale} onChange={setImgScale} />
-              </>
-            )}
-          </SideSection>
+          {bgImage && (
+            <SideSection label="Image Layer">
+              <SliderControl label="Width %" min={20} max={100} value={imgScale} onChange={setImgScale} />
+            </SideSection>
+          )}
 
           <SideSection label="Headline">
             <SliderControl label="Font size" min={18} max={80} value={headlineSize} onChange={setHeadlineSize} unit="px" />
             <p className="text-[10px] text-white/40 mt-2 mb-1">Color</p>
             <ColorSwatches colors={colorSwatches} selected={headlineColor} onSelect={setHeadlineColor} />
+          </SideSection>
+
+          <SideSection label="Text Highlight">
+            <div className="grid grid-cols-2 gap-1 mb-2">
+              {HIGHLIGHT_STYLES.map(s => (
+                <button key={s.id} onClick={() => setHighlightStyle(s.id)}
+                  className={`px-2 py-1.5 rounded-md text-[10px] font-semibold transition-colors ${highlightStyle === s.id ? 'bg-violet-600 text-white' : 'bg-white/5 text-white/50 hover:bg-white/15 hover:text-white'}`}>
+                  {s.label}
+                </button>
+              ))}
+            </div>
+            {highlightStyle !== 'none' && (
+              <>
+                <p className="text-[10px] text-white/40 mb-1">Color</p>
+                <ColorSwatches colors={['#000000', '#ffffff', '#1e1e1e', ...brandColors]} selected={highlightColor} onSelect={setHighlightColor} />
+                <SliderControl label="Opacity" min={0.05} max={1} step={0.05} value={highlightOpacity} onChange={setHighlightOpacity} />
+                <SliderControl label="Padding" min={0} max={24} value={highlightPadding} onChange={setHighlightPadding} unit="px" />
+                <SliderControl label="Radius" min={0} max={20} value={highlightRadius} onChange={setHighlightRadius} unit="px" />
+              </>
+            )}
           </SideSection>
 
           <SideSection label="Subtext">
@@ -407,8 +437,12 @@ export default function CanvasEditor({
                   <div className={`w-3 h-3 rounded-full bg-white transition-transform ${showLogo ? 'translate-x-4' : 'translate-x-0'}`} />
                 </button>
               </div>
-              <SliderControl label="Size" min={4} max={30} value={logoScale} onChange={setLogoScale} />
-              <SliderControl label="Opacity" min={0.1} max={1} step={0.05} value={logoOpacity} onChange={setLogoOpacity} />
+              {showLogo && (
+                <>
+                  <SliderControl label="Width %" min={5} max={50} value={logoScale} onChange={setLogoScale} />
+                  <SliderControl label="Opacity" min={0.1} max={1} step={0.05} value={logoOpacity} onChange={setLogoOpacity} />
+                </>
+              )}
             </SideSection>
           )}
 
@@ -433,8 +467,6 @@ export default function CanvasEditor({
     </div>
   );
 }
-
-// ─── Sub-components ─────────────────────────────────────────────────────────
 
 function DraggableLayer({ x, y, onMouseDown, children, selected, onSelect, style = {}, noBorder = false }) {
   return (
@@ -481,7 +513,7 @@ function SliderControl({ label, min, max, step = 1, value, onChange, unit = '' }
 function ColorSwatches({ colors, selected, onSelect }) {
   return (
     <div className="flex flex-wrap gap-1.5">
-      {colors.map(c => (
+      {[...new Set(colors)].map(c => (
         <button key={c} onClick={() => onSelect(c)}
           className={`w-6 h-6 rounded-full border-2 transition-all shrink-0 ${selected === c ? 'border-violet-400 scale-110 shadow-md' : 'border-transparent'}`}
           style={{ backgroundColor: c }}
