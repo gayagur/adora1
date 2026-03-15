@@ -393,12 +393,15 @@ export default function CanvasEditor({
                   <DraggableLayer x={logoPos.x} y={logoPos.y} onMouseDown={logoDrag}
                     selected={selectedLayer === 'logo'} onSelect={() => setSelectedLayer('logo')}
                     noBorder={exporting} style={{ width: `${logoScale}%`, minWidth: 40 }}>
-                    <img src={logoUrl} alt="logo" crossOrigin="anonymous"
-                     style={{
-                       width: '100%', height: 'auto', display: 'block', opacity: logoOpacity, objectFit: 'contain',
-                       filter: (bgStyle === 'dark' || bgStyle === 'overlay') ? 'brightness(0) invert(1)' : 'none',
-                       mixBlendMode: (bgStyle === 'light' || bgStyle === 'white') ? 'multiply' : 'normal',
-                     }} />
+                    <img
+                      src={logoUrl}
+                      alt="logo"
+                      onError={e => { e.target.style.display = 'none'; }}
+                      style={{
+                        width: '100%', height: 'auto', display: 'block', opacity: logoOpacity, objectFit: 'contain',
+                        filter: (bgStyle === 'dark' || bgStyle === 'overlay') ? 'brightness(0) invert(1)' : 'none',
+                        mixBlendMode: (bgStyle === 'light' || bgStyle === 'white') ? 'multiply' : 'normal',
+                      }} />
                   </DraggableLayer>
                 )}
 
