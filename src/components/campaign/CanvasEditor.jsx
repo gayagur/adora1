@@ -441,7 +441,7 @@ export default function CanvasEditor({
 
           {bgImage && (
             <SideSection label="Image Layer">
-              <SliderControl label="Width %" min={20} max={100} value={imgScale} onChange={setImgScale} />
+              <SliderControl label="Width %" min={10} max={100} value={imgWidth} onChange={setImgWidth} />
             </SideSection>
           )}
 
