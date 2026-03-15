@@ -44,6 +44,7 @@ URL: ${cleanUrl}
 Extract:
 - brand_name: company/brand name
 - brand_colors: 2-4 hex codes that match the brand identity
+- logo_url: the most likely URL of the brand logo. Look for: og:image, a <img> in the header/nav with "logo" in the class/alt/src, or the favicon URL. Return a full absolute URL or null.
 - description: what the product or service does (2-3 sentences, clear and specific)
 - target_audience: precise description of who they serve
 - tone_of_voice: communication style (e.g. "Professional and authoritative", "Casual and friendly")
@@ -55,6 +56,7 @@ Extract:
         properties: {
           brand_name: { type: "string" },
           brand_colors: { type: "array", items: { type: "string" } },
+          logo_url: { type: "string" },
           description: { type: "string" },
           target_audience: { type: "string" },
           tone_of_voice: { type: "string" },
