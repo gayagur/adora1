@@ -167,6 +167,7 @@ export default function CanvasEditor({
   // Resize widths (% of canvas)
   const [headlineWidth, setHeadlineWidth, headlineResize] = useResize(45, canvasRef);
   const [subtextWidth, setSubtextWidth, subtextResize] = useResize(40, canvasRef);
+  const [imgWidth, setImgWidth, imgResize] = useResize(48, canvasRef);
 
   const bgObj = bgStyle === 'brand'
     ? { background: `linear-gradient(135deg, ${accentColor}cc, ${accentColor}44)` }
