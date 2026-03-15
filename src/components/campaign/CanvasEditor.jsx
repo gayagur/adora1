@@ -559,12 +559,12 @@ export default function CanvasEditor({
 }
 
 // ─── ResizableDraggableLayer ─────────────────────────────────────────────────
-function ResizableDraggableLayer({ x, y, width, onDragMouseDown, onResizeMouseDown, children, selected, onSelect, onRemove, noBorder }) {
+function ResizableDraggableLayer({ x, y, width, onPointerDown, onResizePointerDown, children, selected, onSelect, onRemove, noBorder }) {
   return (
     <div
-      onMouseDown={onDragMouseDown}
+      onPointerDown={onPointerDown}
       onClick={(e) => { e.stopPropagation(); onSelect?.(); }}
-      className="absolute cursor-move"
+      className="absolute cursor-move touch-none"
       style={{
         left: `${x}%`,
         top: `${y}%`,
@@ -578,7 +578,7 @@ function ResizableDraggableLayer({ x, y, width, onDragMouseDown, onResizeMouseDo
       {!noBorder && onRemove && (
         <div
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
-          onMouseDown={e => e.stopPropagation()}
+          onPointerDown={e => e.stopPropagation()}
           style={{
             position: 'absolute', top: -8, right: -8,
             width: 16, height: 16, borderRadius: '50%',
@@ -590,13 +590,14 @@ function ResizableDraggableLayer({ x, y, width, onDragMouseDown, onResizeMouseDo
       )}
       {!noBorder && (
         <div
-          onMouseDown={onResizeMouseDown}
+          onPointerDown={onResizePointerDown}
           style={{
             position: 'absolute', right: -6, bottom: -6,
             width: 12, height: 12, borderRadius: 3,
             background: selected ? '#7c3aed' : 'rgba(255,255,255,0.25)',
             cursor: 'ew-resize', zIndex: 10,
             border: '1.5px solid rgba(255,255,255,0.5)',
+            touchAction: 'none',
           }}
           onClick={e => e.stopPropagation()}
         />
