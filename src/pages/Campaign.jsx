@@ -47,8 +47,87 @@ export default function Campaign() {
   });
 
   const generateAsset = async (assetId, option, camp, br) => {
-    const copyResult = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a creative director. Generate a single ${option.label || option.asset_type} for this campaign.
+    const isCarousel = option.asset_type === 'carousel';
+
+    if (isCarousel) {
+      // Generate carousel: 4 slides with individual prompts
+      const copyResult = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are a creative director. Generate a 4-slide carousel post for this campaign.
+
+Campaign: ${camp?.title}
+Strategy Angle: ${camp?.strategy_angle}
+Key Message: ${camp?.key_message}
+Tone: ${camp?.tone}
+Target Audience: ${camp?.target_audience}
+Visual Direction: ${camp?.visual_direction}
+
+Brand: ${br?.brand_name}
+Brand Description: ${br?.description}
+Brand Colors: ${br?.brand_colors?.join(', ')}
+
+Platform: ${option.platform}
+Format: ${option.format}
+
+Generate 4 carousel slides. Each slide should flow as a story/sequence.
+Also generate: headline, ad_copy, full_caption (with hashtags), cta for the overall post.
+
+Each slide should have:
+- headline: short slide title (max 6 words)
+- body: 1 sentence slide copy
+- image_prompt: detailed AI image generation prompt. Square composition. No text in image. Use brand colors. Premium marketing visual.`,
+        file_urls: br?.image_assets?.length > 0 ? br.image_assets.slice(0, 3) : undefined,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            headline: { type: "string" },
+            ad_copy: { type: "string" },
+            full_caption: { type: "string" },
+            cta: { type: "string" },
+            slides: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  headline: { type: "string" },
+                  body: { type: "string" },
+                  image_prompt: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Generate all slide images in parallel
+      const imageResults = await Promise.all(
+        (copyResult.slides || []).map(slide =>
+          base44.integrations.Core.GenerateImage({
+            prompt: `${slide.image_prompt}. Brand colors: ${br?.brand_colors?.join(', ')}. Premium marketing creative. No text overlays. High quality.`,
+            existing_image_urls: br?.image_assets?.length > 0 ? br.image_assets.slice(0, 2) : undefined
+          })
+        )
+      );
+
+      const carousel_slides = (copyResult.slides || []).map((slide, i) => ({
+        image_url: imageResults[i]?.url || '',
+        headline: slide.headline,
+        body: slide.body,
+      }));
+
+      await base44.entities.CampaignAsset.update(assetId, {
+        headline: copyResult.headline,
+        ad_copy: copyResult.ad_copy,
+        full_caption: copyResult.full_caption,
+        cta: copyResult.cta,
+        preview_image: carousel_slides[0]?.image_url || '',
+        carousel_images: carousel_slides.map(s => s.image_url),
+        carousel_slides,
+        status: 'ready',
+      });
+
+    } else {
+      const copyResult = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are a creative director. Generate a single ${option.label || option.asset_type} for this campaign.
 
 Campaign: ${camp?.title}
 Strategy Angle: ${camp?.strategy_angle}
@@ -73,29 +152,30 @@ Generate:
 - full_caption: complete social media caption with hook, value prop, CTA, and 3-5 hashtags
 - cta: call-to-action text (e.g. "Learn More", "Try Free", "Shop Now")
 - visual_prompt: detailed AI image generation prompt. Modern premium marketing visual. NO text in image. Use brand colors. ${option.asset_type === 'story' || option.asset_type === 'reel' ? 'Vertical composition.' : option.asset_type === 'banner' ? 'Wide horizontal layout.' : 'Square composition.'}`,
-      file_urls: br?.image_assets?.length > 0 ? br.image_assets.slice(0, 3) : undefined,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          headline: { type: "string" },
-          ad_copy: { type: "string" },
-          full_caption: { type: "string" },
-          cta: { type: "string" },
-          visual_prompt: { type: "string" }
+        file_urls: br?.image_assets?.length > 0 ? br.image_assets.slice(0, 3) : undefined,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            headline: { type: "string" },
+            ad_copy: { type: "string" },
+            full_caption: { type: "string" },
+            cta: { type: "string" },
+            visual_prompt: { type: "string" }
+          }
         }
-      }
-    });
+      });
 
-    const imageResult = await base44.integrations.Core.GenerateImage({
-      prompt: `${copyResult.visual_prompt}. Brand colors: ${br?.brand_colors?.join(', ')}. Premium marketing creative. No text overlays. High quality.`,
-      existing_image_urls: br?.image_assets?.length > 0 ? br.image_assets.slice(0, 2) : undefined
-    });
+      const imageResult = await base44.integrations.Core.GenerateImage({
+        prompt: `${copyResult.visual_prompt}. Brand colors: ${br?.brand_colors?.join(', ')}. Premium marketing creative. No text overlays. High quality.`,
+        existing_image_urls: br?.image_assets?.length > 0 ? br.image_assets.slice(0, 2) : undefined
+      });
 
-    await base44.entities.CampaignAsset.update(assetId, {
-      ...copyResult,
-      preview_image: imageResult.url,
-      status: 'ready',
-    });
+      await base44.entities.CampaignAsset.update(assetId, {
+        ...copyResult,
+        preview_image: imageResult.url,
+        status: 'ready',
+      });
+    }
 
     qc.invalidateQueries({ queryKey: ['assets', campaignId] });
   };
