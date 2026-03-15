@@ -382,7 +382,9 @@ export default function CanvasEditor({
                     x={imgPos.x} y={imgPos.y}
                     width={imgWidth}
                     onDragMouseDown={imgDrag}
+                    onDragTouchStart={imgTouchDrag}
                     onResizeMouseDown={imgResize}
+                    onResizeTouchStart={imgResizeTouch}
                     selected={selectedLayer === 'img'}
                     onSelect={() => setSelectedLayer('img')}
                     onRemove={() => setBgImage(null)}
