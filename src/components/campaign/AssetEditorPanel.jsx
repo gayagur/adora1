@@ -167,6 +167,7 @@ Return ONLY the improved text, nothing else.`,
               subtext={draft.ad_copy}
               cta={draft.cta}
               brandColors={brand?.brand_colors}
+              screenshots={brand?.image_assets}
             />
           </div>
         )}
