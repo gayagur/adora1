@@ -84,33 +84,58 @@ function useDrag(initialPos, canvasRef) {
   return [pos, setPos, onMouseDown, onTouchStart];
 }
 
-// ─── Resize hook (returns resize handle props + current width%) ───────────────
+// ─── Resize hook (supports both mouse and touch) ───────────────────────────
 function useResize(initialWidth, canvasRef) {
   const [width, setWidth] = useState(initialWidth);
   const resizing = useRef(false);
   const startX = useRef(0);
   const startW = useRef(0);
 
-  const onResizeMouseDown = useCallback((e) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const startResize = useCallback((clientX) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     resizing.current = true;
-    startX.current = e.clientX;
+    startX.current = clientX;
     startW.current = width;
-
-    const onMove = (ev) => {
-      if (!resizing.current) return;
-      const dx = ((ev.clientX - startX.current) / rect.width) * 100;
-      setWidth(Math.max(10, Math.min(95, startW.current + dx)));
-    };
-    const onUp = () => { resizing.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
   }, [width, canvasRef]);
 
-  return [width, setWidth, onResizeMouseDown];
+  const onResizeMove = useCallback((clientX) => {
+    if (!resizing.current) return;
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const dx = ((clientX - startX.current) / rect.width) * 100;
+    setWidth(Math.max(10, Math.min(95, startW.current + dx)));
+  }, [canvasRef]);
+
+  const onResizeEnd = useCallback(() => {
+    resizing.current = false;
+  }, []);
+
+  const onResizeMouseDown = useCallback((e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    startResize(e.clientX);
+    const onMove = (ev) => onResizeMove(ev.clientX);
+    const onUp = () => { onResizeEnd(); window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, [startResize, onResizeMove, onResizeEnd]);
+
+  const onResizeTouchStart = useCallback((e) => {
+    e.stopPropagation();
+    const touch = e.touches[0];
+    if (!touch) return;
+    startResize(touch.clientX);
+    const onMove = (ev) => {
+      const t = ev.touches[0];
+      if (t) onResizeMove(t.clientX);
+    };
+    const onUp = () => { onResizeEnd(); window.removeEventListener('touchmove', onMove); window.removeEventListener('touchend', onUp); };
+    window.addEventListener('touchmove', onMove);
+    window.addEventListener('touchend', onUp);
+  }, [startResize, onResizeMove, onResizeEnd]);
+
+  return [width, setWidth, onResizeMouseDown, onResizeTouchStart];
 }
 
 const BACKGROUNDS = {
