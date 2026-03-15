@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Download, RefreshCw, Check, Loader2, ImageIcon, Pencil, Copy as DuplicateIcon } from 'lucide-react';
+import { Copy, Download, RefreshCw, Check, Loader2, ImageIcon, Pencil, Copy as DuplicateIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
