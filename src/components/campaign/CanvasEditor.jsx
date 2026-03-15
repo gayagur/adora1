@@ -434,11 +434,30 @@ export default function CanvasEditor({
             </button>
           ))}
         </div>
-        <button onClick={handleExport} disabled={exporting}
-          className="flex items-center gap-1.5 h-8 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors disabled:opacity-50">
-          <Download className="w-3.5 h-3.5" />
-          {exporting ? 'Exporting…' : 'Export PNG'}
-        </button>
+        <div className="flex items-center gap-2">
+          {onSave && (
+            <button onClick={async () => {
+              setSaving(true);
+              await onSave({
+                headline,
+                ad_copy: subtext,
+                cta,
+                preview_image: bgImage,
+              });
+              setSaving(false);
+              toast.success('Changes saved');
+            }} disabled={saving}
+              className="flex items-center gap-1.5 h-8 px-4 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-medium transition-colors disabled:opacity-50">
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+          )}
+          <button onClick={handleExport} disabled={exporting}
+            className="flex items-center gap-1.5 h-8 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors disabled:opacity-50">
+            <Download className="w-3.5 h-3.5" />
+            {exporting ? 'Exporting…' : 'Export PNG'}
+          </button>
+        </div>
       </div>
 
       {/* 3-column */}
