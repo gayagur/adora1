@@ -1,8 +1,36 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { Download, Type, Image as ImageIcon, Layers } from 'lucide-react';
 
-// --- Draggable Layer Hook ---
+// ─── Load Google Fonts ────────────────────────────────────────────────────────
+const FONTS = [
+  { label: 'Inter',        value: 'Inter' },
+  { label: 'Roboto',       value: 'Roboto' },
+  { label: 'Playfair Display', value: 'Playfair Display' },
+  { label: 'Montserrat',   value: 'Montserrat' },
+  { label: 'Oswald',       value: 'Oswald' },
+  { label: 'Raleway',      value: 'Raleway' },
+  { label: 'Lato',         value: 'Lato' },
+  { label: 'Poppins',      value: 'Poppins' },
+  { label: 'Merriweather', value: 'Merriweather' },
+  { label: 'Space Grotesk', value: 'Space Grotesk' },
+];
+
+// Inject Google Fonts link once
+function useGoogleFonts() {
+  useEffect(() => {
+    const id = 'canvas-editor-gfonts';
+    if (document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    const families = FONTS.map(f => f.value.replace(/ /g, '+')).join('&family=');
+    link.href = `https://fonts.googleapis.com/css2?family=${families}:wght@400;600;700;800&display=swap`;
+    document.head.appendChild(link);
+  }, []);
+}
+
+// ─── Draggable hook ───────────────────────────────────────────────────────────
 function useDrag(initialPos, canvasRef) {
   const [pos, setPos] = useState(initialPos);
   const dragging = useRef(false);
@@ -30,6 +58,35 @@ function useDrag(initialPos, canvasRef) {
   return [pos, setPos, onMouseDown];
 }
 
+// ─── Resize hook (returns resize handle props + current width%) ───────────────
+function useResize(initialWidth, canvasRef) {
+  const [width, setWidth] = useState(initialWidth);
+  const resizing = useRef(false);
+  const startX = useRef(0);
+  const startW = useRef(0);
+
+  const onResizeMouseDown = useCallback((e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    resizing.current = true;
+    startX.current = e.clientX;
+    startW.current = width;
+
+    const onMove = (ev) => {
+      if (!resizing.current) return;
+      const dx = ((ev.clientX - startX.current) / rect.width) * 100;
+      setWidth(Math.max(10, Math.min(95, startW.current + dx)));
+    };
+    const onUp = () => { resizing.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, [width, canvasRef]);
+
+  return [width, setWidth, onResizeMouseDown];
+}
+
 const BACKGROUNDS = {
   dark:    { background: 'linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)' },
   light:   { background: 'linear-gradient(160deg, #f8f9ff 0%, #eef0ff 50%, #e8ebff 100%)' },
@@ -55,19 +112,22 @@ const HIGHLIGHT_STYLES = [
 
 function getHighlightStyle(style, color, opacity, padding, radius) {
   if (style === 'none') return {};
+  const hex2 = Math.round(opacity * 255).toString(16).padStart(2, '0');
   const base = { padding: `${padding}px ${padding * 2}px`, borderRadius: radius, display: 'inline-block' };
-  if (style === 'soft_box') return { ...base, backgroundColor: `${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}` };
-  if (style === 'marker') return { ...base, backgroundColor: `${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`, borderRadius: 2 };
-  if (style === 'blur') return { ...base, backdropFilter: 'blur(8px)', backgroundColor: `${color}${Math.round(opacity * 0.6 * 255).toString(16).padStart(2, '0')}` };
-  if (style === 'gradient') return { ...base, background: `linear-gradient(90deg, ${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}, transparent)` };
+  if (style === 'soft_box') return { ...base, backgroundColor: `${color}${hex2}` };
+  if (style === 'marker')   return { ...base, backgroundColor: `${color}${hex2}`, borderRadius: 2 };
+  if (style === 'blur')     return { ...base, backdropFilter: 'blur(8px)', backgroundColor: `${color}${Math.round(opacity * 0.6 * 255).toString(16).padStart(2, '0')}` };
+  if (style === 'gradient') return { ...base, background: `linear-gradient(90deg, ${color}${hex2}, transparent)` };
   return {};
 }
 
+// ─── Main CanvasEditor ────────────────────────────────────────────────────────
 export default function CanvasEditor({
   initialHeadline = '', initialSubtext = '', initialCta = '',
   initialImage = null, logoUrl = null, brandColors = [],
   screenshots = [], onClose,
 }) {
+  useGoogleFonts();
   const canvasRef = useRef(null);
 
   const [headline, setHeadline] = useState(initialHeadline);
@@ -79,28 +139,34 @@ export default function CanvasEditor({
   const [headlineColor, setHeadlineColor] = useState('#ffffff');
   const [headlineSize, setHeadlineSize] = useState(44);
   const [subtextSize, setSubtextSize] = useState(18);
+  const [font, setFont] = useState('Inter');
   const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIOS[0]);
   const [showLogo, setShowLogo] = useState(!!logoUrl);
   const [logoOpacity, setLogoOpacity] = useState(1);
-  const [logoScale, setLogoScale] = useState(20); // % of canvas width
+  const [logoScale, setLogoScale] = useState(20);
   const [bgOverlay, setBgOverlay] = useState(0.45);
   const [selectedLayer, setSelectedLayer] = useState(null);
   const [exporting, setExporting] = useState(false);
   const [editingText, setEditingText] = useState(null);
   const [imgScale, setImgScale] = useState(48);
 
-  // Text highlight state
+  // Highlight
   const [highlightStyle, setHighlightStyle] = useState('none');
   const [highlightColor, setHighlightColor] = useState('#000000');
   const [highlightOpacity, setHighlightOpacity] = useState(0.5);
   const [highlightPadding, setHighlightPadding] = useState(6);
   const [highlightRadius, setHighlightRadius] = useState(6);
 
+  // Drag positions
   const [headlinePos, setHeadlinePos, headlineDrag] = useDrag({ x: 8, y: 35 }, canvasRef);
   const [subtextPos, setSubtextPos, subtextDrag] = useDrag({ x: 8, y: 52 }, canvasRef);
   const [ctaPos, setCtaPos, ctaDrag] = useDrag({ x: 8, y: 66 }, canvasRef);
   const [logoPos, setLogoPos, logoDrag] = useDrag({ x: 4, y: 4 }, canvasRef);
   const [imgPos, setImgPos, imgDrag] = useDrag({ x: 52, y: 0 }, canvasRef);
+
+  // Resize widths (% of canvas)
+  const [headlineWidth, setHeadlineWidth, headlineResize] = useResize(45, canvasRef);
+  const [subtextWidth, setSubtextWidth, subtextResize] = useResize(40, canvasRef);
 
   const bgObj = bgStyle === 'brand'
     ? { background: `linear-gradient(135deg, ${accentColor}cc, ${accentColor}44)` }
@@ -135,22 +201,17 @@ export default function CanvasEditor({
     setEditingText(null);
     await new Promise(r => setTimeout(r, 100));
     const canvas = await html2canvas(canvasRef.current, {
-      useCORS: true,
-      allowTaint: false,
-      scale: 2,
-      logging: false,
-      backgroundColor: null,
-      imageTimeout: 15000,
+      useCORS: true, allowTaint: false, scale: 2, logging: false,
+      backgroundColor: null, imageTimeout: 15000,
     });
     const url = canvas.toDataURL('image/png');
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'ad-creative.png';
-    a.click();
+    a.href = url; a.download = 'ad-creative.png'; a.click();
     setExporting(false);
   };
 
   const colorSwatches = [...new Set([...brandColors, '#ffffff', '#111111', '#000000', '#7c3aed', '#2563eb', '#059669', '#ef4444'])].slice(0, 8);
+  const textStyle = { fontFamily: `'${font}', sans-serif` };
 
   return (
     <div className="fixed inset-0 z-50 bg-[#111318] flex flex-col" onClick={() => { setSelectedLayer(null); setEditingText(null); }}>
@@ -221,23 +282,16 @@ export default function CanvasEditor({
           onClick={() => { setSelectedLayer(null); setEditingText(null); }}>
           <div className="relative" style={{ width: '100%', maxWidth: `${80 / (aspectRatio.pad / 100)}vh`, maxHeight: '80vh' }}
             onClick={e => e.stopPropagation()}>
-            <div
-              ref={canvasRef}
+            <div ref={canvasRef}
               className="relative w-full overflow-hidden rounded-xl shadow-2xl select-none"
-              style={{ paddingBottom: `${aspectRatio.pad}%`, ...bgObj }}
-            >
+              style={{ paddingBottom: `${aspectRatio.pad}%`, ...bgObj }}>
               <div className="absolute inset-0">
 
-                {/* BG Image layer */}
+                {/* BG Image */}
                 {bgImage && (
-                  <DraggableLayer
-                    x={imgPos.x} y={imgPos.y}
-                    onMouseDown={imgDrag}
-                    selected={selectedLayer === 'img'}
-                    onSelect={() => setSelectedLayer('img')}
-                    style={{ width: `${imgScale}%`, pointerEvents: 'all' }}
-                    noBorder={exporting}
-                  >
+                  <DraggableLayer x={imgPos.x} y={imgPos.y} onMouseDown={imgDrag}
+                    selected={selectedLayer === 'img'} onSelect={() => setSelectedLayer('img')}
+                    style={{ width: `${imgScale}%`, pointerEvents: 'all' }} noBorder={exporting}>
                     <img src={bgImage} alt="" crossOrigin="anonymous"
                       className="w-full rounded-lg shadow-2xl block"
                       style={{ objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
@@ -251,9 +305,11 @@ export default function CanvasEditor({
 
                 {/* Headline */}
                 {headline && (
-                  <DraggableLayer
+                  <ResizableDraggableLayer
                     x={headlinePos.x} y={headlinePos.y}
-                    onMouseDown={headlineDrag}
+                    width={headlineWidth}
+                    onDragMouseDown={headlineDrag}
+                    onResizeMouseDown={headlineResize}
                     selected={selectedLayer === 'headline'}
                     onSelect={() => setSelectedLayer('headline')}
                     noBorder={exporting}
@@ -262,7 +318,7 @@ export default function CanvasEditor({
                       {editingText === 'headline' ? (
                         <textarea autoFocus
                           className="bg-transparent outline-none resize-none font-bold leading-tight w-full"
-                          style={{ color: headlineColor, fontSize: headlineSize, minWidth: 200, lineHeight: 1.2 }}
+                          style={{ color: headlineColor, fontSize: headlineSize, lineHeight: 1.2, ...textStyle }}
                           value={headline}
                           onChange={e => setHeadline(e.target.value)}
                           onBlur={() => setEditingText(null)}
@@ -270,29 +326,31 @@ export default function CanvasEditor({
                           rows={2}
                         />
                       ) : (
-                        <p className="font-bold leading-tight cursor-text"
-                          style={{ color: headlineColor, fontSize: headlineSize, maxWidth: 420, lineHeight: 1.2,
+                        <p className="font-bold leading-tight cursor-text w-full"
+                          style={{ color: headlineColor, fontSize: headlineSize, lineHeight: 1.2, ...textStyle,
                             textShadow: highlightStyle === 'none' && (bgStyle === 'dark' || bgStyle === 'overlay') ? '0 2px 16px rgba(0,0,0,0.6)' : 'none' }}
                           onDoubleClick={(e) => { e.stopPropagation(); setEditingText('headline'); setSelectedLayer('headline'); }}
                         >{headline}</p>
                       )}
                     </div>
-                  </DraggableLayer>
+                  </ResizableDraggableLayer>
                 )}
 
                 {/* Subtext */}
                 {subtext && (
-                  <DraggableLayer
+                  <ResizableDraggableLayer
                     x={subtextPos.x} y={subtextPos.y}
-                    onMouseDown={subtextDrag}
+                    width={subtextWidth}
+                    onDragMouseDown={subtextDrag}
+                    onResizeMouseDown={subtextResize}
                     selected={selectedLayer === 'subtext'}
                     onSelect={() => setSelectedLayer('subtext')}
                     noBorder={exporting}
                   >
                     {editingText === 'subtext' ? (
                       <textarea autoFocus
-                        className="bg-transparent outline-none resize-none leading-snug"
-                        style={{ color: headlineColor === '#ffffff' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)', fontSize: subtextSize, minWidth: 160 }}
+                        className="bg-transparent outline-none resize-none leading-snug w-full"
+                        style={{ color: headlineColor === '#ffffff' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)', fontSize: subtextSize, ...textStyle }}
                         value={subtext}
                         onChange={e => setSubtext(e.target.value)}
                         onBlur={() => setEditingText(null)}
@@ -300,27 +358,22 @@ export default function CanvasEditor({
                         rows={2}
                       />
                     ) : (
-                      <p className="leading-snug cursor-text"
-                        style={{ color: headlineColor === '#ffffff' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)', fontSize: subtextSize, maxWidth: 380 }}
+                      <p className="leading-snug cursor-text w-full"
+                        style={{ color: headlineColor === '#ffffff' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)', fontSize: subtextSize, ...textStyle }}
                         onDoubleClick={(e) => { e.stopPropagation(); setEditingText('subtext'); setSelectedLayer('subtext'); }}
                       >{subtext}</p>
                     )}
-                  </DraggableLayer>
+                  </ResizableDraggableLayer>
                 )}
 
                 {/* CTA */}
                 {cta && (
-                  <DraggableLayer
-                    x={ctaPos.x} y={ctaPos.y}
-                    onMouseDown={ctaDrag}
-                    selected={selectedLayer === 'cta'}
-                    onSelect={() => setSelectedLayer('cta')}
-                    noBorder={exporting}
-                  >
+                  <DraggableLayer x={ctaPos.x} y={ctaPos.y} onMouseDown={ctaDrag}
+                    selected={selectedLayer === 'cta'} onSelect={() => setSelectedLayer('cta')} noBorder={exporting}>
                     {editingText === 'cta' ? (
                       <input autoFocus
                         className="outline-none bg-transparent font-semibold text-white text-center"
-                        style={{ backgroundColor: accentColor, padding: '8px 20px', borderRadius: 999, fontSize: subtextSize * 0.9 }}
+                        style={{ backgroundColor: accentColor, padding: '8px 20px', borderRadius: 999, fontSize: subtextSize * 0.9, ...textStyle }}
                         value={cta}
                         onChange={e => setCta(e.target.value)}
                         onBlur={() => setEditingText(null)}
@@ -328,7 +381,7 @@ export default function CanvasEditor({
                       />
                     ) : (
                       <span className="inline-flex items-center font-semibold text-white cursor-text"
-                        style={{ backgroundColor: accentColor, padding: '8px 20px', borderRadius: 999, fontSize: subtextSize * 0.9 }}
+                        style={{ backgroundColor: accentColor, padding: '8px 20px', borderRadius: 999, fontSize: subtextSize * 0.9, ...textStyle }}
                         onDoubleClick={(e) => { e.stopPropagation(); setEditingText('cta'); setSelectedLayer('cta'); }}
                       >{cta}</span>
                     )}
@@ -337,33 +390,18 @@ export default function CanvasEditor({
 
                 {/* Logo */}
                 {logoUrl && showLogo && (
-                  <DraggableLayer
-                    x={logoPos.x} y={logoPos.y}
-                    onMouseDown={logoDrag}
-                    selected={selectedLayer === 'logo'}
-                    onSelect={() => setSelectedLayer('logo')}
-                    noBorder={exporting}
-                    style={{ width: `${logoScale}%`, minWidth: 40 }}
-                  >
-                    <img
-                      src={logoUrl}
-                      alt="logo"
-                      crossOrigin="anonymous"
-                      style={{
-                        width: '100%',
-                        height: 'auto',
-                        display: 'block',
-                        opacity: logoOpacity,
-                        objectFit: 'contain',
-                        filter: (bgStyle === 'dark' || bgStyle === 'overlay') ? 'brightness(0) invert(1)' : 'none',
-                      }}
-                    />
+                  <DraggableLayer x={logoPos.x} y={logoPos.y} onMouseDown={logoDrag}
+                    selected={selectedLayer === 'logo'} onSelect={() => setSelectedLayer('logo')}
+                    noBorder={exporting} style={{ width: `${logoScale}%`, minWidth: 40 }}>
+                    <img src={logoUrl} alt="logo" crossOrigin="anonymous"
+                      style={{ width: '100%', height: 'auto', display: 'block', opacity: logoOpacity, objectFit: 'contain',
+                        filter: (bgStyle === 'dark' || bgStyle === 'overlay') ? 'brightness(0) invert(1)' : 'none' }} />
                   </DraggableLayer>
                 )}
 
               </div>
             </div>
-            <p className="text-center text-white/25 text-xs mt-3">Double-click text to edit · Drag to reposition</p>
+            <p className="text-center text-white/25 text-xs mt-3">Double-click text to edit · Drag to move · Drag corner to resize</p>
           </div>
         </div>
 
@@ -393,6 +431,19 @@ export default function CanvasEditor({
               <SliderControl label="Width %" min={20} max={100} value={imgScale} onChange={setImgScale} />
             </SideSection>
           )}
+
+          {/* Font Picker */}
+          <SideSection label="Font">
+            <div className="space-y-1">
+              {FONTS.map(f => (
+                <button key={f.value} onClick={() => setFont(f.value)}
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-colors ${font === f.value ? 'bg-violet-600 text-white' : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'}`}
+                  style={{ fontFamily: `'${f.value}', sans-serif` }}>
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </SideSection>
 
           <SideSection label="Headline">
             <SliderControl label="Font size" min={18} max={80} value={headlineSize} onChange={setHeadlineSize} unit="px" />
@@ -468,6 +519,48 @@ export default function CanvasEditor({
   );
 }
 
+// ─── ResizableDraggableLayer ─────────────────────────────────────────────────
+// Drag anywhere to move; drag the bottom-right handle to resize width
+function ResizableDraggableLayer({ x, y, width, onDragMouseDown, onResizeMouseDown, children, selected, onSelect, noBorder }) {
+  return (
+    <div
+      onMouseDown={onDragMouseDown}
+      onClick={(e) => { e.stopPropagation(); onSelect?.(); }}
+      className="absolute cursor-move"
+      style={{
+        left: `${x}%`,
+        top: `${y}%`,
+        width: `${width}%`,
+        outline: (!noBorder && selected) ? '2px solid #7c3aed' : (!noBorder ? '1px dashed rgba(255,255,255,0.1)' : 'none'),
+        outlineOffset: 4,
+        borderRadius: 4,
+      }}
+    >
+      {children}
+      {/* Resize handle — bottom-right corner */}
+      {!noBorder && (
+        <div
+          onMouseDown={onResizeMouseDown}
+          style={{
+            position: 'absolute',
+            right: -6,
+            bottom: -6,
+            width: 12,
+            height: 12,
+            borderRadius: 3,
+            background: selected ? '#7c3aed' : 'rgba(255,255,255,0.25)',
+            cursor: 'ew-resize',
+            zIndex: 10,
+            border: '1.5px solid rgba(255,255,255,0.5)',
+          }}
+          onClick={e => e.stopPropagation()}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Plain DraggableLayer (no resize) ────────────────────────────────────────
 function DraggableLayer({ x, y, onMouseDown, children, selected, onSelect, style = {}, noBorder = false }) {
   return (
     <div
