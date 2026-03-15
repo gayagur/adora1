@@ -407,7 +407,9 @@ export default function CanvasEditor({
                     x={headlinePos.x} y={headlinePos.y}
                     width={headlineWidth}
                     onDragMouseDown={headlineDrag}
+                    onDragTouchStart={headlineTouch}
                     onResizeMouseDown={headlineResize}
+                    onResizeTouchStart={headlineResizeTouch}
                     selected={selectedLayer === 'headline'}
                     onSelect={() => setSelectedLayer('headline')}
                     onRemove={() => setHeadline('')}
