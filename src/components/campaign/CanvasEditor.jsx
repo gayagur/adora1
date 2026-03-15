@@ -34,9 +34,12 @@ function useGoogleFonts() {
 // ─── Draggable hook ───────────────────────────────────────────────────────────
 function useDrag(initialPos, canvasRef) {
   const [pos, setPos] = useState(initialPos);
+  const posRef = useRef(pos);
   const dragging = useRef(false);
   const start = useRef({ mx: 0, my: 0, px: 0, py: 0 });
   const rect = useRef(null);
+
+  useEffect(() => { posRef.current = pos; }, [pos]);
 
   const onMouseDown = useCallback((e) => {
     e.stopPropagation();
@@ -44,7 +47,7 @@ function useDrag(initialPos, canvasRef) {
     rect.current = canvasRef.current?.getBoundingClientRect();
     if (!rect.current) return;
     dragging.current = true;
-    start.current = { mx: e.clientX, my: e.clientY, px: pos.x, py: pos.y };
+    start.current = { mx: e.clientX, my: e.clientY, px: posRef.current.x, py: posRef.current.y };
 
     const onMove = (ev) => {
       if (!dragging.current || !rect.current) return;
@@ -55,7 +58,7 @@ function useDrag(initialPos, canvasRef) {
     const onUp = () => { dragging.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
-  }, [pos, canvasRef]);
+  }, [canvasRef]);
 
   return [pos, setPos, onMouseDown];
 }
