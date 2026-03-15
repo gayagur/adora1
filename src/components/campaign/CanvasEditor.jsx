@@ -548,8 +548,7 @@ export default function CanvasEditor({
 }
 
 // ─── ResizableDraggableLayer ─────────────────────────────────────────────────
-// Drag anywhere to move; drag the bottom-right handle to resize width
-function ResizableDraggableLayer({ x, y, width, onDragMouseDown, onResizeMouseDown, children, selected, onSelect, noBorder }) {
+function ResizableDraggableLayer({ x, y, width, onDragMouseDown, onResizeMouseDown, children, selected, onSelect, onRemove, noBorder }) {
   return (
     <div
       onMouseDown={onDragMouseDown}
@@ -565,20 +564,27 @@ function ResizableDraggableLayer({ x, y, width, onDragMouseDown, onResizeMouseDo
       }}
     >
       {children}
-      {/* Resize handle — bottom-right corner */}
+      {!noBorder && onRemove && (
+        <div
+          onClick={(e) => { e.stopPropagation(); onRemove(); }}
+          onMouseDown={e => e.stopPropagation()}
+          style={{
+            position: 'absolute', top: -8, right: -8,
+            width: 16, height: 16, borderRadius: '50%',
+            background: '#ef4444', cursor: 'pointer', zIndex: 20,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: '1.5px solid white', fontSize: 10, color: 'white', fontWeight: 700, lineHeight: 1,
+          }}
+        >×</div>
+      )}
       {!noBorder && (
         <div
           onMouseDown={onResizeMouseDown}
           style={{
-            position: 'absolute',
-            right: -6,
-            bottom: -6,
-            width: 12,
-            height: 12,
-            borderRadius: 3,
+            position: 'absolute', right: -6, bottom: -6,
+            width: 12, height: 12, borderRadius: 3,
             background: selected ? '#7c3aed' : 'rgba(255,255,255,0.25)',
-            cursor: 'ew-resize',
-            zIndex: 10,
+            cursor: 'ew-resize', zIndex: 10,
             border: '1.5px solid rgba(255,255,255,0.5)',
           }}
           onClick={e => e.stopPropagation()}
