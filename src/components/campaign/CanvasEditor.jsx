@@ -330,7 +330,7 @@ export default function CanvasEditor({
       <div className="flex flex-1 overflow-hidden" onClick={e => e.stopPropagation()}>
 
         {/* LEFT SIDEBAR */}
-        <div className="w-52 shrink-0 border-r border-white/10 overflow-y-auto p-3 space-y-4">
+        <div className="hidden lg:flex w-52 shrink-0 border-r border-white/10 overflow-y-auto p-3 space-y-4 flex-col">
           <SideSection label="Templates">
             {[
               { id: 'hero', label: 'Hero', emoji: '◧' },
