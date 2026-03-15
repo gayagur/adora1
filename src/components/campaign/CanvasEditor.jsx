@@ -304,7 +304,9 @@ export default function CanvasEditor({
   const [headlineColor, setHeadlineColor] = useState('#ffffff');
   const [headlineSize, setHeadlineSize] = useState(44);
   const [subtextSize, setSubtextSize] = useState(18);
-  const [font, setFont] = useState('Inter');
+  const [headlineFont, setHeadlineFont] = useState('Sora');
+  const [bodyFont, setBodyFont] = useState('Inter');
+  const [showFontPresets, setShowFontPresets] = useState(false);
   const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIOS[0]);
   const [activeLogo, setActiveLogo] = useState(logoUrl || null);
   const [showLogo, setShowLogo] = useState(!!logoUrl);
