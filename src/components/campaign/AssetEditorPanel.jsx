@@ -295,6 +295,7 @@ Return ONLY the improved text, nothing else.`,
         </div>
       </motion.div>
     </motion.div>
+    </>
   );
 }
 
