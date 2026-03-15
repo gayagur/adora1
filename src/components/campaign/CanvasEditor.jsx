@@ -1,7 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import html2canvas from 'html2canvas';
-import { Download, Type, Image as ImageIcon, Layers, Upload } from 'lucide-react';
+import { Download, Type, Image as ImageIcon, Layers, Upload, Save, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 
 // ─── Professional Font Library ────────────────────────────────────────────────
 const FONT_CATEGORIES = {
