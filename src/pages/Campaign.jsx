@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Loader2 } from 'lucide-react';
@@ -7,18 +7,13 @@ import { toast } from 'sonner';
 import AppShell from '../components/ui/AppShell';
 import CampaignHeader from '../components/campaign/CampaignHeader';
 import AssetCard from '../components/campaign/AssetCard';
-import AssetEmptyState from '../components/campaign/AssetEmptyState';
 import AddAssetPanel from '../components/campaign/AddAssetPanel';
+import AssetEditorPanel from '../components/campaign/AssetEditorPanel';
+import CampaignEditPanel from '../components/campaign/CampaignEditPanel';
 
 const PLATFORM_ORDER = ['instagram', 'facebook', 'linkedin', 'tiktok', 'youtube', 'twitter', 'general'];
-const PLATFORM_LABELS = {
-  instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn',
-  tiktok: 'TikTok', youtube: 'YouTube', twitter: 'X / Twitter', general: 'Display'
-};
-const PLATFORM_ICONS = {
-  instagram: '📸', facebook: '📘', linkedin: '💼',
-  tiktok: '🎵', youtube: '▶️', twitter: '🐦', general: '🖼'
-};
+const PLATFORM_LABELS = { instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'X / Twitter', general: 'Display' };
+const PLATFORM_ICONS = { instagram: '📸', facebook: '📘', linkedin: '💼', tiktok: '🎵', youtube: '▶️', twitter: '🐦', general: '🖼' };
 
 export default function Campaign() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -27,8 +22,10 @@ export default function Campaign() {
   const qc = useQueryClient();
 
   const [showAddPanel, setShowAddPanel] = useState(false);
+  const [editingAsset, setEditingAsset] = useState(null);
+  const [editingCampaign, setEditingCampaign] = useState(false);
 
-  const { data: campaign } = useQuery({
+  const { data: campaign, refetch: refetchCampaign } = useQuery({
     queryKey: ['campaign', campaignId],
     queryFn: () => base44.entities.AdCampaign.filter({ id: campaignId }).then(r => r[0]),
     enabled: !!campaignId,
@@ -40,38 +37,14 @@ export default function Campaign() {
     enabled: !!brandId,
   });
 
-  const { data: assets = [], refetch: refetchAssets } = useQuery({
+  const { data: assets = [] } = useQuery({
     queryKey: ['assets', campaignId],
     queryFn: () => base44.entities.CampaignAsset.filter({ campaign_id: campaignId }),
     enabled: !!campaignId,
     refetchInterval: (query) => query.state.data?.some(a => a.status === 'generating') ? 3000 : false,
   });
 
-  const handleAddAsset = async (option) => {
-    // Create a placeholder
-    const placeholder = await base44.entities.CampaignAsset.create({
-      campaign_id: campaignId,
-      brand_id: brandId,
-      platform: option.platform,
-      asset_type: option.asset_type,
-      format: option.format,
-      status: 'generating',
-    });
-
-    qc.setQueryData(['assets', campaignId], prev => [...(prev || []), placeholder]);
-
-    try {
-      await generateAsset(placeholder.id, option, campaign, brand);
-    } catch {
-      toast.error('Generation failed');
-    }
-  };
-
   const generateAsset = async (assetId, option, camp, br) => {
-    const imageContext = br?.image_assets?.length > 0
-      ? `Brand has ${br.image_assets.length} reference image(s).`
-      : '';
-
     const copyResult = await base44.integrations.Core.InvokeLLM({
       prompt: `You are a creative director. Generate a single ${option.label || option.asset_type} for this campaign.
 
@@ -86,7 +59,7 @@ Brand: ${br?.brand_name}
 Brand Description: ${br?.description}
 Brand Tone: ${br?.tone_of_voice}
 Brand Colors: ${br?.brand_colors?.join(', ')}
-${imageContext}
+${br?.image_assets?.length > 0 ? `Brand has ${br.image_assets.length} reference image(s).` : ''}
 
 Platform: ${option.platform}
 Content Type: ${option.asset_type}
@@ -95,9 +68,9 @@ Format: ${option.format}
 Generate:
 - headline: short, punchy headline (max 10 words)
 - ad_copy: 1-2 sentence copy for the ad
-- full_caption: complete social media caption with hook, value prop, CTA, and 3-5 hashtags. Write it in a natural, platform-appropriate voice.
-- cta: call-to-action button text (e.g. "Learn More", "Try Free", "Shop Now")
-- visual_prompt: detailed AI image generation prompt. Modern, premium marketing visual. NO text in image. Use brand colors. ${option.asset_type === 'story' || option.asset_type === 'reel' ? 'Vertical composition.' : option.asset_type === 'banner' ? 'Wide horizontal layout.' : 'Square composition.'}`,
+- full_caption: complete social media caption with hook, value prop, CTA, and 3-5 hashtags
+- cta: call-to-action text (e.g. "Learn More", "Try Free", "Shop Now")
+- visual_prompt: detailed AI image generation prompt. Modern premium marketing visual. NO text in image. Use brand colors. ${option.asset_type === 'story' || option.asset_type === 'reel' ? 'Vertical composition.' : option.asset_type === 'banner' ? 'Wide horizontal layout.' : 'Square composition.'}`,
       file_urls: br?.image_assets?.length > 0 ? br.image_assets.slice(0, 3) : undefined,
       response_json_schema: {
         type: "object",
@@ -125,6 +98,19 @@ Generate:
     qc.invalidateQueries({ queryKey: ['assets', campaignId] });
   };
 
+  const handleAddAsset = async (option) => {
+    const placeholder = await base44.entities.CampaignAsset.create({
+      campaign_id: campaignId,
+      brand_id: brandId,
+      platform: option.platform,
+      asset_type: option.asset_type,
+      format: option.format,
+      status: 'generating',
+    });
+    qc.setQueryData(['assets', campaignId], prev => [...(prev || []), placeholder]);
+    generateAsset(placeholder.id, option, campaign, brand).catch(() => toast.error('Generation failed'));
+  };
+
   const handleRegenerate = async (assetId) => {
     const asset = assets.find(a => a.id === assetId);
     if (!asset) return;
@@ -134,12 +120,27 @@ Generate:
     toast.success('Regenerated!');
   };
 
-  // Group assets by platform
+  const handleDuplicate = async (asset) => {
+    const { id, created_date, updated_date, created_by, ...rest } = asset;
+    const copy = await base44.entities.CampaignAsset.create({ ...rest, headline: rest.headline + ' (copy)' });
+    qc.setQueryData(['assets', campaignId], prev => [...(prev || []), copy]);
+    toast.success('Duplicated');
+  };
+
+  const handleAssetSaved = (updated) => {
+    qc.setQueryData(['assets', campaignId], prev => prev?.map(a => a.id === updated.id ? updated : a));
+    setEditingAsset(null);
+  };
+
+  const handleCampaignSaved = (updated) => {
+    qc.setQueryData(['campaign', campaignId], updated);
+    setEditingCampaign(false);
+    refetchCampaign();
+  };
+
+  // Group by platform
   const grouped = {};
-  assets.forEach(a => {
-    if (!grouped[a.platform]) grouped[a.platform] = [];
-    grouped[a.platform].push(a);
-  });
+  assets.forEach(a => { if (!grouped[a.platform]) grouped[a.platform] = []; grouped[a.platform].push(a); });
   const usedPlatforms = PLATFORM_ORDER.filter(p => grouped[p]?.length > 0);
 
   return (
@@ -150,11 +151,11 @@ Generate:
             campaign={campaign}
             brandName={brand?.brand_name}
             assetCount={assets.filter(a => a.status === 'ready').length}
+            onEdit={() => setEditingCampaign(true)}
           />
         )}
 
         <div className="max-w-screen-xl mx-auto px-6 py-8">
-          {/* Add content button */}
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-lg font-semibold text-gray-900">
               Assets
@@ -168,36 +169,26 @@ Generate:
             </button>
           </div>
 
-          {/* Empty state */}
           {assets.length === 0 && (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <div className="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center mb-4">
                 <Plus className="w-7 h-7 text-violet-400" />
               </div>
               <h3 className="text-base font-semibold text-gray-900 mb-1.5">No content yet</h3>
-              <p className="text-sm text-gray-400 mb-6 max-w-xs">
-                Start building your campaign by adding posts, stories, reels, banners, and more.
-              </p>
-              <button
-                onClick={() => setShowAddPanel(true)}
-                className="flex items-center gap-2 h-10 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium transition-colors"
-              >
+              <p className="text-sm text-gray-400 mb-6 max-w-xs">Generate posts, stories, reels, banners and more for this campaign.</p>
+              <button onClick={() => setShowAddPanel(true)} className="flex items-center gap-2 h-10 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium transition-colors">
                 <Plus className="w-4 h-4" /> Add your first asset
               </button>
             </div>
           )}
 
-          {/* Grouped by platform */}
           {usedPlatforms.map(platform => (
             <div key={platform} className="mb-10">
               <div className="flex items-center gap-2.5 mb-4">
                 <span className="text-lg">{PLATFORM_ICONS[platform]}</span>
                 <h3 className="font-semibold text-gray-800 text-[15px]">{PLATFORM_LABELS[platform]}</h3>
                 <span className="text-xs text-gray-400">{grouped[platform].length} item{grouped[platform].length !== 1 ? 's' : ''}</span>
-                <button
-                  onClick={() => setShowAddPanel(true)}
-                  className="ml-auto flex items-center gap-1 text-xs text-gray-400 hover:text-violet-600 transition-colors"
-                >
+                <button onClick={() => setShowAddPanel(true)} className="ml-auto flex items-center gap-1 text-xs text-gray-400 hover:text-violet-600 transition-colors">
                   <Plus className="w-3.5 h-3.5" /> Add
                 </button>
               </div>
@@ -207,7 +198,9 @@ Generate:
                     key={asset.id}
                     asset={asset}
                     index={i}
+                    onEdit={setEditingAsset}
                     onRegenerate={handleRegenerate}
+                    onDuplicate={handleDuplicate}
                   />
                 ))}
               </div>
@@ -217,10 +210,21 @@ Generate:
       </div>
 
       <AnimatePresence>
-        {showAddPanel && (
-          <AddAssetPanel
-            onAdd={handleAddAsset}
-            onClose={() => setShowAddPanel(false)}
+        {showAddPanel && <AddAssetPanel onAdd={handleAddAsset} onClose={() => setShowAddPanel(false)} />}
+        {editingAsset && (
+          <AssetEditorPanel
+            asset={editingAsset}
+            campaign={campaign}
+            brand={brand}
+            onSave={handleAssetSaved}
+            onClose={() => setEditingAsset(null)}
+          />
+        )}
+        {editingCampaign && campaign && (
+          <CampaignEditPanel
+            campaign={campaign}
+            onSave={handleCampaignSaved}
+            onClose={() => setEditingCampaign(false)}
           />
         )}
       </AnimatePresence>
