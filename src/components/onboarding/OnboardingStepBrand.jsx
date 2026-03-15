@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, ArrowRight, Plus, X, Upload, Loader2, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, X, Upload, Loader2, Check, Instagram, Linkedin, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function OnboardingStepBrand({ brandData, onUpdate, onBack, onConfirm }) {
