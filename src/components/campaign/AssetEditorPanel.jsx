@@ -147,7 +147,10 @@ Return ONLY the improved text, nothing else.`,
           </div>
           {/* Tabs */}
           <div className="flex gap-1">
-            {[{ id: 'edit', label: 'Edit', Icon: null }, { id: 'canvas', label: 'Canvas Editor', Icon: Layers }].map(({ id, label, Icon }) => (
+            {[
+              { id: 'edit', label: 'Edit Copy', Icon: null },
+              { id: 'canvas', label: 'Preview', Icon: Layers },
+            ].map(({ id, label, Icon }) => (
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
@@ -157,6 +160,13 @@ Return ONLY the improved text, nothing else.`,
                 {label}
               </button>
             ))}
+            <button
+              onClick={() => setShowCanvasEditor(true)}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 border-transparent text-violet-500 hover:text-violet-700 ml-auto"
+            >
+              <Layers className="w-3.5 h-3.5" />
+              Design Canvas
+            </button>
           </div>
         </div>
 
