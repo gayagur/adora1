@@ -44,7 +44,7 @@ export default function Campaign() {
     queryKey: ['assets', campaignId],
     queryFn: () => base44.entities.CampaignAsset.filter({ campaign_id: campaignId }),
     enabled: !!campaignId,
-    refetchInterval: (data) => data?.some(a => a.status === 'generating') ? 3000 : false,
+    refetchInterval: (query) => query.state.data?.some(a => a.status === 'generating') ? 3000 : false,
   });
 
   const handleAddAsset = async (option) => {
