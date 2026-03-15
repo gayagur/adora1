@@ -145,14 +145,14 @@ Return ONLY the improved text, nothing else.`,
           </div>
           {/* Tabs */}
           <div className="flex gap-1">
-            {[{ id: 'edit', label: 'Edit' }, { id: 'canvas', label: 'Canvas Editor', icon: Layers }].map(tab => (
+            {[{ id: 'edit', label: 'Edit', Icon: null }, { id: 'canvas', label: 'Canvas Editor', Icon: Layers }].map(({ id, label, Icon }) => (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id ? 'border-violet-600 text-violet-600' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === id ? 'border-violet-600 text-violet-600' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
               >
-                {tab.icon && <tab.icon className="w-3.5 h-3.5" />}
-                {tab.label}
+                {Icon && <Icon className="w-3.5 h-3.5" />}
+                {label}
               </button>
             ))}
           </div>
