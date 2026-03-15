@@ -108,9 +108,8 @@ Return ONLY the improved text, nothing else.`,
     e.target.value = '';
   };
 
-  return (
-    <>
-    {showCanvasEditor && (
+  if (showCanvasEditor) {
+    return (
       <CanvasEditor
         initialHeadline={draft.headline}
         initialSubtext={draft.ad_copy}
@@ -121,8 +120,11 @@ Return ONLY the improved text, nothing else.`,
         screenshots={brand?.image_assets}
         onClose={() => setShowCanvasEditor(false)}
       />
-    )}
+    );
+  }
 
+  return (
+    <>
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
