@@ -529,8 +529,8 @@ export default function CanvasEditor({
           onClick={() => { setSelectedLayer(null); setEditingText(null); }}>
           <div className="relative w-full" style={{ maxWidth: `${60 / (aspectRatio.pad / 100)}vh` }}
             onClick={e => e.stopPropagation()}>
-            <div ref={canvasRef} className="relative w-full overflow-hidden rounded-xl shadow-2xl select-none"
-              style={{ paddingBottom: `${aspectRatio.pad}%`, ...bgObj }}>
+            <div ref={canvasRef} className="relative w-full overflow-hidden rounded-xl shadow-2xl select-none touch-none"
+              style={{ paddingBottom: `${aspectRatio.pad}%`, ...bgObj, touchAction: 'none' }}>
               {canvasContent}
             </div>
           </div>
