@@ -443,12 +443,11 @@ export default function CanvasEditor({
                     onRemove={() => { setActiveLogo(null); setShowLogo(false); }}
                     noBorder={exporting} style={{ width: `${logoScale}%`, minWidth: 40 }}>
                     <img
-                      src={activeLogo}
+                      src={processedLogoUrl || activeLogo}
                       alt="logo"
                       onError={e => { e.target.style.display = 'none'; }}
                       style={{
                         width: '100%', height: 'auto', display: 'block', opacity: logoOpacity, objectFit: 'contain',
-                        mixBlendMode: 'multiply',
                       }} />
                   </DraggableLayer>
                 )}
