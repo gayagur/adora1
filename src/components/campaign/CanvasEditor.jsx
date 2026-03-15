@@ -179,6 +179,7 @@ export default function CanvasEditor({
   const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIOS[0]);
   const [activeLogo, setActiveLogo] = useState(logoUrl || null);
   const [showLogo, setShowLogo] = useState(!!logoUrl);
+  const processedLogoUrl = useWhiteRemovedLogo(activeLogo);
   const [logoOpacity, setLogoOpacity] = useState(1);
   const [logoScale, setLogoScale] = useState(20);
   const [bgOverlay, setBgOverlay] = useState(0.45);
