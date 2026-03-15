@@ -154,6 +154,7 @@ Generate:
             brandName={brand?.brand_name}
             assetCount={assets.filter(a => a.status === 'ready').length}
             onEdit={() => setEditingCampaign(true)}
+            onEditBrand={brand ? () => setEditingBrand(true) : undefined}
           />
         )}
 
@@ -227,6 +228,13 @@ Generate:
             campaign={campaign}
             onSave={handleCampaignSaved}
             onClose={() => setEditingCampaign(false)}
+          />
+        )}
+        {editingBrand && brand && (
+          <BrandEditPanel
+            brand={brand}
+            onSave={(updated) => { qc.setQueryData(['brand', brandId], updated); setEditingBrand(false); }}
+            onClose={() => setEditingBrand(false)}
           />
         )}
       </AnimatePresence>
