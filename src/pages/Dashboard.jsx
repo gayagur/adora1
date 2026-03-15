@@ -7,16 +7,7 @@ import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import AppShell from '../components/ui/AppShell';
 
-const ANGLE_DOT = {
-  'Product Launch':   'bg-violet-500',
-  'Problem/Solution': 'bg-rose-500',
-  'Social Proof':     'bg-amber-500',
-  'Feature Highlight':'bg-cyan-500',
-  'Brand Awareness':  'bg-emerald-500',
-  'Educational':      'bg-blue-500',
-  'Emotional Story':  'bg-purple-500',
-  'Limited Offer':    'bg-orange-500',
-};
+
 
 export default function Dashboard() {
   const { data: campaigns = [], isLoading: loadingCampaigns } = useQuery({

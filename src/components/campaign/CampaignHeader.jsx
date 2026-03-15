@@ -2,16 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Target, Users, Mic2, Eye, Pencil } from 'lucide-react';
 
-const ANGLE_BADGE = {
-  'Product Launch':   'bg-violet-50 text-violet-700',
-  'Problem/Solution': 'bg-rose-50 text-rose-700',
-  'Social Proof':     'bg-amber-50 text-amber-700',
-  'Feature Highlight':'bg-cyan-50 text-cyan-700',
-  'Brand Awareness':  'bg-emerald-50 text-emerald-700',
-  'Educational':      'bg-blue-50 text-blue-700',
-  'Emotional Story':  'bg-purple-50 text-purple-700',
-  'Limited Offer':    'bg-orange-50 text-orange-700',
-};
+
 
 export default function CampaignHeader({ campaign, brandName, assetCount, onEdit }) {
   return (
