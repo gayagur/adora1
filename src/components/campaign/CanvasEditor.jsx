@@ -26,7 +26,7 @@ function useGoogleFonts() {
     link.id = id;
     link.rel = 'stylesheet';
     const families = FONTS.map(f => f.value.replace(/ /g, '+')).join('&family=');
-    link.href = `https://fonts.googleapis.com/css2?family=${families}:wght@400;600;700;800&display=swap`;
+    link.href = `https://fonts.googleapis.com/css2?family=${families}:wght@300;400;500;600;700;800;900&display=swap`;
     document.head.appendChild(link);
   }, []);
 }
