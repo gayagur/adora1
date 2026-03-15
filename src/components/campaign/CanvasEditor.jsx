@@ -3,19 +3,98 @@ import html2canvas from 'html2canvas';
 import { Download, Type, Image as ImageIcon, Layers, Upload } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
-// ─── Load Google Fonts ────────────────────────────────────────────────────────
-const FONTS = [
-  { label: 'Inter',        value: 'Inter' },
-  { label: 'Roboto',       value: 'Roboto' },
-  { label: 'Playfair Display', value: 'Playfair Display' },
-  { label: 'Montserrat',   value: 'Montserrat' },
-  { label: 'Oswald',       value: 'Oswald' },
-  { label: 'Raleway',      value: 'Raleway' },
-  { label: 'Lato',         value: 'Lato' },
-  { label: 'Poppins',      value: 'Poppins' },
-  { label: 'Merriweather', value: 'Merriweather' },
-  { label: 'Space Grotesk', value: 'Space Grotesk' },
+// ─── Professional Font Library ────────────────────────────────────────────────
+const FONT_CATEGORIES = {
+  modern: {
+    label: 'Modern / SaaS',
+    fonts: [
+      { label: 'Plus Jakarta Sans', value: 'Plus Jakarta Sans' },
+      { label: 'Sora', value: 'Sora' },
+      { label: 'Manrope', value: 'Manrope' },
+      { label: 'DM Sans', value: 'DM Sans' },
+      { label: 'General Sans', value: 'General Sans' },
+      { label: 'Outfit', value: 'Outfit' },
+      { label: 'Urbanist', value: 'Urbanist' },
+    ]
+  },
+  editorial: {
+    label: 'Editorial / Luxury',
+    fonts: [
+      { label: 'Fraunces', value: 'Fraunces' },
+      { label: 'Libre Baskerville', value: 'Libre Baskerville' },
+      { label: 'Cormorant Garamond', value: 'Cormorant Garamond' },
+      { label: 'Bodoni Moda', value: 'Bodoni Moda' },
+      { label: 'Playfair Display', value: 'Playfair Display' },
+      { label: 'Prata', value: 'Prata' },
+    ]
+  },
+  bold: {
+    label: 'Bold Headlines',
+    fonts: [
+      { label: 'Bebas Neue', value: 'Bebas Neue' },
+      { label: 'Anton', value: 'Anton' },
+      { label: 'Archivo Black', value: 'Archivo Black' },
+      { label: 'League Spartan', value: 'League Spartan' },
+      { label: 'Space Grotesk', value: 'Space Grotesk' },
+      { label: 'Oswald', value: 'Oswald' },
+      { label: 'Clash Display', value: 'Clash Display' },
+    ]
+  },
+  geometric: {
+    label: 'Clean Geometric',
+    fonts: [
+      { label: 'Syne', value: 'Syne' },
+      { label: 'Poppins', value: 'Poppins' },
+      { label: 'Montserrat', value: 'Montserrat' },
+      { label: 'Rubik', value: 'Rubik' },
+      { label: 'Inter', value: 'Inter' },
+      { label: 'Roboto', value: 'Roboto' },
+    ]
+  },
+};
+
+// Font pair presets for ad creatives
+const FONT_PRESETS = [
+  {
+    id: 'modern-saas',
+    label: 'Modern SaaS',
+    description: 'Clean & contemporary',
+    headline: 'Sora',
+    body: 'Inter'
+  },
+  {
+    id: 'premium-luxury',
+    label: 'Premium / Luxury',
+    description: 'Elegant & refined',
+    headline: 'Playfair Display',
+    body: 'DM Sans'
+  },
+  {
+    id: 'bold-marketing',
+    label: 'Bold Marketing',
+    description: 'Impact & energy',
+    headline: 'Bebas Neue',
+    body: 'Manrope'
+  },
+  {
+    id: 'editorial-premium',
+    label: 'Editorial Premium',
+    description: 'Magazine style',
+    headline: 'Fraunces',
+    body: 'Libre Baskerville'
+  },
+  {
+    id: 'geometric-modern',
+    label: 'Geometric Modern',
+    description: 'Tech & minimal',
+    headline: 'Space Grotesk',
+    body: 'Syne'
+  },
 ];
+
+// Flatten fonts for injection
+const ALL_FONTS = Object.values(FONT_CATEGORIES).flatMap(cat => cat.fonts);
+const UNIQUE_FONTS = [...new Map(ALL_FONTS.map(f => [f.value, f])).values()];
 
 // Inject Google Fonts link once
 function useGoogleFonts() {
@@ -25,7 +104,7 @@ function useGoogleFonts() {
     const link = document.createElement('link');
     link.id = id;
     link.rel = 'stylesheet';
-    const families = FONTS.map(f => f.value.replace(/ /g, '+')).join('&family=');
+    const families = UNIQUE_FONTS.map(f => f.value.replace(/ /g, '+')).join('&family=');
     link.href = `https://fonts.googleapis.com/css2?family=${families}:wght@400;600;700;800&display=swap`;
     document.head.appendChild(link);
   }, []);
