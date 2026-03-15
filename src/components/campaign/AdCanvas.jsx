@@ -64,18 +64,18 @@ export default function AdCanvas({ imageUrl, logoUrl, headline, subtext, cta, br
 
       if (!showText) return;
 
-      // Headline
-      if (headline) {
+      // Headline — max 8 words, max 2 lines
+      const shortHeadline = truncateWords(headline, 8);
+      if (shortHeadline) {
         const hy = layout.headlineY * H;
         ctx.font = `bold ${headlineFontSize}px Inter, system-ui, sans-serif`;
         ctx.fillStyle = headlineColor;
         ctx.textAlign = 'center';
-        ctx.shadowColor = 'rgba(0,0,0,0.5)';
-        ctx.shadowBlur = 8;
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.shadowBlur = 10;
 
-        // Word wrap
-        const words = headline.split(' ');
-        const maxWidth = W * 0.8;
+        const words = shortHeadline.split(' ');
+        const maxWidth = W * 0.78;
         let line = '';
         let lines = [];
         for (const word of words) {
@@ -88,7 +88,22 @@ export default function AdCanvas({ imageUrl, logoUrl, headline, subtext, cta, br
           }
         }
         lines.push(line);
-        lines.forEach((l, i) => ctx.fillText(l, W / 2, hy + i * (headlineFontSize * 1.2)));
+        // Max 2 lines
+        lines.slice(0, 2).forEach((l, i) => ctx.fillText(l, W / 2, hy + i * (headlineFontSize * 1.25)));
+        ctx.shadowBlur = 0;
+      }
+
+      // Subtext — max 10 words, 1 line, smaller font
+      const shortSubtext = truncateWords(subtext, 10);
+      if (shortSubtext) {
+        const sy = layout.subtextY * H;
+        const subtextSize = Math.round(headlineFontSize * 0.52);
+        ctx.font = `500 ${subtextSize}px Inter, system-ui, sans-serif`;
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 6;
+        ctx.fillText(shortSubtext, W / 2, sy);
         ctx.shadowBlur = 0;
       }
 
