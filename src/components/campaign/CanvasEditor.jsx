@@ -322,6 +322,7 @@ export default function CanvasEditor({
                     onResizeMouseDown={headlineResize}
                     selected={selectedLayer === 'headline'}
                     onSelect={() => setSelectedLayer('headline')}
+                    onRemove={() => setHeadline('')}
                     noBorder={exporting}
                   >
                     <div style={highlightCss}>
