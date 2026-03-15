@@ -109,6 +109,19 @@ Return ONLY the improved text, nothing else.`,
   };
 
   return (
+    {showCanvasEditor && (
+      <CanvasEditor
+        initialHeadline={draft.headline}
+        initialSubtext={draft.ad_copy}
+        initialCta={draft.cta}
+        initialImage={draft.preview_image}
+        logoUrl={brand?.logo_url}
+        brandColors={brand?.brand_colors}
+        screenshots={brand?.image_assets}
+        onClose={() => setShowCanvasEditor(false)}
+      />
+    )}
+
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
