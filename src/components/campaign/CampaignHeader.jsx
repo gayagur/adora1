@@ -4,7 +4,7 @@ import { ArrowLeft, Target, Users, Mic2, Eye, Pencil } from 'lucide-react';
 
 
 
-export default function CampaignHeader({ campaign, brandName, assetCount, onEdit }) {
+export default function CampaignHeader({ campaign, brandName, assetCount, onEdit, onEditBrand }) {
   return (
     <div className="border-b border-gray-100 bg-white">
       <div className="max-w-screen-xl mx-auto px-6 py-6">
@@ -24,14 +24,24 @@ export default function CampaignHeader({ campaign, brandName, assetCount, onEdit
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-1">{campaign.title}</h1>
             {brandName && <p className="text-sm text-gray-400">{brandName}</p>}
           </div>
-          {onEdit && (
-            <button
-              onClick={onEdit}
-              className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
-            >
-              <Pencil className="w-3.5 h-3.5" /> Edit Campaign
-            </button>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {onEditBrand && (
+              <button
+                onClick={onEditBrand}
+                className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <Pencil className="w-3.5 h-3.5" /> Edit Brand
+              </button>
+            )}
+            {onEdit && (
+              <button
+                onClick={onEdit}
+                className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <Pencil className="w-3.5 h-3.5" /> Edit Campaign
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
