@@ -20,7 +20,7 @@ export default function AssetEditorPanel({ asset, campaign, brand, onSave, onClo
   const [regeneratingImage, setRegeneratingImage] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [improvingField, setImprovingField] = useState(null);
-  const [activeTab, setActiveTab] = useState('edit'); // 'edit' | 'canvas' | 'design'
+  const [activeTab, setActiveTab] = useState('edit');
   const [showCanvasEditor, setShowCanvasEditor] = useState(false);
 
   const updateField = (k, v) => setDraft(prev => ({ ...prev, [k]: v }));
