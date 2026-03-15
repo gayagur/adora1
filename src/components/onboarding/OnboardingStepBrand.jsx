@@ -118,6 +118,40 @@ export default function OnboardingStepBrand({ brandData, onUpdate, onBack, onCon
           </div>
         </Field>
 
+        {/* Brand Logo */}
+        <Field label="Brand Logo" hint="Displayed on generated ad creatives">
+          <div className="flex items-start gap-4">
+            {brandData.logo_url ? (
+              <div className="relative group w-20 h-20 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
+                <img src={brandData.logo_url} alt="Logo" className="max-w-full max-h-full object-contain p-2" />
+                <button
+                  onClick={() => update('logo_url', null)}
+                  className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                >
+                  <X className="w-4 h-4 text-white" />
+                </button>
+              </div>
+            ) : (
+              <div className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center shrink-0">
+                <span className="text-[11px] text-gray-400 text-center px-1">No logo</span>
+              </div>
+            )}
+            <div className="flex-1 space-y-2">
+              <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer transition-colors text-xs font-medium text-gray-600">
+                <Upload className="w-3.5 h-3.5" /> Upload logo
+                <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                  update('logo_url', file_url);
+                  e.target.value = '';
+                }} />
+              </label>
+              <p className="text-xs text-gray-400">PNG with transparency works best. The logo will be overlaid on generated ads.</p>
+            </div>
+          </div>
+        </Field>
+
         {/* Image Upload */}
         <Field label="Brand Images" hint="Optional — used as visual references when generating ads">
           {(brandData.image_assets || []).length > 0 && (
