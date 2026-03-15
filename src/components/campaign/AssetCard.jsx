@@ -15,8 +15,11 @@ const ASSET_LABELS = {
 export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplicate }) {
   const [copied, setCopied] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
   const isGenerating = asset.status === 'generating';
+  const carouselImages = asset.carousel_images && asset.carousel_images.length > 0 ? asset.carousel_images : [];
+  const currentImage = carouselImages.length > 0 ? carouselImages[carouselIndex] : asset.preview_image;
 
   const copyCaption = (e) => {
     e.stopPropagation();
