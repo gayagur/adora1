@@ -179,21 +179,7 @@ Return ONLY the improved text, nothing else.`,
           </div>
         </div>
 
-        {activeTab === 'canvas' && (
-          <div className="p-6">
-            <AdCanvas
-              imageUrl={draft.preview_image}
-              logoUrl={brand?.logo_url}
-              headline={draft.headline}
-              subtext={draft.ad_copy}
-              cta={draft.cta}
-              brandColors={brand?.brand_colors}
-              screenshots={brand?.image_assets}
-            />
-          </div>
-        )}
-
-        <div className={`p-6 space-y-6 ${activeTab !== 'edit' ? 'hidden' : ''}`}>
+        <div className="p-6 space-y-6">
           {/* Image section */}
           <div>
             <SectionLabel>Visual</SectionLabel>
