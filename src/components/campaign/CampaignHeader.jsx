@@ -46,12 +46,12 @@ export default function CampaignHeader({ campaign, brandName, assetCount }) {
   );
 }
 
-function MetaTile({ icon: Icon, label, value }) {
+function MetaTile({ icon: IconComp, label, value }) {
   if (!value) return null;
   return (
     <div className="bg-gray-50 rounded-xl p-3.5">
       <div className="flex items-center gap-1.5 mb-1.5">
-        <Icon className="w-3.5 h-3.5 text-gray-400" />
+        <IconComp className="w-3.5 h-3.5 text-gray-400" />
         <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{label}</span>
       </div>
       <p className="text-xs text-gray-700 leading-relaxed line-clamp-2">{value}</p>
