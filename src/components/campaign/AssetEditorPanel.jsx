@@ -162,20 +162,13 @@ Return ONLY the improved text, nothing else.`,
             </div>
           </div>
           {/* Tabs */}
-          <div className="flex gap-1">
-            {[
-              { id: 'edit', label: 'Edit Copy', Icon: null },
-              { id: 'canvas', label: 'Preview', Icon: Layers },
-            ].map(({ id, label, Icon }) => (
-              <button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === id ? 'border-violet-600 text-violet-600' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
-              >
-                {Icon && <Icon className="w-3.5 h-3.5" />}
-                {label}
-              </button>
-            ))}
+          <div className="flex gap-1 items-center">
+            <button
+              onClick={() => setActiveTab('edit')}
+              className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'edit' ? 'border-violet-600 text-violet-600' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
+            >
+              Edit Copy
+            </button>
             <button
               onClick={() => setShowCanvasEditor(true)}
               className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 border-transparent text-violet-500 hover:text-violet-700 ml-auto"
