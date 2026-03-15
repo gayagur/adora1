@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, Loader2, Plus, X, Upload, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import AppShell from '../components/ui/AppShell';
 import OnboardingStepURL from '../components/onboarding/OnboardingStepURL';
 import OnboardingStepBrand from '../components/onboarding/OnboardingStepBrand';
+import OnboardingStepVisuals from '../components/onboarding/OnboardingStepVisuals';
 import OnboardingStepThemes from '../components/onboarding/OnboardingStepThemes';
+
+// Steps: 0=URL, 1=Brand, 2=Visuals, 3=Themes
+const STEPS = ['Analyze', 'Brand Profile', 'Visuals', 'Campaigns'];
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -21,12 +24,11 @@ export default function Onboarding() {
   const [url, setUrl] = useState(initialUrl);
   const [brandData, setBrandData] = useState(null);
   const [brandId, setBrandId] = useState(null);
+  const [selectedVisuals, setSelectedVisuals] = useState([]);
   const [themes, setThemes] = useState([]);
 
   useEffect(() => {
-    if (initialUrl) {
-      handleAnalyze(initialUrl);
-    }
+    if (initialUrl) handleAnalyze(initialUrl);
   }, []);
 
   const handleAnalyze = async (targetUrl) => {
@@ -69,11 +71,19 @@ Extract:
 
   const handleBrandConfirm = async (updatedBrand) => {
     setBrandData(updatedBrand);
-    const saved = await base44.entities.Brand.create(updatedBrand);
-    setBrandId(saved.id);
     setStep(2);
+  };
+
+  const handleVisualsConfirm = async (visuals) => {
+    setSelectedVisuals(visuals);
+    // Merge visuals into brand image_assets
+    const merged = { ...brandData, image_assets: [...(brandData.image_assets || []), ...visuals] };
+    setBrandData(merged);
+    const saved = await base44.entities.Brand.create(merged);
+    setBrandId(saved.id);
+    setStep(3);
     setGeneratingThemes(true);
-    await generateThemes(saved.id, updatedBrand);
+    await generateThemes(saved.id, merged);
   };
 
   const generateThemes = async (bId, brand) => {
@@ -88,9 +98,7 @@ Key Messages: ${brand.key_messages?.join(', ')}
 Industry: ${brand.industry}
 
 Generate 6 strategic campaign themes. Each should be a DIFFERENT marketing angle.
-
-Use these theme types as inspiration (but adapt the names and concepts to the brand):
-- Product Launch, Problem/Solution, Social Proof, Feature Highlight, Brand Awareness, Limited Offer, Educational/Value-driven, Emotional Storytelling
+Cover different angles: product benefits, emotional appeal, social proof, problem/solution, brand awareness, feature highlights.
 
 For EACH theme return:
 - title: short campaign name (3-5 words)
@@ -99,7 +107,7 @@ For EACH theme return:
 - target_audience: specific segment for this campaign
 - tone: e.g. "Bold and urgent", "Warm and empathetic"
 - key_message: the one central message this campaign should communicate
-- visual_direction: brief art direction note (e.g. "Clean white backgrounds, product-focused shots, minimal typography")
+- visual_direction: brief art direction note
 - suggested_channels: array of 2-3 best platforms for this campaign`,
       response_json_schema: {
         type: "object",
@@ -124,11 +132,8 @@ For EACH theme return:
       }
     });
 
-    const generatedThemes = result.themes || [];
-
-    // Save all campaigns
     const saved = await Promise.all(
-      generatedThemes.map(t => base44.entities.AdCampaign.create({ ...t, brand_id: bId }))
+      (result.themes || []).map(t => base44.entities.AdCampaign.create({ ...t, brand_id: bId }))
     );
     setThemes(saved);
     setGeneratingThemes(false);
@@ -142,42 +147,29 @@ For EACH theme return:
     <AppShell>
       <div className="min-h-screen bg-[#F7F7F8] pt-10 pb-20 px-6">
         <div className="max-w-3xl mx-auto">
-          {/* Step indicator */}
           <div className="mb-12">
-            <OnboardingProgress step={step} />
+            <OnboardingProgress step={step} steps={STEPS} />
           </div>
 
           <AnimatePresence mode="wait">
             {step === 0 && (
               <motion.div key="s0" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}>
-                <OnboardingStepURL
-                  url={url}
-                  setUrl={setUrl}
-                  onAnalyze={() => handleAnalyze()}
-                  analyzing={analyzing}
-                />
+                <OnboardingStepURL url={url} setUrl={setUrl} onAnalyze={() => handleAnalyze()} analyzing={analyzing} />
               </motion.div>
             )}
-
             {step === 1 && brandData && (
               <motion.div key="s1" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}>
-                <OnboardingStepBrand
-                  brandData={brandData}
-                  onUpdate={setBrandData}
-                  onBack={() => setStep(0)}
-                  onConfirm={handleBrandConfirm}
-                />
+                <OnboardingStepBrand brandData={brandData} onUpdate={setBrandData} onBack={() => setStep(0)} onConfirm={handleBrandConfirm} />
               </motion.div>
             )}
-
-            {step === 2 && (
+            {step === 2 && brandData && (
               <motion.div key="s2" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}>
-                <OnboardingStepThemes
-                  themes={themes}
-                  generating={generatingThemes}
-                  brandName={brandData?.brand_name}
-                  onOpen={handleOpenCampaign}
-                />
+                <OnboardingStepVisuals brandData={brandData} onBack={() => setStep(1)} onConfirm={handleVisualsConfirm} />
+              </motion.div>
+            )}
+            {step === 3 && (
+              <motion.div key="s3" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}>
+                <OnboardingStepThemes themes={themes} generating={generatingThemes} brandName={brandData?.brand_name} onOpen={handleOpenCampaign} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -187,13 +179,12 @@ For EACH theme return:
   );
 }
 
-function OnboardingProgress({ step }) {
-  const steps = ['Analyze Website', 'Brand Profile', 'Campaign Themes'];
+function OnboardingProgress({ step, steps }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2">
       {steps.map((label, i) => (
         <React.Fragment key={i}>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
               i < step ? 'bg-violet-600 text-white' :
               i === step ? 'bg-violet-600 text-white ring-4 ring-violet-100' :

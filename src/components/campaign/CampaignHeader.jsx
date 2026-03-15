@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Target, Users, Mic2, Eye } from 'lucide-react';
+import { ArrowLeft, Target, Users, Mic2, Eye, Pencil } from 'lucide-react';
 
 const ANGLE_BADGE = {
   'Product Launch':   'bg-violet-50 text-violet-700',
@@ -13,7 +13,7 @@ const ANGLE_BADGE = {
   'Limited Offer':    'bg-orange-50 text-orange-700',
 };
 
-export default function CampaignHeader({ campaign, brandName, assetCount }) {
+export default function CampaignHeader({ campaign, brandName, assetCount, onEdit }) {
   return (
     <div className="border-b border-gray-100 bg-white">
       <div className="max-w-screen-xl mx-auto px-6 py-6">
@@ -33,6 +33,14 @@ export default function CampaignHeader({ campaign, brandName, assetCount }) {
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-1">{campaign.title}</h1>
             {brandName && <p className="text-sm text-gray-400">{brandName}</p>}
           </div>
+          {onEdit && (
+            <button
+              onClick={onEdit}
+              className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
+            >
+              <Pencil className="w-3.5 h-3.5" /> Edit Campaign
+            </button>
+          )}
         </div>
 
         <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
