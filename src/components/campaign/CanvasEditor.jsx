@@ -299,6 +299,7 @@ export default function CanvasEditor({
                     onResizeMouseDown={imgResize}
                     selected={selectedLayer === 'img'}
                     onSelect={() => setSelectedLayer('img')}
+                    onRemove={() => setBgImage(null)}
                     noBorder={exporting}
                   >
                     <img src={bgImage} alt=""
