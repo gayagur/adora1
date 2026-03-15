@@ -4,6 +4,7 @@ import { X, RefreshCw, Loader2, Upload, Wand2, Scissors, Zap, Heart, ChevronDown
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import AdCanvas from './AdCanvas';
+import CanvasEditor from './CanvasEditor';
 
 const IMPROVE_ACTIONS = [
   { label: 'Shorten', icon: Scissors, instruction: 'Make this copy shorter and punchier. Keep the core message.' },
