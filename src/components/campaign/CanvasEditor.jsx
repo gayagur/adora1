@@ -293,7 +293,7 @@ export default function CanvasEditor({
         </ResizableDraggableLayer>
       )}
       {subtext && (
-        <ResizableDraggableLayer x={subtextPos.x} y={subtextPos.y} width={subtextWidth} onDragMouseDown={subtextDrag} onResizeMouseDown={subtextResize}
+        <ResizableDraggableLayer x={subtextPos.x} y={subtextPos.y} width={subtextWidth} onPointerDown={subtextPointerDown} onResizePointerDown={subtextResizePointerDown}
           selected={selectedLayer === 'subtext'} onSelect={() => setSelectedLayer('subtext')} onRemove={() => setSubtext('')} noBorder={exporting}>
           {editingText === 'subtext' ? (
             <textarea autoFocus className="bg-transparent outline-none resize-none leading-snug w-full"
