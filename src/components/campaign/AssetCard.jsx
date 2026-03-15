@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Download, RefreshCw, Check, Loader2, ImageIcon, Pencil, Copy as DuplicateIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Copy, Download, RefreshCw, Check, Loader2, ImageIcon, Pencil, Copy as DuplicateIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
@@ -15,14 +15,8 @@ const ASSET_LABELS = {
 export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplicate }) {
   const [copied, setCopied] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
-  const [slideIndex, setSlideIndex] = useState(0);
 
   const isGenerating = asset.status === 'generating';
-  const isCarousel = asset.asset_type === 'carousel' && asset.carousel_images?.length > 0;
-  const carouselImages = asset.carousel_images || [];
-
-  const prevSlide = (e) => { e.stopPropagation(); setSlideIndex(i => (i - 1 + carouselImages.length) % carouselImages.length); };
-  const nextSlide = (e) => { e.stopPropagation(); setSlideIndex(i => (i + 1) % carouselImages.length); };
 
   const copyCaption = (e) => {
     e.stopPropagation();
@@ -72,36 +66,12 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
       onClick={() => !isGenerating && onEdit && onEdit(asset)}
     >
       {/* Image */}
-      <div className="relative bg-gray-50 aspect-square overflow-hidden">
+      <div className="relative bg-gray-50 aspect-square">
         {isGenerating ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
             <Loader2 className="w-7 h-7 text-violet-400 animate-spin" />
-            <p className="text-xs text-gray-400">{asset.asset_type === 'carousel' ? 'Generating 4 slides…' : 'Generating…'}</p>
+            <p className="text-xs text-gray-400">Generating…</p>
           </div>
-        ) : isCarousel ? (
-          <>
-            <img src={carouselImages[slideIndex]} alt={`Slide ${slideIndex + 1}`} className="w-full h-full object-cover" />
-            {/* Carousel controls */}
-            <button onClick={prevSlide} className="absolute left-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center transition-colors">
-              <ChevronLeft className="w-4 h-4 text-white" />
-            </button>
-            <button onClick={nextSlide} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center transition-colors">
-              <ChevronRight className="w-4 h-4 text-white" />
-            </button>
-            {/* Dots */}
-            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
-              {carouselImages.map((_, i) => (
-                <button key={i} onClick={(e) => { e.stopPropagation(); setSlideIndex(i); }}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${i === slideIndex ? 'bg-white w-3' : 'bg-white/50'}`} />
-              ))}
-            </div>
-            {/* Hover overlay */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
-              <div className="bg-white rounded-xl px-3 py-1.5 text-xs font-medium text-gray-800 shadow-lg flex items-center gap-1.5">
-                <Pencil className="w-3 h-3" /> Edit
-              </div>
-            </div>
-          </>
         ) : asset.preview_image ? (
           <>
             <img src={asset.preview_image} alt={asset.headline} className="w-full h-full object-cover" />
@@ -122,7 +92,6 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
         <div className="absolute top-2.5 left-2.5">
           <span className="px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-sm text-[11px] font-medium text-gray-700 shadow-sm">
             {PLATFORM_ICONS[asset.platform]} {ASSET_LABELS[asset.asset_type] || asset.asset_type}
-            {isCarousel && ` · ${slideIndex + 1}/${carouselImages.length}`}
           </span>
         </div>
       </div>
