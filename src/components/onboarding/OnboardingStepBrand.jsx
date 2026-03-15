@@ -1,0 +1,192 @@
+import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { ArrowLeft, ArrowRight, Plus, X, Upload, Loader2, Check } from 'lucide-react';
+import { toast } from 'sonner';
+
+export default function OnboardingStepBrand({ brandData, onUpdate, onBack, onConfirm }) {
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [newColor, setNewColor] = useState('#6366f1');
+
+  const update = (key, value) => onUpdate({ ...brandData, [key]: value });
+
+  const addColor = () => {
+    if (!brandData.brand_colors?.includes(newColor)) {
+      onUpdate({ ...brandData, brand_colors: [...(brandData.brand_colors || []), newColor] });
+    }
+  };
+  const removeColor = (c) => onUpdate({ ...brandData, brand_colors: brandData.brand_colors.filter(x => x !== c) });
+  const changeColor = (old, nw) => onUpdate({ ...brandData, brand_colors: brandData.brand_colors.map(c => c === old ? nw : c) });
+
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      const results = await Promise.all(files.map(f => base44.integrations.Core.UploadFile({ file: f })));
+      onUpdate({ ...brandData, image_assets: [...(brandData.image_assets || []), ...results.map(r => r.file_url)] });
+      toast.success(`${files.length} image${files.length > 1 ? 's' : ''} added`);
+    } catch { toast.error('Upload failed'); }
+    finally { setUploading(false); e.target.value = ''; }
+  };
+
+  const handleConfirm = async () => {
+    setSaving(true);
+    await onConfirm(brandData);
+    setSaving(false);
+  };
+
+  return (
+    <div>
+      <div className="mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Review brand profile</h1>
+        <p className="text-gray-500 text-sm">We analyzed <span className="font-medium text-gray-700">{brandData.url}</span>. Adjust anything before generating campaigns.</p>
+      </div>
+
+      <div className="space-y-4">
+        {/* Brand name + industry */}
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Brand Name">
+            <input className={inputCls} value={brandData.brand_name || ''} onChange={e => update('brand_name', e.target.value)} placeholder="Acme Corp" />
+          </Field>
+          <Field label="Industry">
+            <input className={inputCls} value={brandData.industry || ''} onChange={e => update('industry', e.target.value)} placeholder="SaaS, Fintech..." />
+          </Field>
+        </div>
+
+        {/* Description */}
+        <Field label="Product / Service Description">
+          <textarea className={`${inputCls} resize-none`} rows={3} value={brandData.description || ''} onChange={e => update('description', e.target.value)} placeholder="What does your product do?" />
+        </Field>
+
+        {/* Audience + Tone */}
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Target Audience">
+            <input className={inputCls} value={brandData.target_audience || ''} onChange={e => update('target_audience', e.target.value)} placeholder="e.g. SaaS founders" />
+          </Field>
+          <Field label="Tone of Voice">
+            <input className={inputCls} value={brandData.tone_of_voice || ''} onChange={e => update('tone_of_voice', e.target.value)} placeholder="e.g. Professional, bold" />
+          </Field>
+        </div>
+
+        {/* Key messages */}
+        <Field label="Key Messages">
+          <div className="space-y-2">
+            {(brandData.key_messages || []).map((msg, i) => (
+              <div key={i} className="flex gap-2 items-center">
+                <input
+                  className={`${inputCls} flex-1`}
+                  value={msg}
+                  onChange={e => {
+                    const msgs = [...brandData.key_messages];
+                    msgs[i] = e.target.value;
+                    update('key_messages', msgs);
+                  }}
+                />
+                <button onClick={() => update('key_messages', brandData.key_messages.filter((_, j) => j !== i))}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => update('key_messages', [...(brandData.key_messages || []), ''])}
+              className="flex items-center gap-1.5 text-xs text-violet-600 hover:text-violet-700 font-medium mt-1"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add message
+            </button>
+          </div>
+        </Field>
+
+        {/* Brand Colors */}
+        <Field label="Brand Colors">
+          <div className="flex flex-wrap gap-2 mb-3">
+            {(brandData.brand_colors || []).map(color => (
+              <ColorChip key={color} color={color} onRemove={() => removeColor(color)} onChange={nc => changeColor(color, nc)} />
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 border border-gray-200 cursor-pointer"
+              onClick={() => document.getElementById('new-cp')?.click()}>
+              <div className="w-5 h-5 rounded" style={{ backgroundColor: newColor }} />
+              <span className="text-xs font-mono text-gray-500">{newColor}</span>
+              <input id="new-cp" type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
+            </div>
+            <button onClick={addColor} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-xs font-medium text-gray-700 transition-colors">
+              <Plus className="w-3.5 h-3.5" /> Add
+            </button>
+          </div>
+        </Field>
+
+        {/* Image Upload */}
+        <Field label="Brand Images" hint="Optional — used as visual references when generating ads">
+          {(brandData.image_assets || []).length > 0 && (
+            <div className="grid grid-cols-4 gap-2 mb-3">
+              {brandData.image_assets.map((url, i) => (
+                <div key={i} className="relative group rounded-lg overflow-hidden aspect-square bg-gray-100">
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => onUpdate({ ...brandData, image_assets: brandData.image_assets.filter((_, j) => j !== i) })}
+                    className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <label className={`flex items-center gap-3 p-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${uploading ? 'border-violet-300 bg-violet-50' : 'border-gray-200 hover:border-violet-300 hover:bg-violet-50/30'}`}>
+            {uploading ? <Loader2 className="w-5 h-5 text-violet-500 animate-spin shrink-0" /> : <Upload className="w-5 h-5 text-gray-400 shrink-0" />}
+            <div>
+              <p className="text-sm font-medium text-gray-700">{uploading ? 'Uploading...' : 'Upload product images'}</p>
+              <p className="text-xs text-gray-400">PNG, JPG, WEBP — optional</p>
+            </div>
+            <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
+          </label>
+        </Field>
+      </div>
+
+      <div className="flex items-center justify-between mt-8">
+        <button onClick={onBack} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+        <button
+          onClick={handleConfirm}
+          disabled={saving}
+          className="flex items-center gap-2 h-11 px-7 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white font-medium text-sm transition-colors"
+        >
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> Generate Campaign Themes</>}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const inputCls = "w-full px-3.5 py-2.5 rounded-xl bg-white border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all";
+
+function Field({ label, hint, children }) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 p-5">
+      <div className="flex items-baseline gap-2 mb-3">
+        <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">{label}</label>
+        {hint && <span className="text-xs text-gray-400">{hint}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function ColorChip({ color, onRemove, onChange }) {
+  return (
+    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 border border-gray-200">
+      <div className="relative w-5 h-5 rounded cursor-pointer" style={{ backgroundColor: color }}
+        onClick={() => document.getElementById(`cp-${color}`)?.click()}>
+        <input id={`cp-${color}`} type="color" value={color} onChange={e => onChange(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+      </div>
+      <span className="text-xs font-mono text-gray-500">{color}</span>
+      <button onClick={onRemove} className="text-gray-400 hover:text-gray-600 ml-0.5">
+        <X className="w-3 h-3" />
+      </button>
+    </div>
+  );
+}
