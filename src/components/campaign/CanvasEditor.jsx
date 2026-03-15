@@ -629,18 +629,72 @@ export default function CanvasEditor({
             </SideSection>
           )}
 
-          {/* Font Picker */}
-          <SideSection label="Font">
-            <div className="space-y-1">
-              {FONTS.map(f => (
-                <button key={f.value} onClick={() => setFont(f.value)}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-colors ${font === f.value ? 'bg-violet-600 text-white' : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'}`}
-                  style={{ fontFamily: `'${f.value}', sans-serif` }}>
-                  {f.label}
+          {/* Font Presets */}
+          <SideSection label="Font Pairings">
+            {!showFontPresets ? (
+              <button onClick={() => setShowFontPresets(true)}
+                className="w-full px-2.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 text-xs font-medium transition-colors text-left">
+                {FONT_PRESETS.find(p => p.headline === headlineFont && p.body === bodyFont)?.label || 'View Presets'} →
+              </button>
+            ) : (
+              <div className="space-y-1.5">
+                {FONT_PRESETS.map(preset => (
+                  <button key={preset.id} onClick={() => applyFontPreset(preset)}
+                    className="w-full px-2.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-left text-xs transition-colors group">
+                    <p className="text-white font-medium group-hover:text-violet-300">{preset.label}</p>
+                    <p className="text-white/40 text-[10px] mt-0.5">{preset.headline} + {preset.body}</p>
+                  </button>
+                ))}
+                <button onClick={() => setShowFontPresets(false)}
+                  className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 text-xs transition-colors">
+                  Custom fonts
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
           </SideSection>
+
+          {/* Font Picker (Custom) */}
+          {showFontPresets === false && (
+            <>
+              <SideSection label="Headline Font">
+                <div className="space-y-2">
+                  {Object.entries(FONT_CATEGORIES).map(([key, cat]) => (
+                    <div key={key}>
+                      <p className="text-[10px] text-white/40 mb-1">{cat.label}</p>
+                      <div className="space-y-0.5">
+                        {cat.fonts.map(f => (
+                          <button key={f.value} onClick={() => setHeadlineFont(f.value)}
+                            className={`w-full text-left px-2 py-1.5 rounded text-[11px] transition-colors ${headlineFont === f.value ? 'bg-violet-600 text-white' : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'}`}
+                            style={{ fontFamily: `'${f.value}', sans-serif` }}>
+                            {f.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </SideSection>
+
+              <SideSection label="Body Font">
+                <div className="space-y-2">
+                  {Object.entries(FONT_CATEGORIES).map(([key, cat]) => (
+                    <div key={key}>
+                      <p className="text-[10px] text-white/40 mb-1">{cat.label}</p>
+                      <div className="space-y-0.5">
+                        {cat.fonts.map(f => (
+                          <button key={f.value} onClick={() => setBodyFont(f.value)}
+                            className={`w-full text-left px-2 py-1.5 rounded text-[11px] transition-colors ${bodyFont === f.value ? 'bg-violet-600 text-white' : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'}`}
+                            style={{ fontFamily: `'${f.value}', sans-serif` }}>
+                            {f.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </SideSection>
+            </>
+          )}
 
           <SideSection label="Headline">
             <SliderControl label="Font size" min={18} max={80} value={headlineSize} onChange={setHeadlineSize} unit="px" />
