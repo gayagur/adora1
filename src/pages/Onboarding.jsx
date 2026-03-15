@@ -89,6 +89,42 @@ Extract:
   };
 
   const generateThemes = async (bId, brand) => {
+    // If social links provided, analyze visual style first
+    let visualStyleNotes = brand.visual_style_notes || '';
+    const socialLinks = [brand.social_instagram, brand.social_facebook, brand.social_linkedin].filter(Boolean);
+    if (socialLinks.length > 0 && !visualStyleNotes) {
+      const styleResult = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze the visual and marketing style of this brand based on their social media presence.
+
+Brand: ${brand.brand_name}
+Social pages: ${socialLinks.join(', ')}
+
+Based on these pages, describe:
+- color_palette: the dominant colors used
+- typography_style: bold/minimal/serif/etc
+- layout_style: how they arrange content (centered/split/product-focused/etc)
+- visual_tone: dark/light/vibrant/minimal
+- content_style: product shots/lifestyle/illustration/screenshot-based
+- marketing_tone: the emotional/messaging tone of their ads
+
+Return a concise style guide that can inform ad creative generation.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            color_palette: { type: "string" },
+            typography_style: { type: "string" },
+            layout_style: { type: "string" },
+            visual_tone: { type: "string" },
+            content_style: { type: "string" },
+            marketing_tone: { type: "string" }
+          }
+        }
+      });
+      visualStyleNotes = Object.entries(styleResult).map(([k, v]) => `${k}: ${v}`).join('\n');
+      await base44.entities.Brand.update(bId, { visual_style_notes: visualStyleNotes });
+    }
+
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `You are a senior marketing strategist. Generate 6 distinct campaign themes for this brand.
 
@@ -97,7 +133,7 @@ Product/Service: ${brand.description}
 Audience: ${brand.target_audience}
 Tone: ${brand.tone_of_voice}
 Key Messages: ${brand.key_messages?.join(', ')}
-Industry: ${brand.industry}
+Industry: ${brand.industry}${visualStyleNotes ? `\n\nBrand Visual Style (from social analysis):\n${visualStyleNotes}\n\nIMPORTANT: Use the visual style notes above to inform the visual_direction field for each campaign theme.` : ''}
 
 Generate 6 strategic campaign themes. Each should be a DIFFERENT marketing angle.
 Cover different angles: product benefits, emotional appeal, social proof, problem/solution, brand awareness, feature highlights.
