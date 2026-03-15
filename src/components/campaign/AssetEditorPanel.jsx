@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { X, RefreshCw, Loader2, Upload, Wand2, Scissors, Zap, Heart, ChevronDown, Layers } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import AdCanvas from './AdCanvas';
 import CanvasEditor from './CanvasEditor';
 
 const IMPROVE_ACTIONS = [
