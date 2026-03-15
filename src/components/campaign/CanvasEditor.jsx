@@ -381,7 +381,14 @@ export default function CanvasEditor({
   };
 
   const colorSwatches = [...new Set([...brandColors, '#ffffff', '#111111', '#000000', '#7c3aed', '#2563eb', '#059669', '#ef4444'])].slice(0, 8);
-  const textStyle = { fontFamily: `'${font}', sans-serif` };
+  const headlineFontStyle = { fontFamily: `'${headlineFont}', sans-serif` };
+  const bodyFontStyle = { fontFamily: `'${bodyFont}', sans-serif` };
+
+  const applyFontPreset = (preset) => {
+    setHeadlineFont(preset.headline);
+    setBodyFont(preset.body);
+    setShowFontPresets(false);
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-[#111318] flex flex-col" onClick={() => { setSelectedLayer(null); setEditingText(null); }}>
