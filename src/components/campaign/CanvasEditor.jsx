@@ -506,12 +506,13 @@ export default function CanvasEditor({
         <div className="w-52 shrink-0 border-r border-white/10 overflow-y-auto p-3">
           {sourcePanelContent}
         </div>
-        <div className="flex-1 flex items-center justify-center overflow-auto p-8 bg-[#16181d]"
-          onClick={() => { setSelectedLayer(null); setEditingText(null); }}>
-          <div className="relative" style={{ width: '100%', maxWidth: `${80 / (aspectRatio.pad / 100)}vh`, maxHeight: '80vh' }}
+        <div className="flex-1 flex items-center justify-center overflow-auto p-8 bg-[#16181d] touch-none"
+          onClick={() => { setSelectedLayer(null); setEditingText(null); }}
+          style={{ touchAction: 'none' }}>
+          <div className="relative touch-none" style={{ width: '100%', maxWidth: `${80 / (aspectRatio.pad / 100)}vh`, maxHeight: '80vh', touchAction: 'none' }}
             onClick={e => e.stopPropagation()}>
-            <div ref={canvasRef} className="relative w-full overflow-hidden rounded-xl shadow-2xl select-none"
-              style={{ paddingBottom: `${aspectRatio.pad}%`, ...bgObj }}>
+            <div ref={canvasRef} className="relative w-full overflow-hidden rounded-xl shadow-2xl select-none touch-none"
+              style={{ paddingBottom: `${aspectRatio.pad}%`, ...bgObj, touchAction: 'none' }}>
               {canvasContent}
             </div>
             <p className="text-center text-white/25 text-xs mt-3">Double-click text to edit · Drag to move · Drag corner to resize</p>
