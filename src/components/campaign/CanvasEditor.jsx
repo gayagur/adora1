@@ -167,8 +167,8 @@ export default function CanvasEditor({
   const [imgPos, setImgPos, imgDrag] = useDrag({ x: 50, y: 2 }, canvasRef);
 
   // Resize widths (% of canvas)
-  const [headlineWidth, setHeadlineWidth, headlineResize] = useResize(45, canvasRef);
-  const [subtextWidth, setSubtextWidth, subtextResize] = useResize(40, canvasRef);
+  const [headlineWidth, setHeadlineWidth, headlineResize] = useResize(42, canvasRef);
+  const [subtextWidth, setSubtextWidth, subtextResize] = useResize(38, canvasRef);
   const [imgWidth, setImgWidth, imgResize] = useResize(48, canvasRef);
 
   const bgObj = bgStyle === 'brand'
