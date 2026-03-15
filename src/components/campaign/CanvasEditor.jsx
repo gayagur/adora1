@@ -5,16 +5,16 @@ import { base44 } from '@/api/base44Client';
 
 // ─── Load Google Fonts ────────────────────────────────────────────────────────
 const FONTS = [
-  { label: 'Inter',        value: 'Inter' },
-  { label: 'Roboto',       value: 'Roboto' },
-  { label: 'Playfair Display', value: 'Playfair Display' },
-  { label: 'Montserrat',   value: 'Montserrat' },
-  { label: 'Oswald',       value: 'Oswald' },
-  { label: 'Raleway',      value: 'Raleway' },
-  { label: 'Lato',         value: 'Lato' },
-  { label: 'Poppins',      value: 'Poppins' },
-  { label: 'Merriweather', value: 'Merriweather' },
-  { label: 'Space Grotesk', value: 'Space Grotesk' },
+  { label: 'Sora',           value: 'Sora' },
+  { label: 'DM Sans',        value: 'DM Sans' },
+  { label: 'Clash Display',  value: 'Clash Display' },
+  { label: 'Figtree',        value: 'Figtree' },
+  { label: 'General Sans',   value: 'General Sans' },
+  { label: 'Plus Jakarta Sans', value: 'Plus Jakarta Sans' },
+  { label: 'Cabinet Grotesk', value: 'Cabinet Grotesk' },
+  { label: 'Instrument Serif', value: 'Instrument Serif' },
+  { label: 'Space Grotesk',  value: 'Space Grotesk' },
+  { label: 'Inter',          value: 'Inter' },
 ];
 
 // Inject Google Fonts link once
