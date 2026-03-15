@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Plus, ArrowRight, Globe, Layers } from 'lucide-react';
+import { Plus, ArrowRight, Globe, Layers, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import AppShell from '../components/ui/AppShell';
@@ -10,6 +10,7 @@ import AppShell from '../components/ui/AppShell';
 
 
 export default function Dashboard() {
+  const [expandedBrand, setExpandedBrand] = useState(null);
   const { data: campaigns = [], isLoading: loadingCampaigns } = useQuery({
     queryKey: ['all-campaigns'],
     queryFn: () => base44.entities.AdCampaign.list('-created_date', 100),
