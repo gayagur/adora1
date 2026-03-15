@@ -356,6 +356,7 @@ export default function CanvasEditor({
                     onResizeMouseDown={subtextResize}
                     selected={selectedLayer === 'subtext'}
                     onSelect={() => setSelectedLayer('subtext')}
+                    onRemove={() => setSubtext('')}
                     noBorder={exporting}
                   >
                     {editingText === 'subtext' ? (
