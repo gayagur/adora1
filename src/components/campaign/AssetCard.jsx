@@ -15,8 +15,14 @@ const ASSET_LABELS = {
 export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplicate }) {
   const [copied, setCopied] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [slideIndex, setSlideIndex] = useState(0);
 
   const isGenerating = asset.status === 'generating';
+  const isCarousel = asset.asset_type === 'carousel' && asset.carousel_images?.length > 0;
+  const carouselImages = asset.carousel_images || [];
+
+  const prevSlide = (e) => { e.stopPropagation(); setSlideIndex(i => (i - 1 + carouselImages.length) % carouselImages.length); };
+  const nextSlide = (e) => { e.stopPropagation(); setSlideIndex(i => (i + 1) % carouselImages.length); };
 
   const copyCaption = (e) => {
     e.stopPropagation();
