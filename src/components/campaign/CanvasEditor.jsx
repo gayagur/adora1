@@ -408,8 +408,6 @@ export default function CanvasEditor({
                       onError={e => { e.target.style.display = 'none'; }}
                       style={{
                         width: '100%', height: 'auto', display: 'block', opacity: logoOpacity, objectFit: 'contain',
-                        filter: (bgStyle === 'dark' || bgStyle === 'overlay') ? 'brightness(0) invert(1)' : 'none',
-                        mixBlendMode: (bgStyle === 'light' || bgStyle === 'white') ? 'multiply' : 'normal',
                       }} />
                   </DraggableLayer>
                 )}
