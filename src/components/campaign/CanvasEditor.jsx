@@ -122,6 +122,41 @@ function getHighlightStyle(style, color, opacity, padding, radius) {
   return {};
 }
 
+// ─── Remove white background from logo using canvas ──────────────────────────
+function useWhiteRemovedLogo(logoUrl) {
+  const [processedUrl, setProcessedUrl] = useState(null);
+
+  useEffect(() => {
+    if (!logoUrl) { setProcessedUrl(null); return; }
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i + 1], b = data[i + 2];
+        // Make near-white pixels transparent
+        if (r > 220 && g > 220 && b > 220) {
+          const brightness = (r + g + b) / 3;
+          data[i + 3] = Math.round(Math.max(0, (255 - brightness) * 2));
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+      setProcessedUrl(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => setProcessedUrl(logoUrl); // fallback
+    img.src = logoUrl;
+  }, [logoUrl]);
+
+  return processedUrl;
+}
+
 // ─── Main CanvasEditor ────────────────────────────────────────────────────────
 export default function CanvasEditor({
   initialHeadline = '', initialSubtext = '', initialCta = '',
