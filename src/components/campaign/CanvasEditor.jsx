@@ -33,6 +33,7 @@ function useGoogleFonts() {
 }
 
 // ─── Draggable hook ───────────────────────────────────────────────────────────
+// Uses internal canvas coords (1080x1080), converts from viewport coords
 function useDrag(initialPos, canvasRef) {
   const [pos, setPos] = useState(initialPos);
   const dragging = useRef(false);
@@ -43,20 +44,44 @@ function useDrag(initialPos, canvasRef) {
     if (e.pointerType !== 'mouse') e.preventDefault();
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
+
     dragging.current = true;
-    const clientX = e.clientX;
-    const clientY = e.clientY;
-    start.current = { mx: clientX, my: clientY, px: pos.x, py: pos.y };
+    const viewportX = e.clientX - rect.left;
+    const viewportY = e.clientY - rect.top;
+    
+    // Convert viewport coords to internal canvas coords (0-100%)
+    const normalizedX = (viewportX / rect.width) * 100;
+    const normalizedY = (viewportY / rect.height) * 100;
+    
+    start.current = { 
+      mx: normalizedX, 
+      my: normalizedY, 
+      px: pos.x, 
+      py: pos.y 
+    };
 
     const onMove = (ev) => {
       if (!dragging.current) return;
-      const x = ev.clientX;
-      const y = ev.clientY;
-      const dx = ((x - start.current.mx) / rect.width) * 100;
-      const dy = ((y - start.current.my) / rect.height) * 100;
-      setPos({ x: Math.max(0, Math.min(95, start.current.px + dx)), y: Math.max(0, Math.min(95, start.current.py + dy)) });
+      const vx = ev.clientX - rect.left;
+      const vy = ev.clientY - rect.top;
+      const nx = (vx / rect.width) * 100;
+      const ny = (vy / rect.height) * 100;
+      
+      const dx = nx - start.current.mx;
+      const dy = ny - start.current.my;
+      
+      setPos({ 
+        x: Math.max(0, Math.min(95, start.current.px + dx)), 
+        y: Math.max(0, Math.min(95, start.current.py + dy)) 
+      });
     };
-    const onUp = () => { dragging.current = false; document.removeEventListener('pointermove', onMove); document.removeEventListener('pointerup', onUp); };
+    
+    const onUp = () => { 
+      dragging.current = false; 
+      document.removeEventListener('pointermove', onMove); 
+      document.removeEventListener('pointerup', onUp); 
+    };
+    
     document.addEventListener('pointermove', onMove);
     document.addEventListener('pointerup', onUp);
   }, [pos, canvasRef]);
