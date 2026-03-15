@@ -109,6 +109,7 @@ Return ONLY the improved text, nothing else.`,
   };
 
   return (
+    <>
     {showCanvasEditor && (
       <CanvasEditor
         initialHeadline={draft.headline}
