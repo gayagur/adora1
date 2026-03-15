@@ -572,6 +572,7 @@ function ResizableDraggableLayer({ x, y, width, onPointerDown, onResizePointerDo
         outline: (!noBorder && selected) ? '2px solid #7c3aed' : (!noBorder ? '1px dashed rgba(255,255,255,0.1)' : 'none'),
         outlineOffset: 4,
         borderRadius: 4,
+        touchAction: 'none',
       }}
     >
       {children}
