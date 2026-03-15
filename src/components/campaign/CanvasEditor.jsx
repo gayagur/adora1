@@ -2,20 +2,19 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { Download, Type, Image as ImageIcon, Layers, Upload } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { LAYOUT_TEMPLATES, enforceGridAlignment, getSafeAreaBounds } from './layoutTemplates';
 
 // ─── Load Google Fonts ────────────────────────────────────────────────────────
 const FONTS = [
-  { label: 'Sora',           value: 'Sora' },
-  { label: 'DM Sans',        value: 'DM Sans' },
-  { label: 'Clash Display',  value: 'Clash Display' },
-  { label: 'Figtree',        value: 'Figtree' },
-  { label: 'General Sans',   value: 'General Sans' },
-  { label: 'Plus Jakarta Sans', value: 'Plus Jakarta Sans' },
-  { label: 'Cabinet Grotesk', value: 'Cabinet Grotesk' },
-  { label: 'Instrument Serif', value: 'Instrument Serif' },
-  { label: 'Space Grotesk',  value: 'Space Grotesk' },
-  { label: 'Inter',          value: 'Inter' },
+  { label: 'Inter',        value: 'Inter' },
+  { label: 'Roboto',       value: 'Roboto' },
+  { label: 'Playfair Display', value: 'Playfair Display' },
+  { label: 'Montserrat',   value: 'Montserrat' },
+  { label: 'Oswald',       value: 'Oswald' },
+  { label: 'Raleway',      value: 'Raleway' },
+  { label: 'Lato',         value: 'Lato' },
+  { label: 'Poppins',      value: 'Poppins' },
+  { label: 'Merriweather', value: 'Merriweather' },
+  { label: 'Space Grotesk', value: 'Space Grotesk' },
 ];
 
 // Inject Google Fonts link once
@@ -27,66 +26,37 @@ function useGoogleFonts() {
     link.id = id;
     link.rel = 'stylesheet';
     const families = FONTS.map(f => f.value.replace(/ /g, '+')).join('&family=');
-    link.href = `https://fonts.googleapis.com/css2?family=${families}:wght@300;400;500;600;700;800;900&display=swap`;
+    link.href = `https://fonts.googleapis.com/css2?family=${families}:wght@400;600;700;800&display=swap`;
     document.head.appendChild(link);
   }, []);
 }
 
 // ─── Draggable hook ───────────────────────────────────────────────────────────
-// Uses internal canvas coords (1080x1080), converts from viewport coords
 function useDrag(initialPos, canvasRef) {
   const [pos, setPos] = useState(initialPos);
   const dragging = useRef(false);
   const start = useRef({ mx: 0, my: 0, px: 0, py: 0 });
 
-  const onPointerDown = useCallback((e) => {
+  const onMouseDown = useCallback((e) => {
     e.stopPropagation();
-    if (e.pointerType !== 'mouse') e.preventDefault();
+    e.preventDefault();
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
-
     dragging.current = true;
-    const viewportX = e.clientX - rect.left;
-    const viewportY = e.clientY - rect.top;
-    
-    // Convert viewport coords to internal canvas coords (0-100%)
-    const normalizedX = (viewportX / rect.width) * 100;
-    const normalizedY = (viewportY / rect.height) * 100;
-    
-    start.current = { 
-      mx: normalizedX, 
-      my: normalizedY, 
-      px: pos.x, 
-      py: pos.y 
-    };
+    start.current = { mx: e.clientX, my: e.clientY, px: pos.x, py: pos.y };
 
     const onMove = (ev) => {
       if (!dragging.current) return;
-      const vx = ev.clientX - rect.left;
-      const vy = ev.clientY - rect.top;
-      const nx = (vx / rect.width) * 100;
-      const ny = (vy / rect.height) * 100;
-      
-      const dx = nx - start.current.mx;
-      const dy = ny - start.current.my;
-      
-      setPos({ 
-        x: Math.max(0, Math.min(95, start.current.px + dx)), 
-        y: Math.max(0, Math.min(95, start.current.py + dy)) 
-      });
+      const dx = ((ev.clientX - start.current.mx) / rect.width) * 100;
+      const dy = ((ev.clientY - start.current.my) / rect.height) * 100;
+      setPos({ x: Math.max(0, Math.min(95, start.current.px + dx)), y: Math.max(0, Math.min(95, start.current.py + dy)) });
     };
-    
-    const onUp = () => { 
-      dragging.current = false; 
-      document.removeEventListener('pointermove', onMove); 
-      document.removeEventListener('pointerup', onUp); 
-    };
-    
-    document.addEventListener('pointermove', onMove);
-    document.addEventListener('pointerup', onUp);
+    const onUp = () => { dragging.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
   }, [pos, canvasRef]);
 
-  return [pos, setPos, onPointerDown];
+  return [pos, setPos, onMouseDown];
 }
 
 // ─── Resize hook (returns resize handle props + current width%) ───────────────
@@ -96,28 +66,26 @@ function useResize(initialWidth, canvasRef) {
   const startX = useRef(0);
   const startW = useRef(0);
 
-  const onResizePointerDown = useCallback((e) => {
+  const onResizeMouseDown = useCallback((e) => {
     e.stopPropagation();
-    if (e.pointerType !== 'mouse') e.preventDefault();
+    e.preventDefault();
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     resizing.current = true;
-    const clientX = e.clientX;
-    startX.current = clientX;
+    startX.current = e.clientX;
     startW.current = width;
 
     const onMove = (ev) => {
       if (!resizing.current) return;
-      const x = ev.clientX;
-      const dx = ((x - startX.current) / rect.width) * 100;
+      const dx = ((ev.clientX - startX.current) / rect.width) * 100;
       setWidth(Math.max(10, Math.min(95, startW.current + dx)));
     };
-    const onUp = () => { resizing.current = false; document.removeEventListener('pointermove', onMove); document.removeEventListener('pointerup', onUp); };
-    document.addEventListener('pointermove', onMove);
-    document.addEventListener('pointerup', onUp);
+    const onUp = () => { resizing.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
   }, [width, canvasRef]);
 
-  return [width, setWidth, onResizePointerDown];
+  return [width, setWidth, onResizeMouseDown];
 }
 
 const BACKGROUNDS = {
@@ -229,16 +197,16 @@ export default function CanvasEditor({
   const [highlightRadius, setHighlightRadius] = useState(6);
 
   // Drag positions
-  const [headlinePos, setHeadlinePos, headlinePointerDown] = useDrag({ x: 5, y: 38 }, canvasRef);
-  const [subtextPos, setSubtextPos, subtextPointerDown] = useDrag({ x: 5, y: 62 }, canvasRef);
-  const [ctaPos, setCtaPos, ctaPointerDown] = useDrag({ x: 5, y: 78 }, canvasRef);
-  const [logoPos, setLogoPos, logoPointerDown] = useDrag({ x: 4, y: 4 }, canvasRef);
-  const [imgPos, setImgPos, imgPointerDown] = useDrag({ x: 50, y: 2 }, canvasRef);
+  const [headlinePos, setHeadlinePos, headlineDrag] = useDrag({ x: 5, y: 38 }, canvasRef);
+  const [subtextPos, setSubtextPos, subtextDrag] = useDrag({ x: 5, y: 62 }, canvasRef);
+  const [ctaPos, setCtaPos, ctaDrag] = useDrag({ x: 5, y: 78 }, canvasRef);
+  const [logoPos, setLogoPos, logoDrag] = useDrag({ x: 4, y: 4 }, canvasRef);
+  const [imgPos, setImgPos, imgDrag] = useDrag({ x: 50, y: 2 }, canvasRef);
 
   // Resize widths (% of canvas)
-  const [headlineWidth, setHeadlineWidth, headlineResizePointerDown] = useResize(42, canvasRef);
-  const [subtextWidth, setSubtextWidth, subtextResizePointerDown] = useResize(38, canvasRef);
-  const [imgWidth, setImgWidth, imgResizePointerDown] = useResize(48, canvasRef);
+  const [headlineWidth, setHeadlineWidth, headlineResize] = useResize(42, canvasRef);
+  const [subtextWidth, setSubtextWidth, subtextResize] = useResize(38, canvasRef);
+  const [imgWidth, setImgWidth, imgResize] = useResize(48, canvasRef);
 
   const bgObj = bgStyle === 'brand'
     ? { background: `linear-gradient(135deg, ${accentColor}cc, ${accentColor}44)` }
@@ -288,7 +256,7 @@ export default function CanvasEditor({
   const canvasContent = (
     <div className="absolute inset-0">
       {bgImage && (
-        <ResizableDraggableLayer x={imgPos.x} y={imgPos.y} width={imgWidth} onPointerDown={imgPointerDown} onResizePointerDown={imgResizePointerDown}
+        <ResizableDraggableLayer x={imgPos.x} y={imgPos.y} width={imgWidth} onDragMouseDown={imgDrag} onResizeMouseDown={imgResize}
           selected={selectedLayer === 'img'} onSelect={() => setSelectedLayer('img')} onRemove={() => setBgImage(null)} noBorder={exporting}>
           <img src={bgImage} alt="" className="w-full rounded-lg shadow-2xl block" style={{ objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
         </ResizableDraggableLayer>
@@ -297,7 +265,7 @@ export default function CanvasEditor({
         <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${bgOverlay})`, pointerEvents: 'none' }} />
       )}
       {headline && (
-        <ResizableDraggableLayer x={headlinePos.x} y={headlinePos.y} width={headlineWidth} onPointerDown={headlinePointerDown} onResizePointerDown={headlineResizePointerDown}
+        <ResizableDraggableLayer x={headlinePos.x} y={headlinePos.y} width={headlineWidth} onDragMouseDown={headlineDrag} onResizeMouseDown={headlineResize}
           selected={selectedLayer === 'headline'} onSelect={() => setSelectedLayer('headline')} onRemove={() => setHeadline('')} noBorder={exporting}>
           <div style={highlightCss}>
             {editingText === 'headline' ? (
@@ -315,7 +283,7 @@ export default function CanvasEditor({
         </ResizableDraggableLayer>
       )}
       {subtext && (
-        <ResizableDraggableLayer x={subtextPos.x} y={subtextPos.y} width={subtextWidth} onPointerDown={subtextPointerDown} onResizePointerDown={subtextResizePointerDown}
+        <ResizableDraggableLayer x={subtextPos.x} y={subtextPos.y} width={subtextWidth} onDragMouseDown={subtextDrag} onResizeMouseDown={subtextResize}
           selected={selectedLayer === 'subtext'} onSelect={() => setSelectedLayer('subtext')} onRemove={() => setSubtext('')} noBorder={exporting}>
           {editingText === 'subtext' ? (
             <textarea autoFocus className="bg-transparent outline-none resize-none leading-snug w-full"
@@ -330,7 +298,7 @@ export default function CanvasEditor({
         </ResizableDraggableLayer>
       )}
       {cta && (
-        <DraggableLayer x={ctaPos.x} y={ctaPos.y} onPointerDown={ctaPointerDown}
+        <DraggableLayer x={ctaPos.x} y={ctaPos.y} onMouseDown={ctaDrag}
           selected={selectedLayer === 'cta'} onSelect={() => setSelectedLayer('cta')} onRemove={() => setCta('')} noBorder={exporting}>
           {editingText === 'cta' ? (
             <input autoFocus className="outline-none bg-transparent font-semibold text-white text-center"
@@ -345,7 +313,7 @@ export default function CanvasEditor({
         </DraggableLayer>
       )}
       {activeLogo && showLogo && (
-        <DraggableLayer x={logoPos.x} y={logoPos.y} onPointerDown={logoPointerDown}
+        <DraggableLayer x={logoPos.x} y={logoPos.y} onMouseDown={logoDrag}
           selected={selectedLayer === 'logo'} onSelect={() => setSelectedLayer('logo')}
           onRemove={() => { setActiveLogo(null); setShowLogo(false); }}
           noBorder={exporting} style={{ width: `${logoScale}%`, minWidth: 40 }}>
@@ -551,8 +519,8 @@ export default function CanvasEditor({
           onClick={() => { setSelectedLayer(null); setEditingText(null); }}>
           <div className="relative w-full" style={{ maxWidth: `${60 / (aspectRatio.pad / 100)}vh` }}
             onClick={e => e.stopPropagation()}>
-            <div ref={canvasRef} className="relative w-full overflow-hidden rounded-xl shadow-2xl select-none touch-none"
-              style={{ paddingBottom: `${aspectRatio.pad}%`, ...bgObj, touchAction: 'none' }}>
+            <div ref={canvasRef} className="relative w-full overflow-hidden rounded-xl shadow-2xl select-none"
+              style={{ paddingBottom: `${aspectRatio.pad}%`, ...bgObj }}>
               {canvasContent}
             </div>
           </div>
@@ -581,12 +549,12 @@ export default function CanvasEditor({
 }
 
 // ─── ResizableDraggableLayer ─────────────────────────────────────────────────
-function ResizableDraggableLayer({ x, y, width, onPointerDown, onResizePointerDown, children, selected, onSelect, onRemove, noBorder }) {
+function ResizableDraggableLayer({ x, y, width, onDragMouseDown, onResizeMouseDown, children, selected, onSelect, onRemove, noBorder }) {
   return (
     <div
-      onPointerDown={onPointerDown}
+      onMouseDown={onDragMouseDown}
       onClick={(e) => { e.stopPropagation(); onSelect?.(); }}
-      className="absolute cursor-move touch-none"
+      className="absolute cursor-move"
       style={{
         left: `${x}%`,
         top: `${y}%`,
@@ -594,14 +562,13 @@ function ResizableDraggableLayer({ x, y, width, onPointerDown, onResizePointerDo
         outline: (!noBorder && selected) ? '2px solid #7c3aed' : (!noBorder ? '1px dashed rgba(255,255,255,0.1)' : 'none'),
         outlineOffset: 4,
         borderRadius: 4,
-        touchAction: 'none',
       }}
     >
       {children}
       {!noBorder && onRemove && (
         <div
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
-          onPointerDown={e => e.stopPropagation()}
+          onMouseDown={e => e.stopPropagation()}
           style={{
             position: 'absolute', top: -8, right: -8,
             width: 16, height: 16, borderRadius: '50%',
@@ -613,14 +580,13 @@ function ResizableDraggableLayer({ x, y, width, onPointerDown, onResizePointerDo
       )}
       {!noBorder && (
         <div
-          onPointerDown={onResizePointerDown}
+          onMouseDown={onResizeMouseDown}
           style={{
             position: 'absolute', right: -6, bottom: -6,
             width: 12, height: 12, borderRadius: 3,
             background: selected ? '#7c3aed' : 'rgba(255,255,255,0.25)',
             cursor: 'ew-resize', zIndex: 10,
             border: '1.5px solid rgba(255,255,255,0.5)',
-            touchAction: 'none',
           }}
           onClick={e => e.stopPropagation()}
         />
@@ -630,19 +596,18 @@ function ResizableDraggableLayer({ x, y, width, onPointerDown, onResizePointerDo
 }
 
 // ─── Plain DraggableLayer (no resize) ────────────────────────────────────────
-function DraggableLayer({ x, y, onPointerDown, children, selected, onSelect, onRemove, style = {}, noBorder = false }) {
+function DraggableLayer({ x, y, onMouseDown, children, selected, onSelect, onRemove, style = {}, noBorder = false }) {
   return (
     <div
-      onPointerDown={onPointerDown}
+      onMouseDown={onMouseDown}
       onClick={(e) => { e.stopPropagation(); onSelect?.(); }}
-      className="absolute cursor-move touch-none"
+      className="absolute cursor-move"
       style={{
         left: `${x}%`,
         top: `${y}%`,
         outline: (!noBorder && selected) ? '2px solid #7c3aed' : (!noBorder ? '1px dashed rgba(255,255,255,0.1)' : 'none'),
         outlineOffset: 4,
         borderRadius: 4,
-        touchAction: 'none',
         ...style,
       }}
     >
@@ -650,7 +615,7 @@ function DraggableLayer({ x, y, onPointerDown, children, selected, onSelect, onR
       {!noBorder && onRemove && (
         <div
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
-          onPointerDown={e => e.stopPropagation()}
+          onMouseDown={e => e.stopPropagation()}
           style={{
             position: 'absolute', top: -8, right: -8,
             width: 16, height: 16, borderRadius: '50%',

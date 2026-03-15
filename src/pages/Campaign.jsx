@@ -52,7 +52,7 @@ export default function Campaign() {
     if (isCarousel) {
       // Generate carousel: 4 slides with individual prompts
       const copyResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a creative director. Generate exactly 4-slide carousel post for this campaign.
+        prompt: `You are a creative director. Generate a 4-slide carousel post for this campaign.
 
 Campaign: ${camp?.title}
 Strategy Angle: ${camp?.strategy_angle}
@@ -68,13 +68,13 @@ Brand Colors: ${br?.brand_colors?.join(', ')}
 Platform: ${option.platform}
 Format: ${option.format}
 
-Generate EXACTLY 4 carousel slides. Each slide must flow as a story/sequence.
+Generate 4 carousel slides. Each slide should flow as a story/sequence.
 Also generate: headline, ad_copy, full_caption (with hashtags), cta for the overall post.
 
-CRITICAL: slides array must contain EXACTLY 4 items. Each slide must have:
+Each slide should have:
 - headline: short slide title (max 6 words)
 - body: 1 sentence slide copy
-- image_prompt: detailed AI image generation prompt for THIS specific slide. Square composition. No text in image. Use brand colors. Premium marketing visual. Make each slide visually distinct.`,
+- image_prompt: detailed AI image generation prompt. Square composition. No text in image. Use brand colors. Premium marketing visual.`,
         file_urls: br?.image_assets?.length > 0 ? br.image_assets.slice(0, 3) : undefined,
         response_json_schema: {
           type: "object",
@@ -92,24 +92,15 @@ CRITICAL: slides array must contain EXACTLY 4 items. Each slide must have:
                   body: { type: "string" },
                   image_prompt: { type: "string" }
                 }
-              },
-              minItems: 4,
-              maxItems: 4
+              }
             }
-          },
-          required: ["slides"]
+          }
         }
       });
 
-      // Ensure we have exactly 4 slides
-      const slides = (copyResult.slides || []).slice(0, 4);
-      if (slides.length < 4) {
-        throw new Error('Failed to generate 4 carousel slides');
-      }
-
       // Generate all slide images in parallel
       const imageResults = await Promise.all(
-        slides.map(slide =>
+        (copyResult.slides || []).map(slide =>
           base44.integrations.Core.GenerateImage({
             prompt: `${slide.image_prompt}. Brand colors: ${br?.brand_colors?.join(', ')}. Premium marketing creative. No text overlays. High quality.`,
             existing_image_urls: br?.image_assets?.length > 0 ? br.image_assets.slice(0, 2) : undefined
@@ -117,17 +108,17 @@ CRITICAL: slides array must contain EXACTLY 4 items. Each slide must have:
         )
       );
 
-      const carousel_slides = slides.map((slide, i) => ({
+      const carousel_slides = (copyResult.slides || []).map((slide, i) => ({
         image_url: imageResults[i]?.url || '',
         headline: slide.headline,
         body: slide.body,
       }));
 
       await base44.entities.CampaignAsset.update(assetId, {
-        headline: copyResult.headline || 'Carousel Post',
-        ad_copy: copyResult.ad_copy || '',
-        full_caption: copyResult.full_caption || '',
-        cta: copyResult.cta || '',
+        headline: copyResult.headline,
+        ad_copy: copyResult.ad_copy,
+        full_caption: copyResult.full_caption,
+        cta: copyResult.cta,
         preview_image: carousel_slides[0]?.image_url || '',
         carousel_images: carousel_slides.map(s => s.image_url),
         carousel_slides,
