@@ -15,7 +15,7 @@ export default function CampaignHeader({ campaign, brandName, assetCount, onEdit
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2.5 mb-2">
-              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${ANGLE_BADGE[campaign.strategy_angle] || 'bg-gray-50 text-gray-600'}`}>
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
                 {campaign.strategy_angle}
               </span>
               <span className="text-xs text-gray-400">·</span>

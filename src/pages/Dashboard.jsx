@@ -100,10 +100,7 @@ export default function Dashboard() {
                         <Link to={`/Campaign?id=${camp.id}&brand=${camp.brand_id}`}>
                           <div className="group bg-white rounded-2xl border border-gray-100 p-5 hover:border-violet-200 hover:shadow-md transition-all duration-200 cursor-pointer h-full">
                             <div className="flex items-start justify-between mb-3">
-                              <div className="flex items-center gap-2">
-                                <div className={`w-2 h-2 rounded-full shrink-0 ${ANGLE_DOT[camp.strategy_angle] || 'bg-gray-400'}`} />
-                                <span className="text-xs text-gray-400 font-medium">{camp.strategy_angle}</span>
-                              </div>
+                              <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">{camp.strategy_angle}</span>
                               <div className="w-6 h-6 rounded-lg bg-gray-50 group-hover:bg-violet-50 flex items-center justify-center transition-colors">
                                 <ArrowRight className="w-3 h-3 text-gray-400 group-hover:text-violet-600 transition-colors" />
                               </div>
