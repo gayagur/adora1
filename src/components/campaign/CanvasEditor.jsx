@@ -404,6 +404,7 @@ export default function CanvasEditor({
                 {activeLogo && showLogo && (
                   <DraggableLayer x={logoPos.x} y={logoPos.y} onMouseDown={logoDrag}
                     selected={selectedLayer === 'logo'} onSelect={() => setSelectedLayer('logo')}
+                    onRemove={() => { setActiveLogo(null); setShowLogo(false); }}
                     noBorder={exporting} style={{ width: `${logoScale}%`, minWidth: 40 }}>
                     <img
                       src={activeLogo}
