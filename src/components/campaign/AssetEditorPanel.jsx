@@ -118,6 +118,15 @@ Return ONLY the improved text, nothing else.`,
         brandColors={brand?.brand_colors}
         screenshots={brand?.image_assets}
         onClose={() => setShowCanvasEditor(false)}
+        onSave={async (designData) => {
+          setDraft(prev => ({
+            ...prev,
+            headline: designData.headline,
+            ad_copy: designData.ad_copy,
+            cta: designData.cta,
+            preview_image: designData.preview_image,
+          }));
+        }}
       />
     );
   }
