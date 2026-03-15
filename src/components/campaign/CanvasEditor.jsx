@@ -492,8 +492,7 @@ export default function CanvasEditor({
             <ColorSwatches colors={colorSwatches} selected={accentColor} onSelect={setAccentColor} />
           </SideSection>
 
-          {logoUrl && (
-            <SideSection label="Logo">
+          <SideSection label="Logo">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] text-white/50">Visible</span>
                 <button onClick={() => setShowLogo(v => !v)}
@@ -501,14 +500,25 @@ export default function CanvasEditor({
                   <div className={`w-3 h-3 rounded-full bg-white transition-transform ${showLogo ? 'translate-x-4' : 'translate-x-0'}`} />
                 </button>
               </div>
-              {showLogo && (
+              <label className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs cursor-pointer transition-colors mb-2">
+                <Upload className="w-3.5 h-3.5 shrink-0" />
+                {activeLogo ? 'Replace Logo' : 'Upload Logo'}
+                <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                  setActiveLogo(file_url);
+                  setShowLogo(true);
+                  e.target.value = '';
+                }} />
+              </label>
+              {showLogo && activeLogo && (
                 <>
                   <SliderControl label="Width %" min={5} max={50} value={logoScale} onChange={setLogoScale} />
                   <SliderControl label="Opacity" min={0.1} max={1} step={0.05} value={logoOpacity} onChange={setLogoOpacity} />
                 </>
               )}
             </SideSection>
-          )}
 
           <SideSection label="Layers">
             {[
