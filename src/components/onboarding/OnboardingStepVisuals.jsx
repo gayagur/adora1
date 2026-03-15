@@ -16,81 +16,13 @@ export default function OnboardingStepVisuals({ brandData, onBack, onConfirm }) 
   const fetchScreenshots = async () => {
     setLoading(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a web content analyst. Given this brand/website, generate 8 realistic mock screenshot descriptions that represent key visual sections of the website.
-
-Brand: ${brandData.brand_name}
-URL: ${brandData.url}
-Industry: ${brandData.industry}
-Description: ${brandData.description}
-Brand Colors: ${brandData.brand_colors?.join(', ')}
-
-For each section, provide:
-- section: one of "Hero", "Product", "Features", "Social Proof", "Pricing", "About", "CTA", "General"
-- description: brief description of what this screenshot shows
-- visual_prompt: a detailed AI image generation prompt to recreate this section as a marketing visual. No text. Use brand colors. Clean, modern UI screenshot style.
-
-Generate exactly 8 items covering different parts of the website.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            items: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  section: { type: 'string' },
-                  description: { type: 'string' },
-                  visual_prompt: { type: 'string' }
-                }
-              }
-            }
-          }
-        }
-      });
-
-      // Generate images for first 4 (to keep it fast), rest are placeholders
-      const items = (result.items || []).slice(0, 8);
-      const withPlaceholders = items.map((item, i) => ({ ...item, id: i, image_url: null, generating: i < 4 }));
-      setScreenshots(withPlaceholders);
-
-      // Select all by default
-      setSelected(new Set(withPlaceholders.map(s => s.id)));
-
-      // Generate images for first 4 in parallel
-      const first4 = withPlaceholders.slice(0, 4);
-      Promise.all(
-        first4.map(async (item) => {
-          const res = await base44.integrations.Core.GenerateImage({
-            prompt: `${item.visual_prompt}. Modern clean UI screenshot, ${brandData.brand_colors?.join(', ')} color scheme. No text.`
-          });
-          return { id: item.id, url: res.url };
-        })
-      ).then(results => {
-        setScreenshots(prev => prev.map(s => {
-          const found = results.find(r => r.id === s.id);
-          return found ? { ...s, image_url: found.url, generating: false } : s;
-        }));
-      });
-
-      // Generate rest 4 after
-      Promise.all(
-        withPlaceholders.slice(4).map(async (item) => {
-          const res = await base44.integrations.Core.GenerateImage({
-            prompt: `${item.visual_prompt}. Modern clean UI screenshot, ${brandData.brand_colors?.join(', ')} color scheme. No text.`
-          });
-          return { id: item.id, url: res.url };
-        })
-      ).then(results => {
-        setScreenshots(prev => prev.map(s => {
-          const found = results.find(r => r.id === s.id);
-          return found ? { ...s, image_url: found.url, generating: false } : s;
-        }));
-      });
-
+      const response = await base44.functions.invoke('captureScreenshots', { url: brandData.url });
+      const items = (response.data.screenshots || []).map((s, i) => ({ ...s, id: i }));
+      setScreenshots(items);
+      // Pre-select all that succeeded
+      setSelected(new Set(items.filter(s => s.image_url).map(s => s.id)));
     } catch {
-      toast.error('Could not generate screenshots');
+      toast.error('Could not capture screenshots');
       setScreenshots([]);
     }
     setLoading(false);
