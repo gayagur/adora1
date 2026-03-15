@@ -37,26 +37,32 @@ function useDrag(initialPos, canvasRef) {
   const dragging = useRef(false);
   const start = useRef({ mx: 0, my: 0, px: 0, py: 0 });
 
-  const onMouseDown = useCallback((e) => {
+  const onPointerDown = useCallback((e) => {
     e.stopPropagation();
     e.preventDefault();
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     dragging.current = true;
-    start.current = { mx: e.clientX, my: e.clientY, px: pos.x, py: pos.y };
+    const clientX = e.clientX || e.touches?.[0]?.clientX;
+    const clientY = e.clientY || e.touches?.[0]?.clientY;
+    start.current = { mx: clientX, my: clientY, px: pos.x, py: pos.y };
 
     const onMove = (ev) => {
       if (!dragging.current) return;
-      const dx = ((ev.clientX - start.current.mx) / rect.width) * 100;
-      const dy = ((ev.clientY - start.current.my) / rect.height) * 100;
+      const x = ev.clientX || ev.touches?.[0]?.clientX;
+      const y = ev.clientY || ev.touches?.[0]?.clientY;
+      const dx = ((x - start.current.mx) / rect.width) * 100;
+      const dy = ((y - start.current.my) / rect.height) * 100;
       setPos({ x: Math.max(0, Math.min(95, start.current.px + dx)), y: Math.max(0, Math.min(95, start.current.py + dy)) });
     };
-    const onUp = () => { dragging.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+    const onUp = () => { dragging.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('touchmove', onMove); window.removeEventListener('mouseup', onUp); window.removeEventListener('touchend', onUp); };
     window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, { passive: false });
     window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchend', onUp);
   }, [pos, canvasRef]);
 
-  return [pos, setPos, onMouseDown];
+  return [pos, setPos, onPointerDown];
 }
 
 // ─── Resize hook (returns resize handle props + current width%) ───────────────
