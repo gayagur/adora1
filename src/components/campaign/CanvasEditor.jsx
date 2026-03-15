@@ -323,7 +323,7 @@ export default function CanvasEditor({
         </DraggableLayer>
       )}
       {activeLogo && showLogo && (
-        <DraggableLayer x={logoPos.x} y={logoPos.y} onMouseDown={logoDrag}
+        <DraggableLayer x={logoPos.x} y={logoPos.y} onPointerDown={logoPointerDown}
           selected={selectedLayer === 'logo'} onSelect={() => setSelectedLayer('logo')}
           onRemove={() => { setActiveLogo(null); setShowLogo(false); }}
           noBorder={exporting} style={{ width: `${logoScale}%`, minWidth: 40 }}>
