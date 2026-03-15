@@ -573,7 +573,7 @@ export default function CanvasEditor({
                       />
                     ) : (
                       <span className="inline-flex items-center font-semibold text-white cursor-text"
-                        style={{ backgroundColor: accentColor, padding: '8px 20px', borderRadius: 999, fontSize: subtextSize * 0.9, ...textStyle }}
+                        style={{ backgroundColor: accentColor, padding: '8px 20px', borderRadius: 999, fontSize: subtextSize * 0.9, ...bodyFontStyle }}
                         onDoubleClick={(e) => { e.stopPropagation(); setEditingText('cta'); setSelectedLayer('cta'); }}
                       >{cta}</span>
                     )}
