@@ -507,7 +507,7 @@ export default function CanvasEditor({
                       {editingText === 'headline' ? (
                         <textarea autoFocus
                           className="bg-transparent outline-none resize-none font-bold leading-tight w-full"
-                          style={{ color: headlineColor, fontSize: headlineSize, lineHeight: 1.2, ...textStyle }}
+                          style={{ color: headlineColor, fontSize: headlineSize, lineHeight: 1.2, ...headlineFontStyle }}
                           value={headline}
                           onChange={e => setHeadline(e.target.value)}
                           onBlur={() => setEditingText(null)}
@@ -516,7 +516,7 @@ export default function CanvasEditor({
                         />
                       ) : (
                         <p className="font-bold leading-tight cursor-text w-full"
-                          style={{ color: headlineColor, fontSize: headlineSize, lineHeight: 1.2, ...textStyle,
+                          style={{ color: headlineColor, fontSize: headlineSize, lineHeight: 1.2, ...headlineFontStyle,
                             textShadow: highlightStyle === 'none' && (bgStyle === 'dark' || bgStyle === 'overlay') ? '0 2px 16px rgba(0,0,0,0.6)' : 'none' }}
                           onDoubleClick={(e) => { e.stopPropagation(); setEditingText('headline'); setSelectedLayer('headline'); }}
                         >{headline}</p>
