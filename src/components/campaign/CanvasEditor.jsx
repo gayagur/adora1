@@ -290,7 +290,7 @@ function useWhiteRemovedLogo(logoUrl) {
 export default function CanvasEditor({
   initialHeadline = '', initialSubtext = '', initialCta = '',
   initialImage = null, logoUrl = null, brandColors = [],
-  screenshots = [], onClose,
+  screenshots = [], onClose, onSave,
 }) {
   useGoogleFonts();
   const canvasRef = useRef(null);
