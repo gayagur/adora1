@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 const LAYOUTS = [
-  { id: 'top',     label: 'Top Headline',    headlineY: 0.12, ctaY: 0.22 },
-  { id: 'center',  label: 'Centered',         headlineY: 0.38, ctaY: 0.52 },
-  { id: 'bottom',  label: 'Bottom Caption',   headlineY: 0.72, ctaY: 0.84 },
-  { id: 'overlay', label: 'Dark Overlay',     headlineY: 0.38, ctaY: 0.54 },
+  { id: 'top',     label: 'Top Headline',    headlineY: 0.10, subtextY: 0.20, ctaY: 0.28 },
+  { id: 'center',  label: 'Centered',         headlineY: 0.36, subtextY: 0.47, ctaY: 0.56 },
+  { id: 'bottom',  label: 'Bottom Caption',   headlineY: 0.68, subtextY: 0.78, ctaY: 0.87 },
+  { id: 'overlay', label: 'Dark Overlay',     headlineY: 0.34, subtextY: 0.45, ctaY: 0.54 },
 ];
 
 const LOGO_POSITIONS = [
