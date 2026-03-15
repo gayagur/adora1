@@ -1,8 +1,10 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import html2canvas from 'html2canvas';
-import { Download, Type, Image as ImageIcon, Layers, Upload, Save, Loader2 } from 'lucide-react';
+import { Download, Type, Image as ImageIcon, Layers, Upload, Save, Loader2, Settings } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from '@/components/ui/drawer';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // ─── Professional Font Library ────────────────────────────────────────────────
 const FONT_CATEGORIES = {
