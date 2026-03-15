@@ -207,16 +207,16 @@ export default function CanvasEditor({
   const [highlightRadius, setHighlightRadius] = useState(6);
 
   // Drag positions
-  const [headlinePos, setHeadlinePos, headlineDrag] = useDrag({ x: 5, y: 38 }, canvasRef);
-  const [subtextPos, setSubtextPos, subtextDrag] = useDrag({ x: 5, y: 62 }, canvasRef);
-  const [ctaPos, setCtaPos, ctaDrag] = useDrag({ x: 5, y: 78 }, canvasRef);
-  const [logoPos, setLogoPos, logoDrag] = useDrag({ x: 4, y: 4 }, canvasRef);
-  const [imgPos, setImgPos, imgDrag] = useDrag({ x: 50, y: 2 }, canvasRef);
+  const [headlinePos, setHeadlinePos, headlinePointerDown] = useDrag({ x: 5, y: 38 }, canvasRef);
+  const [subtextPos, setSubtextPos, subtextPointerDown] = useDrag({ x: 5, y: 62 }, canvasRef);
+  const [ctaPos, setCtaPos, ctaPointerDown] = useDrag({ x: 5, y: 78 }, canvasRef);
+  const [logoPos, setLogoPos, logoPointerDown] = useDrag({ x: 4, y: 4 }, canvasRef);
+  const [imgPos, setImgPos, imgPointerDown] = useDrag({ x: 50, y: 2 }, canvasRef);
 
   // Resize widths (% of canvas)
-  const [headlineWidth, setHeadlineWidth, headlineResize] = useResize(42, canvasRef);
-  const [subtextWidth, setSubtextWidth, subtextResize] = useResize(38, canvasRef);
-  const [imgWidth, setImgWidth, imgResize] = useResize(48, canvasRef);
+  const [headlineWidth, setHeadlineWidth, headlineResizePointerDown] = useResize(42, canvasRef);
+  const [subtextWidth, setSubtextWidth, subtextResizePointerDown] = useResize(38, canvasRef);
+  const [imgWidth, setImgWidth, imgResizePointerDown] = useResize(48, canvasRef);
 
   const bgObj = bgStyle === 'brand'
     ? { background: `linear-gradient(135deg, ${accentColor}cc, ${accentColor}44)` }
