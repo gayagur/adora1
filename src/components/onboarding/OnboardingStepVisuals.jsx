@@ -70,8 +70,8 @@ export default function OnboardingStepVisuals({ brandData, onBack, onConfirm }) 
             <ImageIcon className="w-7 h-7 text-violet-400" />
           </div>
           <div className="text-center">
-            <p className="font-semibold text-gray-800 mb-1">Generate website visuals</p>
-            <p className="text-sm text-gray-400 max-w-xs">We'll create visual references from {brandData.brand_name}'s website sections</p>
+            <p className="font-semibold text-gray-800 mb-1">Capture real screenshots</p>
+            <p className="text-sm text-gray-400 max-w-xs">We'll take live screenshots of {brandData.brand_name}'s website sections to use as visual references</p>
           </div>
           <div className="flex gap-3">
             <button
@@ -80,7 +80,7 @@ export default function OnboardingStepVisuals({ brandData, onBack, onConfirm }) 
               className="flex items-center gap-2 h-10 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium transition-colors disabled:opacity-60"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              {loading ? 'Generating…' : 'Generate Visuals'}
+              {loading ? 'Capturing screenshots…' : 'Capture Screenshots'}
             </button>
             <button onClick={() => onConfirm([])} className="h-10 px-5 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors">
               Skip this step
