@@ -152,6 +152,25 @@ export default function OnboardingStepBrand({ brandData, onUpdate, onBack, onCon
           </div>
         </Field>
 
+        {/* Social Reference */}
+        <Field label="Social Style Reference" hint="Optional — helps AI match your visual identity">
+          <p className="text-xs text-gray-400 mb-3">Paste links to your social pages. The AI will analyze your visual style to generate more consistent creatives.</p>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Instagram className="w-4 h-4 text-pink-400 shrink-0" />
+              <input className={inputCls} value={brandData.social_instagram || ''} onChange={e => update('social_instagram', e.target.value)} placeholder="https://instagram.com/yourbrand" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-blue-400 shrink-0" />
+              <input className={inputCls} value={brandData.social_facebook || ''} onChange={e => update('social_facebook', e.target.value)} placeholder="https://facebook.com/yourbrand" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Linkedin className="w-4 h-4 text-blue-600 shrink-0" />
+              <input className={inputCls} value={brandData.social_linkedin || ''} onChange={e => update('social_linkedin', e.target.value)} placeholder="https://linkedin.com/company/yourbrand" />
+            </div>
+          </div>
+        </Field>
+
         {/* Image Upload */}
         <Field label="Brand Images" hint="Optional — used as visual references when generating ads">
           {(brandData.image_assets || []).length > 0 && (
