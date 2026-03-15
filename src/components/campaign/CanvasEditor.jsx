@@ -398,12 +398,12 @@ export default function CanvasEditor({
                 )}
 
                 {/* Logo */}
-                {logoUrl && showLogo && (
+                {activeLogo && showLogo && (
                   <DraggableLayer x={logoPos.x} y={logoPos.y} onMouseDown={logoDrag}
                     selected={selectedLayer === 'logo'} onSelect={() => setSelectedLayer('logo')}
                     noBorder={exporting} style={{ width: `${logoScale}%`, minWidth: 40 }}>
                     <img
-                      src={logoUrl}
+                      src={activeLogo}
                       alt="logo"
                       onError={e => { e.target.style.display = 'none'; }}
                       style={{
