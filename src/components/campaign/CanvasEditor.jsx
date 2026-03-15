@@ -36,19 +36,20 @@ function useDrag(initialPos, canvasRef) {
   const [pos, setPos] = useState(initialPos);
   const dragging = useRef(false);
   const start = useRef({ mx: 0, my: 0, px: 0, py: 0 });
+  const rect = useRef(null);
 
   const onMouseDown = useCallback((e) => {
     e.stopPropagation();
     e.preventDefault();
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    rect.current = canvasRef.current?.getBoundingClientRect();
+    if (!rect.current) return;
     dragging.current = true;
     start.current = { mx: e.clientX, my: e.clientY, px: pos.x, py: pos.y };
 
     const onMove = (ev) => {
-      if (!dragging.current) return;
-      const dx = ((ev.clientX - start.current.mx) / rect.width) * 100;
-      const dy = ((ev.clientY - start.current.my) / rect.height) * 100;
+      if (!dragging.current || !rect.current) return;
+      const dx = ((ev.clientX - start.current.mx) / rect.current.width) * 100;
+      const dy = ((ev.clientY - start.current.my) / rect.current.height) * 100;
       setPos({ x: Math.max(0, Math.min(95, start.current.px + dx)), y: Math.max(0, Math.min(95, start.current.py + dy)) });
     };
     const onUp = () => { dragging.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
