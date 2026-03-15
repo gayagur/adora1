@@ -10,6 +10,7 @@ import AssetCard from '../components/campaign/AssetCard';
 import AddAssetPanel from '../components/campaign/AddAssetPanel';
 import AssetEditorPanel from '../components/campaign/AssetEditorPanel';
 import CampaignEditPanel from '../components/campaign/CampaignEditPanel';
+import BrandEditPanel from '../components/campaign/BrandEditPanel';
 
 const PLATFORM_ORDER = ['instagram', 'facebook', 'linkedin', 'tiktok', 'youtube', 'twitter', 'general'];
 const PLATFORM_LABELS = { instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'X / Twitter', general: 'Display' };
@@ -24,6 +25,7 @@ export default function Campaign() {
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [editingAsset, setEditingAsset] = useState(null);
   const [editingCampaign, setEditingCampaign] = useState(false);
+  const [editingBrand, setEditingBrand] = useState(false);
 
   const { data: campaign, refetch: refetchCampaign } = useQuery({
     queryKey: ['campaign', campaignId],
