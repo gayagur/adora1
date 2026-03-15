@@ -607,18 +607,19 @@ function ResizableDraggableLayer({ x, y, width, onPointerDown, onResizePointerDo
 }
 
 // ─── Plain DraggableLayer (no resize) ────────────────────────────────────────
-function DraggableLayer({ x, y, onMouseDown, children, selected, onSelect, onRemove, style = {}, noBorder = false }) {
+function DraggableLayer({ x, y, onPointerDown, children, selected, onSelect, onRemove, style = {}, noBorder = false }) {
   return (
     <div
-      onMouseDown={onMouseDown}
+      onPointerDown={onPointerDown}
       onClick={(e) => { e.stopPropagation(); onSelect?.(); }}
-      className="absolute cursor-move"
+      className="absolute cursor-move touch-none"
       style={{
         left: `${x}%`,
         top: `${y}%`,
         outline: (!noBorder && selected) ? '2px solid #7c3aed' : (!noBorder ? '1px dashed rgba(255,255,255,0.1)' : 'none'),
         outlineOffset: 4,
         borderRadius: 4,
+        touchAction: 'none',
         ...style,
       }}
     >
@@ -626,7 +627,7 @@ function DraggableLayer({ x, y, onMouseDown, children, selected, onSelect, onRem
       {!noBorder && onRemove && (
         <div
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
-          onMouseDown={e => e.stopPropagation()}
+          onPointerDown={e => e.stopPropagation()}
           style={{
             position: 'absolute', top: -8, right: -8,
             width: 16, height: 16, borderRadius: '50%',
