@@ -266,7 +266,7 @@ export default function CanvasEditor({
   const canvasContent = (
     <div className="absolute inset-0">
       {bgImage && (
-        <ResizableDraggableLayer x={imgPos.x} y={imgPos.y} width={imgWidth} onDragMouseDown={imgDrag} onResizeMouseDown={imgResize}
+        <ResizableDraggableLayer x={imgPos.x} y={imgPos.y} width={imgWidth} onPointerDown={imgPointerDown} onResizePointerDown={imgResizePointerDown}
           selected={selectedLayer === 'img'} onSelect={() => setSelectedLayer('img')} onRemove={() => setBgImage(null)} noBorder={exporting}>
           <img src={bgImage} alt="" className="w-full rounded-lg shadow-2xl block" style={{ objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
         </ResizableDraggableLayer>
@@ -275,7 +275,7 @@ export default function CanvasEditor({
         <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${bgOverlay})`, pointerEvents: 'none' }} />
       )}
       {headline && (
-        <ResizableDraggableLayer x={headlinePos.x} y={headlinePos.y} width={headlineWidth} onDragMouseDown={headlineDrag} onResizeMouseDown={headlineResize}
+        <ResizableDraggableLayer x={headlinePos.x} y={headlinePos.y} width={headlineWidth} onPointerDown={headlinePointerDown} onResizePointerDown={headlineResizePointerDown}
           selected={selectedLayer === 'headline'} onSelect={() => setSelectedLayer('headline')} onRemove={() => setHeadline('')} noBorder={exporting}>
           <div style={highlightCss}>
             {editingText === 'headline' ? (
