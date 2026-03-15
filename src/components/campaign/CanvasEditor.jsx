@@ -252,8 +252,6 @@ export default function CanvasEditor({
   const colorSwatches = [...new Set([...brandColors, '#ffffff', '#111111', '#000000', '#7c3aed', '#2563eb', '#059669', '#ef4444'])].slice(0, 8);
   const textStyle = { fontFamily: `'${font}', sans-serif` };
 
-  const [mobilePanelTab, setMobilePanelTab] = useState('source'); // 'source' | 'style'
-
   const canvasContent = (
     <div className="absolute inset-0">
       {bgImage && (
