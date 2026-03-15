@@ -164,6 +164,7 @@ Return ONLY the improved text, nothing else.`,
               imageUrl={draft.preview_image}
               logoUrl={brand?.logo_url}
               headline={draft.headline}
+              subtext={draft.ad_copy}
               cta={draft.cta}
               brandColors={brand?.brand_colors}
             />
