@@ -472,7 +472,7 @@ export default function CanvasEditor({
 
                 {/* CTA */}
                 {cta && (
-                  <DraggableLayer x={ctaPos.x} y={ctaPos.y} onMouseDown={ctaDrag}
+                   <DraggableLayer x={ctaPos.x} y={ctaPos.y} onMouseDown={ctaDrag} onTouchStart={ctaTouch}
                     selected={selectedLayer === 'cta'} onSelect={() => setSelectedLayer('cta')} onRemove={() => setCta('')} noBorder={exporting}>
                     {editingText === 'cta' ? (
                       <input autoFocus
