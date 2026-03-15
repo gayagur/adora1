@@ -122,8 +122,9 @@ export default function OnboardingStepBrand({ brandData, onUpdate, onBack, onCon
         <Field label="Brand Logo" hint="Displayed on generated ad creatives">
           <div className="flex items-start gap-4">
             {brandData.logo_url ? (
-              <div className="relative group w-20 h-20 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
-                <img src={brandData.logo_url} alt="Logo" className="max-w-full max-h-full object-contain p-2" />
+              <div className="relative group w-20 h-20 rounded-xl border border-gray-200 flex items-center justify-center overflow-hidden shrink-0"
+                   style={{ backgroundImage: 'linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%)', backgroundSize: '10px 10px', backgroundPosition: '0 0, 0 5px, 5px -5px, -5px 0px', backgroundColor: '#f9fafb' }}>
+                 <img src={brandData.logo_url} alt="Logo" className="max-w-full max-h-full object-contain p-2" />
                 <button
                   onClick={() => update('logo_url', null)}
                   className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
