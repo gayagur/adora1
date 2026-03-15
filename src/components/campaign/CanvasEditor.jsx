@@ -443,7 +443,9 @@ export default function CanvasEditor({
                     x={subtextPos.x} y={subtextPos.y}
                     width={subtextWidth}
                     onDragMouseDown={subtextDrag}
+                    onDragTouchStart={subtextTouch}
                     onResizeMouseDown={subtextResize}
+                    onResizeTouchStart={subtextResizeTouch}
                     selected={selectedLayer === 'subtext'}
                     onSelect={() => setSelectedLayer('subtext')}
                     onRemove={() => setSubtext('')}
