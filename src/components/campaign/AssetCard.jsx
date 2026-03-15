@@ -138,9 +138,9 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
                 {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
               </button>
               {asset.preview_image && (
-                <button onClick={downloadImage} className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">
-                  <Download className="w-3 h-3" />
-                </button>
+                <button onClick={downloadImage} className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors" title="Download current image">
+                    <Download className="w-3 h-3" />
+                  </button>
               )}
               {onDuplicate && (
                 <button onClick={handleDuplicate} className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">
