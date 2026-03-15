@@ -422,6 +422,67 @@ export default function CanvasEditor({
 
   return (
     <div className="fixed inset-0 z-50 bg-[#111318] flex flex-col" onClick={() => { setSelectedLayer(null); setEditingText(null); }}>
+      {/* Settings button - mobile only */}
+      <button
+        onClick={() => setShowDrawer(true)}
+        className="lg:hidden fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-violet-600 hover:bg-violet-700 text-white flex items-center justify-center shadow-lg"
+      >
+        <Settings className="w-5 h-5" />
+      </button>
+
+      {/* Drawer - mobile tools */}
+      <Drawer open={showDrawer} onOpenChange={setShowDrawer}>
+        <DrawerContent className="bg-[#111318] border-white/10">
+          <DrawerHeader className="text-white border-b border-white/10">
+            <DrawerTitle className="text-white">Design Tools</DrawerTitle>
+          </DrawerHeader>
+          <ScrollArea className="h-[70vh]">
+            <div className="p-4 space-y-4">
+              <SideSection label="Background">
+                <div className="grid grid-cols-3 gap-1">
+                  {Object.keys(BACKGROUNDS).map(k => (
+                    <button key={k} onClick={() => setBgStyle(k)}
+                      className={`px-2 py-1.5 rounded-md text-[10px] font-semibold capitalize transition-colors ${bgStyle === k ? 'bg-violet-600 text-white' : 'bg-white/5 text-white/50 hover:bg-white/15 hover:text-white'}`}>
+                      {k}
+                    </button>
+                  ))}
+                </div>
+              </SideSection>
+
+              <SideSection label="Headline">
+                <SliderControl label="Font size" min={18} max={80} value={headlineSize} onChange={setHeadlineSize} unit="px" />
+                <p className="text-[10px] text-white/40 mt-2 mb-1">Color</p>
+                <ColorSwatches colors={colorSwatches} selected={headlineColor} onSelect={setHeadlineColor} />
+              </SideSection>
+
+              <SideSection label="Subtext">
+                <SliderControl label="Font size" min={10} max={36} value={subtextSize} onChange={setSubtextSize} unit="px" />
+              </SideSection>
+
+              <SideSection label="CTA / Accent">
+                <ColorSwatches colors={colorSwatches} selected={accentColor} onSelect={setAccentColor} />
+              </SideSection>
+
+              <SideSection label="Logo">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] text-white/50">Visible</span>
+                  <button onClick={() => setShowLogo(v => !v)}
+                    className={`w-8 h-4 rounded-full transition-colors ${showLogo ? 'bg-violet-600' : 'bg-white/20'} flex items-center px-0.5`}>
+                    <div className={`w-3 h-3 rounded-full bg-white transition-transform ${showLogo ? 'translate-x-4' : 'translate-x-0'}`} />
+                  </button>
+                </div>
+                {showLogo && activeLogo && (
+                  <>
+                    <SliderControl label="Width %" min={5} max={50} value={logoScale} onChange={setLogoScale} />
+                    <SliderControl label="Opacity" min={0.1} max={1} step={0.05} value={logoOpacity} onChange={setLogoOpacity} />
+                  </>
+                )}
+              </SideSection>
+            </div>
+          </ScrollArea>
+        </DrawerContent>
+      </Drawer>
+
       {/* Top Bar */}
       <div className="h-12 flex items-center justify-between px-4 border-b border-white/10 shrink-0" onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-3">
