@@ -369,32 +369,39 @@ export default function CanvasEditor({
     setExporting(true);
     setSelectedLayer(null);
     setEditingText(null);
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise(r => setTimeout(r, 150));
     
-    // Add font styles to canvas element temporarily
-    const originalStyle = canvasRef.current.style.cssText;
-    const fontLink = document.createElement('style');
     const families = UNIQUE_FONTS.map(f => f.value.replace(/ /g, '+')).join('&family=');
-    fontLink.textContent = `@import url('https://fonts.googleapis.com/css2?family=${families}:wght@400;600;700;800&display=swap');`;
-    canvasRef.current.appendChild(fontLink);
+    const fontUrl = `https://fonts.googleapis.com/css2?family=${families}:wght@400;600;700;800&display=swap`;
     
     const canvas = await html2canvas(canvasRef.current, {
-      useCORS: true, allowTaint: false, scale: 2, logging: false,
-      backgroundColor: null, imageTimeout: 15000,
+      useCORS: true,
+      allowTaint: true,
+      scale: 2,
+      logging: false,
+      backgroundColor: null,
+      imageTimeout: 30000,
       onclone: (clonedDoc) => {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = `https://fonts.googleapis.com/css2?family=${families}:wght@400;600;700;800&display=swap`;
+        link.href = fontUrl;
         clonedDoc.head.appendChild(link);
+        
+        const style = document.createElement('style');
+        style.textContent = `
+          * { outline: none !important; border: none !important; }
+          [class*="outline"] { outline: none !important; }
+        `;
+        clonedDoc.head.appendChild(style);
       }
     });
     
-    canvasRef.current.removeChild(fontLink);
-    canvasRef.current.style.cssText = originalStyle;
-    
     const url = canvas.toDataURL('image/png');
     const a = document.createElement('a');
-    a.href = url; a.download = 'ad-creative.png'; a.click();
+    a.href = url;
+    a.download = 'ad-creative.png';
+    a.click();
+    URL.revokeObjectURL(url);
     setExporting(false);
   };
 
