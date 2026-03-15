@@ -509,7 +509,7 @@ export default function CanvasEditor({
         </div>
 
         {/* RIGHT SIDEBAR */}
-        <div className="w-60 shrink-0 border-l border-white/10 overflow-y-auto p-3 space-y-4" onClick={e => e.stopPropagation()}>
+        <div className="hidden lg:flex w-60 shrink-0 border-l border-white/10 overflow-y-auto p-3 space-y-4 flex-col" onClick={e => e.stopPropagation()}>
 
           <SideSection label="Background">
             <div className="grid grid-cols-3 gap-1">
