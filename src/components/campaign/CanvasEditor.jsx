@@ -187,6 +187,7 @@ export default function CanvasEditor({
   const [exporting, setExporting] = useState(false);
   const [editingText, setEditingText] = useState(null);
   const [imgScale, setImgScale] = useState(48);
+  const [mobilePanelTab, setMobilePanelTab] = useState('source');
 
   // Highlight
   const [highlightStyle, setHighlightStyle] = useState('none');
