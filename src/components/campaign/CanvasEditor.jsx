@@ -39,27 +39,25 @@ function useDrag(initialPos, canvasRef) {
 
   const onPointerDown = useCallback((e) => {
     e.stopPropagation();
-    e.preventDefault();
+    if (e.pointerType !== 'mouse') e.preventDefault();
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     dragging.current = true;
-    const clientX = e.clientX || e.touches?.[0]?.clientX;
-    const clientY = e.clientY || e.touches?.[0]?.clientY;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
     start.current = { mx: clientX, my: clientY, px: pos.x, py: pos.y };
 
     const onMove = (ev) => {
       if (!dragging.current) return;
-      const x = ev.clientX || ev.touches?.[0]?.clientX;
-      const y = ev.clientY || ev.touches?.[0]?.clientY;
+      const x = ev.clientX;
+      const y = ev.clientY;
       const dx = ((x - start.current.mx) / rect.width) * 100;
       const dy = ((y - start.current.my) / rect.height) * 100;
       setPos({ x: Math.max(0, Math.min(95, start.current.px + dx)), y: Math.max(0, Math.min(95, start.current.py + dy)) });
     };
-    const onUp = () => { dragging.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('touchmove', onMove); window.removeEventListener('mouseup', onUp); window.removeEventListener('touchend', onUp); };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('touchmove', onMove, { passive: false });
-    window.addEventListener('mouseup', onUp);
-    window.addEventListener('touchend', onUp);
+    const onUp = () => { dragging.current = false; document.removeEventListener('pointermove', onMove); document.removeEventListener('pointerup', onUp); };
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
   }, [pos, canvasRef]);
 
   return [pos, setPos, onPointerDown];
