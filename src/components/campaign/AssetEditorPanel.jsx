@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { X, RefreshCw, Loader2, Upload, Wand2, Scissors, Zap, Heart, ChevronDown } from 'lucide-react';
+import { X, RefreshCw, Loader2, Upload, Wand2, Scissors, Zap, Heart, ChevronDown, Layers } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import AdCanvas from './AdCanvas';
 
 const IMPROVE_ACTIONS = [
   { label: 'Shorten', icon: Scissors, instruction: 'Make this copy shorter and punchier. Keep the core message.' },
@@ -18,6 +19,7 @@ export default function AssetEditorPanel({ asset, campaign, brand, onSave, onClo
   const [regeneratingImage, setRegeneratingImage] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [improvingField, setImprovingField] = useState(null);
+  const [activeTab, setActiveTab] = useState('edit'); // 'edit' | 'canvas'
 
   const updateField = (k, v) => setDraft(prev => ({ ...prev, [k]: v }));
 
