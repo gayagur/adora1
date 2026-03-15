@@ -31,32 +31,57 @@ function useGoogleFonts() {
   }, []);
 }
 
-// ─── Draggable hook ───────────────────────────────────────────────────────────
+// ─── Draggable hook (supports both mouse and touch) ───────────────────────────
 function useDrag(initialPos, canvasRef) {
   const [pos, setPos] = useState(initialPos);
   const dragging = useRef(false);
   const start = useRef({ mx: 0, my: 0, px: 0, py: 0 });
 
-  const onMouseDown = useCallback((e) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const startDrag = useCallback((clientX, clientY) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     dragging.current = true;
-    start.current = { mx: e.clientX, my: e.clientY, px: pos.x, py: pos.y };
-
-    const onMove = (ev) => {
-      if (!dragging.current) return;
-      const dx = ((ev.clientX - start.current.mx) / rect.width) * 100;
-      const dy = ((ev.clientY - start.current.my) / rect.height) * 100;
-      setPos({ x: Math.max(0, Math.min(95, start.current.px + dx)), y: Math.max(0, Math.min(95, start.current.py + dy)) });
-    };
-    const onUp = () => { dragging.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
+    start.current = { mx: clientX, my: clientY, px: pos.x, py: pos.y };
   }, [pos, canvasRef]);
 
-  return [pos, setPos, onMouseDown];
+  const onDragMove = useCallback((clientX, clientY) => {
+    if (!dragging.current) return;
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const dx = ((clientX - start.current.mx) / rect.width) * 100;
+    const dy = ((clientY - start.current.my) / rect.height) * 100;
+    setPos({ x: Math.max(0, Math.min(95, start.current.px + dx)), y: Math.max(0, Math.min(95, start.current.py + dy)) });
+  }, [canvasRef]);
+
+  const onDragEnd = useCallback(() => {
+    dragging.current = false;
+  }, []);
+
+  const onMouseDown = useCallback((e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    startDrag(e.clientX, e.clientY);
+    const onMove = (ev) => onDragMove(ev.clientX, ev.clientY);
+    const onUp = () => { onDragEnd(); window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, [startDrag, onDragMove, onDragEnd]);
+
+  const onTouchStart = useCallback((e) => {
+    e.stopPropagation();
+    const touch = e.touches[0];
+    if (!touch) return;
+    startDrag(touch.clientX, touch.clientY);
+    const onMove = (ev) => {
+      const t = ev.touches[0];
+      if (t) onDragMove(t.clientX, t.clientY);
+    };
+    const onUp = () => { onDragEnd(); window.removeEventListener('touchmove', onMove); window.removeEventListener('touchend', onUp); };
+    window.addEventListener('touchmove', onMove);
+    window.addEventListener('touchend', onUp);
+  }, [startDrag, onDragMove, onDragEnd]);
+
+  return [pos, setPos, onMouseDown, onTouchStart];
 }
 
 // ─── Resize hook (returns resize handle props + current width%) ───────────────
