@@ -47,6 +47,9 @@ export default function Campaign() {
   });
 
   const generateAsset = async (assetId, option, camp, br) => {
+    const isCarousel = option.asset_type === 'carousel';
+    const imageCount = isCarousel ? 4 : 1;
+
     const copyResult = await base44.integrations.Core.InvokeLLM({
       prompt: `You are a creative director. Generate a single ${option.label || option.asset_type} for this campaign.
 
@@ -86,14 +89,21 @@ Generate:
       }
     });
 
-    const imageResult = await base44.integrations.Core.GenerateImage({
-      prompt: `${copyResult.visual_prompt}. Brand colors: ${br?.brand_colors?.join(', ')}. Premium marketing creative. No text overlays. High quality.`,
-      existing_image_urls: br?.image_assets?.length > 0 ? br.image_assets.slice(0, 2) : undefined
-    });
+    const imagePrompt = `${copyResult.visual_prompt}. Brand colors: ${br?.brand_colors?.join(', ')}. Premium marketing creative. No text overlays. High quality.`;
+    const images = [];
+    
+    for (let i = 0; i < imageCount; i++) {
+      const imageResult = await base44.integrations.Core.GenerateImage({
+        prompt: imagePrompt,
+        existing_image_urls: br?.image_assets?.length > 0 ? br.image_assets.slice(0, 2) : undefined
+      });
+      images.push(imageResult.url);
+    }
 
     await base44.entities.CampaignAsset.update(assetId, {
       ...copyResult,
-      preview_image: imageResult.url,
+      preview_image: images[0],
+      carousel_images: isCarousel ? images : undefined,
       status: 'ready',
     });
 
