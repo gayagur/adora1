@@ -542,7 +542,7 @@ export default function CanvasEditor({
                     {editingText === 'subtext' ? (
                       <textarea autoFocus
                         className="bg-transparent outline-none resize-none leading-snug w-full"
-                        style={{ color: headlineColor === '#ffffff' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)', fontSize: subtextSize, ...textStyle }}
+                        style={{ color: headlineColor === '#ffffff' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)', fontSize: subtextSize, ...bodyFontStyle }}
                         value={subtext}
                         onChange={e => setSubtext(e.target.value)}
                         onBlur={() => setEditingText(null)}
@@ -551,7 +551,7 @@ export default function CanvasEditor({
                       />
                     ) : (
                       <p className="leading-snug cursor-text w-full"
-                        style={{ color: headlineColor === '#ffffff' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)', fontSize: subtextSize, ...textStyle }}
+                        style={{ color: headlineColor === '#ffffff' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)', fontSize: subtextSize, ...bodyFontStyle }}
                         onDoubleClick={(e) => { e.stopPropagation(); setEditingText('subtext'); setSelectedLayer('subtext'); }}
                       >{subtext}</p>
                     )}
