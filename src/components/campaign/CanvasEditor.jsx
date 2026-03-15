@@ -160,11 +160,11 @@ export default function CanvasEditor({
   const [highlightRadius, setHighlightRadius] = useState(6);
 
   // Drag positions
-  const [headlinePos, setHeadlinePos, headlineDrag] = useDrag({ x: 8, y: 35 }, canvasRef);
-  const [subtextPos, setSubtextPos, subtextDrag] = useDrag({ x: 8, y: 52 }, canvasRef);
-  const [ctaPos, setCtaPos, ctaDrag] = useDrag({ x: 8, y: 66 }, canvasRef);
+  const [headlinePos, setHeadlinePos, headlineDrag] = useDrag({ x: 5, y: 38 }, canvasRef);
+  const [subtextPos, setSubtextPos, subtextDrag] = useDrag({ x: 5, y: 62 }, canvasRef);
+  const [ctaPos, setCtaPos, ctaDrag] = useDrag({ x: 5, y: 78 }, canvasRef);
   const [logoPos, setLogoPos, logoDrag] = useDrag({ x: 4, y: 4 }, canvasRef);
-  const [imgPos, setImgPos, imgDrag] = useDrag({ x: 52, y: 0 }, canvasRef);
+  const [imgPos, setImgPos, imgDrag] = useDrag({ x: 50, y: 2 }, canvasRef);
 
   // Resize widths (% of canvas)
   const [headlineWidth, setHeadlineWidth, headlineResize] = useResize(45, canvasRef);
