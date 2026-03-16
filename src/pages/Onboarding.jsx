@@ -37,20 +37,32 @@ export default function Onboarding() {
       : 'https://' + (targetUrl || url).trim();
 
     setAnalyzing(true);
+
+    // Take a screenshot first so the LLM can visually extract colors
+    let screenshotUrl = null;
+    try {
+      const ssRes = await base44.functions.invoke('captureScreenshots', { urls: [cleanUrl] });
+      screenshotUrl = ssRes?.data?.screenshots?.[0] || null;
+    } catch (e) {
+      // screenshot failed — continue without it
+    }
+
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `You are a brand analyst. Analyze this website and extract brand information.
 URL: ${cleanUrl}
+${screenshotUrl ? '\nA screenshot of the homepage is attached. Use it to accurately identify the brand colors, logo, and visual style.' : ''}
 
 Extract:
 - brand_name: company/brand name
-- brand_colors: 3-5 EXACT hex codes used on the website. Look at the actual CSS/computed styles for primary buttons, headers, backgrounds, links, and key UI elements. Do NOT guess — extract the real hex values. Format: ["#RRGGBB", ...]
-- logo_url: the direct URL of the brand logo image. Look specifically for: <img> tags inside <header> or <nav> with "logo" in class/id/alt/src, or a linked image from the home page header. Prefer SVG or PNG. Return a full absolute URL or null.
-- description: what the product or service does (2-3 sentences, clear and specific)
+- brand_colors: 3-5 EXACT hex color codes that represent the brand's visual identity. Look at: primary buttons, headings, nav bar background, hero section, links, and key accents. Return the actual dominant colors you see, NOT generic guesses. Format: ["#RRGGBB", ...]
+- logo_url: the direct URL of the brand logo image (full absolute URL or null)
+- description: what the product or service does (2-3 sentences)
 - target_audience: precise description of who they serve
-- tone_of_voice: communication style (e.g. "Professional and authoritative", "Casual and friendly")
+- tone_of_voice: communication style (e.g. "Professional and authoritative")
 - key_messages: array of 4-5 distinct value propositions or marketing messages
 - industry: the industry/vertical (e.g. "SaaS", "E-commerce", "Fintech")`,
       add_context_from_internet: true,
+      file_urls: screenshotUrl ? [screenshotUrl] : undefined,
       response_json_schema: {
         type: "object",
         properties: {
