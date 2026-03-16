@@ -21,8 +21,8 @@ function buildScreenshotUrl(url, options = {}) {
     block_ads: 'true',
     block_cookie_banners: 'true',
     block_trackers: 'true',
-    delay: '2',
-    timeout: '25',
+    delay: '3',
+    timeout: '40',
   });
 
   if (options.full_page) {
