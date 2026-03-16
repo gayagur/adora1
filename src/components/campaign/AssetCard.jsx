@@ -174,6 +174,7 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
         ) : (
           <div className="h-8 rounded-lg bg-gray-100 animate-pulse" />
         )}
+        {isStuck && null}
       </div>
     </motion.div>
   );
