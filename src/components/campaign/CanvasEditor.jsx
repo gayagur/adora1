@@ -646,8 +646,8 @@ export default function CanvasEditor({
                         />
                       ) : (
                         <p className="font-bold leading-tight cursor-text w-full"
-                          style={{ color: headlineColor, fontSize: headlineSize, lineHeight: 1.2, ...headlineFontStyle,
-                            textShadow: highlightStyle === 'none' && (bgStyle === 'dark' || bgStyle === 'overlay') ? '0 2px 16px rgba(0,0,0,0.6)' : 'none' }}
+                          style={{ color: headlineColor, fontSize: headlineSize, lineHeight: 1.2, ...headlineFontStyle, ...computedStroke,
+                            textShadow: textShadowEnabled ? computedTextShadow : (highlightStyle === 'none' && (bgStyle === 'dark' || bgStyle === 'overlay') ? '0 2px 16px rgba(0,0,0,0.6)' : 'none') }}
                           onDoubleClick={(e) => { e.stopPropagation(); setEditingText('headline'); setSelectedLayer('headline'); }}
                         >{headline}</p>
                       )}
