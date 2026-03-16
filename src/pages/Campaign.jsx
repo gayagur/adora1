@@ -105,11 +105,17 @@ Generate:
 
     const images = [firstImageResult.url];
 
-    // For carousel, generate one more image with the refined prompt
+    // For carousel, generate 3 more images that tell a sequential story
     if (isCarousel) {
-      const refinedPrompt = `${copyResult.visual_prompt}. Brand colors: ${br?.brand_colors?.join(', ')}. Premium marketing creative. No text overlays. High quality.`;
-      const extra = await base44.integrations.Core.GenerateImage({ prompt: refinedPrompt, existing_image_urls: existingRefs });
-      images.push(extra.url);
+      const carouselFrames = [
+        `Slide 2 of 4 - Problem statement visual: ${copyResult.visual_prompt}. Brand colors: ${br?.brand_colors?.join(', ')}. No text. High quality.`,
+        `Slide 3 of 4 - Solution/benefit visual: ${copyResult.visual_prompt}. Brand colors: ${br?.brand_colors?.join(', ')}. No text. High quality.`,
+        `Slide 4 of 4 - Call to action / result visual: ${copyResult.visual_prompt}. Brand colors: ${br?.brand_colors?.join(', ')}. No text. High quality.`,
+      ];
+      const extraImages = await Promise.all(
+        carouselFrames.map(prompt => base44.integrations.Core.GenerateImage({ prompt, existing_image_urls: existingRefs }))
+      );
+      images.push(...extraImages.map(r => r.url));
     }
 
     await base44.entities.CampaignAsset.update(assetId, {
