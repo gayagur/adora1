@@ -34,6 +34,7 @@ const AuthenticatedApp = () => {
       <Route path="/Onboarding" element={<Onboarding />} />
       <Route path="/Dashboard" element={<Dashboard />} />
       <Route path="/Campaign" element={<Campaign />} />
+      <Route path="/Gallery" element={<Gallery />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

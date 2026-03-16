@@ -25,6 +25,10 @@ export default function AppShell({ children }) {
               <LayoutGrid className="w-4 h-4" />
               Campaigns
             </NavLink>
+            <NavLink to="/Gallery" active={location.pathname === '/Gallery'}>
+              <Images className="w-4 h-4" />
+              Gallery
+            </NavLink>
           </nav>
 
           <div className="ml-auto">
