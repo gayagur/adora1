@@ -4,12 +4,9 @@ const ACCESS_KEY = Deno.env.get('SCREENSHOTONE_ACCESS_KEY');
 
 const SECTIONS = [
   { label: 'Hero',         scroll_to: 0,    full_page: false },
-  { label: 'Product',      scroll_to: 700,  full_page: false },
-  { label: 'Features',     scroll_to: 1400, full_page: false },
-  { label: 'Social Proof', scroll_to: 2100, full_page: false },
-  { label: 'Pricing',      scroll_to: 2800, full_page: false },
-  { label: 'About',        scroll_to: 3500, full_page: false },
-  { label: 'CTA',          scroll_to: 4200, full_page: false },
+  { label: 'Product',      scroll_to: 800,  full_page: false },
+  { label: 'Features',     scroll_to: 1600, full_page: false },
+  { label: 'Social Proof', scroll_to: 2400, full_page: false },
   { label: 'Full Page',    scroll_to: 0,    full_page: true  },
 ];
 
