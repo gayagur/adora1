@@ -355,6 +355,14 @@ export default function CanvasEditor({
   const [subtextWidth, setSubtextWidth, subtextResize, subtextResizeTouch] = useResize(38, canvasRef);
   const [imgWidth, setImgWidth, imgResize, imgResizeTouch] = useResize(48, canvasRef);
 
+  const computedTextShadow = textShadowEnabled
+    ? `${textShadowOffsetX}px ${textShadowOffsetY}px ${textShadowBlur}px ${textShadowColor}`
+    : 'none';
+
+  const computedStroke = textStrokeEnabled
+    ? { WebkitTextStroke: `${textStrokeWidth}px ${textStrokeColor}` }
+    : {};
+
   const bgObj = bgStyle === 'brand'
     ? { background: `linear-gradient(135deg, ${accentColor}cc, ${accentColor}44)` }
     : BACKGROUNDS[bgStyle] || BACKGROUNDS.dark;
