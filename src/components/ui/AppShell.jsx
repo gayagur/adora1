@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Sparkles, LayoutGrid, Plus } from 'lucide-react';
+import { Sparkles, LayoutGrid, Plus, Images } from 'lucide-react';
 
 export default function AppShell({ children }) {
   const location = useLocation();
