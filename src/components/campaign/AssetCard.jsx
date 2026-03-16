@@ -73,7 +73,19 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
     >
       {/* Image */}
       <div className="relative bg-gray-50 aspect-square">
-        {isGenerating ? (
+        {isStuck ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 text-center">
+            <p className="text-xs text-gray-400">Generation timed out</p>
+            <button
+              onClick={async (e) => { e.stopPropagation(); setRegenerating(true); await onRegenerate(asset.id); setRegenerating(false); }}
+              disabled={regenerating}
+              className="flex items-center gap-1.5 h-8 px-3 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-medium transition-colors disabled:opacity-50"
+            >
+              {regenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+              Retry
+            </button>
+          </div>
+        ) : isGenerating ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
             <Loader2 className="w-7 h-7 text-violet-400 animate-spin" />
             <p className="text-xs text-gray-400">Generating…</p>
