@@ -852,6 +852,42 @@ export default function CanvasEditor({
             )}
           </SideSection>
 
+          <SideSection label="Text Shadow">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] text-white/50">Enable</span>
+              <button onClick={() => setTextShadowEnabled(v => !v)}
+                className={`w-8 h-4 rounded-full transition-colors ${textShadowEnabled ? 'bg-violet-600' : 'bg-white/20'} flex items-center px-0.5`}>
+                <div className={`w-3 h-3 rounded-full bg-white transition-transform ${textShadowEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
+              </button>
+            </div>
+            {textShadowEnabled && (
+              <>
+                <p className="text-[10px] text-white/40 mb-1">Color</p>
+                <ColorSwatches colors={['#000000', '#ffffff', '#1e1e1e', ...brandColors]} selected={textShadowColor} onSelect={setTextShadowColor} />
+                <SliderControl label="Blur" min={0} max={30} value={textShadowBlur} onChange={setTextShadowBlur} unit="px" />
+                <SliderControl label="Offset X" min={-20} max={20} value={textShadowOffsetX} onChange={setTextShadowOffsetX} unit="px" />
+                <SliderControl label="Offset Y" min={-20} max={20} value={textShadowOffsetY} onChange={setTextShadowOffsetY} unit="px" />
+              </>
+            )}
+          </SideSection>
+
+          <SideSection label="Text Stroke">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] text-white/50">Enable</span>
+              <button onClick={() => setTextStrokeEnabled(v => !v)}
+                className={`w-8 h-4 rounded-full transition-colors ${textStrokeEnabled ? 'bg-violet-600' : 'bg-white/20'} flex items-center px-0.5`}>
+                <div className={`w-3 h-3 rounded-full bg-white transition-transform ${textStrokeEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
+              </button>
+            </div>
+            {textStrokeEnabled && (
+              <>
+                <p className="text-[10px] text-white/40 mb-1">Color</p>
+                <ColorSwatches colors={['#000000', '#ffffff', '#1e1e1e', ...brandColors]} selected={textStrokeColor} onSelect={setTextStrokeColor} />
+                <SliderControl label="Width" min={0.5} max={8} step={0.5} value={textStrokeWidth} onChange={setTextStrokeWidth} unit="px" />
+              </>
+            )}
+          </SideSection>
+
           <SideSection label="Subtext">
             <SliderControl label="Font size" min={10} max={36} value={subtextSize} onChange={setSubtextSize} unit="px" />
           </SideSection>
