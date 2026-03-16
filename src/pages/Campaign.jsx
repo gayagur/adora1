@@ -90,15 +90,17 @@ Generate:
     });
 
     const imagePrompt = `${copyResult.visual_prompt}. Brand colors: ${br?.brand_colors?.join(', ')}. Premium marketing creative. No text overlays. High quality.`;
-    const images = [];
-    
-    for (let i = 0; i < imageCount; i++) {
-      const imageResult = await base44.integrations.Core.GenerateImage({
-        prompt: imagePrompt,
-        existing_image_urls: br?.image_assets?.length > 0 ? br.image_assets.slice(0, 2) : undefined
-      });
-      images.push(imageResult.url);
-    }
+    const existingRefs = br?.image_assets?.length > 0 ? br.image_assets.slice(0, 2) : undefined;
+
+    const imageResults = await Promise.all(
+      Array.from({ length: imageCount }, () =>
+        base44.integrations.Core.GenerateImage({
+          prompt: imagePrompt,
+          existing_image_urls: existingRefs
+        })
+      )
+    );
+    const images = imageResults.map(r => r.url);
 
     await base44.entities.CampaignAsset.update(assetId, {
       ...copyResult,
