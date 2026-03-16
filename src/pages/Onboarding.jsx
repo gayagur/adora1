@@ -41,8 +41,8 @@ export default function Onboarding() {
     // Take a screenshot first so the LLM can visually extract colors
     let screenshotUrl = null;
     try {
-      const ssRes = await base44.functions.invoke('captureScreenshots', { urls: [cleanUrl] });
-      screenshotUrl = ssRes?.data?.screenshots?.[0] || null;
+      const ssRes = await base44.functions.invoke('captureScreenshots', { url: cleanUrl });
+      screenshotUrl = ssRes?.data?.screenshots?.[0]?.image_url || null;
     } catch (e) {
       // screenshot failed — continue without it
     }
