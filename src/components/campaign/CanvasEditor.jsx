@@ -324,6 +324,18 @@ export default function CanvasEditor({
   const [saving, setSaving] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
 
+  // Text Shadow
+  const [textShadowEnabled, setTextShadowEnabled] = useState(false);
+  const [textShadowColor, setTextShadowColor] = useState('#000000');
+  const [textShadowBlur, setTextShadowBlur] = useState(8);
+  const [textShadowOffsetX, setTextShadowOffsetX] = useState(2);
+  const [textShadowOffsetY, setTextShadowOffsetY] = useState(2);
+
+  // Text Stroke
+  const [textStrokeEnabled, setTextStrokeEnabled] = useState(false);
+  const [textStrokeColor, setTextStrokeColor] = useState('#000000');
+  const [textStrokeWidth, setTextStrokeWidth] = useState(1);
+
   // Highlight
   const [highlightStyle, setHighlightStyle] = useState('none');
   const [highlightColor, setHighlightColor] = useState('#000000');
