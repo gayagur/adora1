@@ -132,7 +132,9 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
 
       {/* Content */}
       <div className="p-4">
-        {!isGenerating ? (
+        {isStuck ? (
+          <div className="h-8 rounded-lg bg-gray-100" />
+        ) : !isGenerating ? (
           <>
             <h3 className="font-semibold text-gray-900 text-sm leading-snug mb-1">{asset.headline}</h3>
             <p className="text-xs text-gray-400 leading-relaxed mb-3 line-clamp-2">{asset.ad_copy}</p>
