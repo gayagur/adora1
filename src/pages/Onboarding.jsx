@@ -92,14 +92,18 @@ Extract:
 
   const handleVisualsConfirm = async (visuals) => {
     setSelectedVisuals(visuals);
-    // Merge visuals into brand image_assets
     const merged = { ...brandData, image_assets: [...(brandData.image_assets || []), ...visuals] };
     setBrandData(merged);
     const saved = await base44.entities.Brand.create(merged);
     setBrandId(saved.id);
     setStep(3);
+  };
+
+  const handleStrategyConfirm = async (strategy) => {
+    setStrategyData(strategy);
+    setStep(4);
     setGeneratingThemes(true);
-    await generateThemes(saved.id, merged);
+    await generateThemes(brandId, brandData, strategy);
   };
 
   const generateThemes = async (bId, brand) => {
