@@ -10,7 +10,9 @@ import AppShell from '../components/ui/AppShell';
 
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [expandedBrand, setExpandedBrand] = useState(null);
+  const [generatingFor, setGeneratingFor] = useState(null); // brandId being processed
   const { data: campaigns = [], isLoading: loadingCampaigns } = useQuery({
     queryKey: ['all-campaigns'],
     queryFn: () => base44.entities.AdCampaign.list('-created_date', 100),
