@@ -21,7 +21,7 @@ export function CanvasLayer({
         cursor: exporting ? 'default' : 'move',
         outline: exporting ? 'none' : selected
           ? '1.5px solid rgba(124,58,237,0.8)'
-          : '1px dashed rgba(255,255,255,0.12)',
+          : 'none',
         outlineOffset: 3,
         borderRadius: 4,
         ...style,
