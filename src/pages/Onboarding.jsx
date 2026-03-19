@@ -8,9 +8,10 @@ import OnboardingStepURL from '../components/onboarding/OnboardingStepURL';
 import OnboardingStepBrand from '../components/onboarding/OnboardingStepBrand';
 import OnboardingStepVisuals from '../components/onboarding/OnboardingStepVisuals';
 import OnboardingStepThemes from '../components/onboarding/OnboardingStepThemes';
+import OnboardingStepStrategy from '../components/onboarding/OnboardingStepStrategy';
 
-// Steps: 0=URL, 1=Brand, 2=Visuals, 3=Themes
-const STEPS = ['Analyze', 'Brand Profile', 'Visuals', 'Campaigns'];
+// Steps: 0=URL, 1=Brand, 2=Visuals, 3=Strategy, 4=Themes
+const STEPS = ['Analyze', 'Brand', 'Visuals', 'Strategy', 'Campaigns'];
 
 export default function Onboarding() {
   const navigate = useNavigate();
