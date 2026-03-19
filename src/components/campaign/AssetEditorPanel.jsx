@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { X, RefreshCw, Loader2, Upload, Wand2, Scissors, Zap, Heart, ChevronDown, Layers } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import CanvasEditor from './CanvasEditor';
+import PremiumCanvasEditor from '../canvas/PremiumCanvasEditor';
 
 const IMPROVE_ACTIONS = [
   { label: 'Shorten', icon: Scissors, instruction: 'Make this copy shorter and punchier. Keep the core message.' },
