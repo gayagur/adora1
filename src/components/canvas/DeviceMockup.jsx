@@ -85,9 +85,8 @@ export function IphoneMockup({ imageUrl, rotation = 3, shadowIntensity = 0.4 }) 
             <img
               src={imageUrl}
               alt="Screen"
-              className="w-full h-full object-contain object-center"
+              className="w-full h-full object-cover object-top"
               crossOrigin="anonymous"
-              style={{ imageRendering: 'high-quality' }}
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-b from-[#1a1a2e] to-[#16213e]" />
