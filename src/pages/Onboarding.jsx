@@ -106,7 +106,7 @@ Extract:
     await generateThemes(brandId, brandData, strategy);
   };
 
-  const generateThemes = async (bId, brand) => {
+  const generateThemes = async (bId, brand, strategy = null) => {
     // If social links provided, analyze visual style first
     let visualStyleNotes = brand.visual_style_notes || '';
     const socialLinks = [brand.social_instagram, brand.social_facebook, brand.social_linkedin].filter(Boolean);
