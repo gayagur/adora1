@@ -26,6 +26,7 @@ export default function Onboarding() {
   const [brandData, setBrandData] = useState(null);
   const [brandId, setBrandId] = useState(null);
   const [selectedVisuals, setSelectedVisuals] = useState([]);
+  const [strategyData, setStrategyData] = useState(null);
   const [themes, setThemes] = useState([]);
 
   useEffect(() => {
