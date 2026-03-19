@@ -122,11 +122,13 @@ const defaultLayerStyle = (type, brandColor, mode) => {
       fontSize: 56, fontWeight: 700, lineHeight: 1.05, letterSpacing: -0.025,
       color: isDark ? '#FFFFFF' : '#0A0A0A', align: 'left',
       bgEnabled: false, bgColor: '#000000', bgOpacity: 0.4,
+      strokeEnabled: false, strokeColor: '#000000', strokeWidth: 2,
     },
     subtext: {
       fontSize: 18, fontWeight: 400, lineHeight: 1.6, letterSpacing: -0.01,
       color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)', align: 'left',
       bgEnabled: false, bgColor: '#000000', bgOpacity: 0.3,
+      strokeEnabled: false, strokeColor: '#000000', strokeWidth: 1,
     },
     cta: {
       fontSize: 15, fontWeight: 600, lineHeight: 1, letterSpacing: -0.01,
