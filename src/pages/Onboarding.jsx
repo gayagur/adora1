@@ -224,8 +224,13 @@ For EACH theme return:
                 <OnboardingStepVisuals brandData={brandData} onBack={() => setStep(1)} onConfirm={handleVisualsConfirm} />
               </motion.div>
             )}
-            {step === 3 && (
+            {step === 3 && brandData && (
               <motion.div key="s3" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}>
+                <OnboardingStepStrategy brandData={brandData} onBack={() => setStep(2)} onConfirm={handleStrategyConfirm} />
+              </motion.div>
+            )}
+            {step === 4 && (
+              <motion.div key="s4" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}>
                 <OnboardingStepThemes themes={themes} generating={generatingThemes} brandName={brandData?.brand_name} onOpen={handleOpenCampaign} />
               </motion.div>
             )}
