@@ -205,7 +205,19 @@ For EACH theme return:
 
                         {/* Campaigns */}
                         <div>
-                          <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Campaigns</h3>
+                          <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500">Campaigns</h3>
+                            <button
+                              onClick={() => generateCampaignsForBrand(brand)}
+                              disabled={generatingFor === brandId}
+                              className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-semibold transition-colors disabled:opacity-60"
+                            >
+                              {generatingFor === brandId
+                                ? <><Loader2 className="w-3 h-3 animate-spin" /> Generating…</>
+                                : <><Sparkles className="w-3 h-3" /> New Campaigns</>
+                              }
+                            </button>
+                          </div>
                           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                             {bCampaigns.map((camp, i) => (
                               <motion.div
