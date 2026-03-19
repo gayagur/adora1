@@ -30,6 +30,61 @@ export default function Dashboard() {
   const assetCountMap = {};
   assets.forEach(a => { assetCountMap[a.campaign_id] = (assetCountMap[a.campaign_id] || 0) + 1; });
 
+  const generateCampaignsForBrand = async (brand) => {
+    setGeneratingFor(brand.id);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are a senior marketing strategist. Generate 6 NEW and DIFFERENT campaign themes for this brand.
+Avoid repeating themes that are too similar to generic ones — be creative and specific.
+
+Brand: ${brand.brand_name}
+Product/Service: ${brand.description}
+Audience: ${brand.target_audience}
+Tone: ${brand.tone_of_voice}
+Key Messages: ${brand.key_messages?.join(', ')}
+Industry: ${brand.industry}${brand.visual_style_notes ? `\n\nBrand Visual Style:\n${brand.visual_style_notes}` : ''}
+
+Generate 6 strategic campaign themes with fresh angles.
+For EACH theme return:
+- title, strategy_angle, summary, target_audience, tone, key_message, visual_direction, suggested_channels`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            themes: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  strategy_angle: { type: "string" },
+                  summary: { type: "string" },
+                  target_audience: { type: "string" },
+                  tone: { type: "string" },
+                  key_message: { type: "string" },
+                  visual_direction: { type: "string" },
+                  suggested_channels: { type: "array", items: { type: "string" } }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      const saved = await Promise.all(
+        (result.themes || []).map(t => base44.entities.AdCampaign.create({ ...t, brand_id: brand.id }))
+      );
+
+      // Navigate to the first new campaign
+      if (saved.length > 0) {
+        toast.success(`${saved.length} new campaigns generated!`);
+        navigate(`/Campaign?id=${saved[0].id}&brand=${brand.id}`);
+      }
+    } catch (e) {
+      toast.error('Failed to generate campaigns');
+    }
+    setGeneratingFor(null);
+  };
+
   // Group campaigns by brand
   const grouped = {};
   campaigns.forEach(c => {
