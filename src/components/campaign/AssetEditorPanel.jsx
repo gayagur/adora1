@@ -109,7 +109,7 @@ Return ONLY the improved text, nothing else.`,
 
   if (showCanvasEditor) {
     return (
-      <CanvasEditor
+      <PremiumCanvasEditor
         initialHeadline={draft.headline}
         initialSubtext={draft.ad_copy}
         initialCta={draft.cta}
