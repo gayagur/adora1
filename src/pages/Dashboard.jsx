@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import { Plus, ArrowRight, Globe, Layers, ChevronDown } from 'lucide-react';
-import { format } from 'date-fns';
-import { motion } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
+import { Plus, ArrowRight, Globe, Layers, ChevronDown, Sparkles, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import AppShell from '../components/ui/AppShell';
 
 
