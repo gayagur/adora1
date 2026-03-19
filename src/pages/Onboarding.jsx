@@ -151,10 +151,11 @@ Product/Service: ${brand.description}
 Audience: ${brand.target_audience}
 Tone: ${brand.tone_of_voice}
 Key Messages: ${brand.key_messages?.join(', ')}
-Industry: ${brand.industry}${visualStyleNotes ? `\n\nBrand Visual Style (from social analysis):\n${visualStyleNotes}\n\nIMPORTANT: Use the visual style notes above to inform the visual_direction field for each campaign theme.` : ''}
+Industry: ${brand.industry}${visualStyleNotes ? `\n\nBrand Visual Style (from social analysis):\n${visualStyleNotes}\n\nIMPORTANT: Use the visual style notes above to inform the visual_direction field for each campaign theme.` : ''}${strategy?.intent ? `\n\nUser Campaign Intent:\n"${strategy.intent}"` : ''}${strategy?.content ? `\n\nSource Content (use this as the primary basis for messaging):\n${strategy.content.slice(0, 2000)}` : ''}${strategy?.hooks?.length > 0 ? `\n\nPre-generated Hooks to incorporate:\n${strategy.hooks.map(h => `• ${h.text} (${h.style})`).join('\n')}` : ''}${strategy?.strategic_direction ? `\n\nStrategic Direction:\n${strategy.strategic_direction}` : ''}${strategy?.suggested_tone ? `\n\nSuggested Tone: ${strategy.suggested_tone}` : ''}
 
-Generate 6 strategic campaign themes. Each should be a DIFFERENT marketing angle.
-Cover different angles: product benefits, emotional appeal, social proof, problem/solution, brand awareness, feature highlights.
+IMPORTANT: The user has provided specific campaign intent and source content above. ALL 6 campaign themes MUST be deeply rooted in this direction. Do not generate generic themes — each theme should directly reflect the user's stated focus.
+
+Generate 6 strategic campaign themes. Each should be a DIFFERENT angle within the user's stated direction.
 
 For EACH theme return:
 - title: short campaign name (3-5 words)
