@@ -268,6 +268,7 @@ export default function PremiumCanvasEditor({
     color: s.color,
     textAlign: s.align,
     width: '100%',
+    WebkitTextStroke: s.strokeEnabled ? `${s.strokeWidth}px ${s.strokeColor}` : 'none',
   });
 
   // Right panel content based on selected layer or tab
