@@ -703,6 +703,15 @@ function LayerStylePanel({ label, style, onChange, swatches, showBg }) {
           )}
         </SidePanel>
       )}
+      <SidePanel title={`${label} — Stroke`}>
+        <Toggle value={style.strokeEnabled} onChange={v => set('strokeEnabled', v)} label="Text outline" />
+        {style.strokeEnabled && (
+          <div className="mt-2 space-y-2">
+            <ColorRow label="Stroke color" value={style.strokeColor} onChange={v => set('strokeColor', v)} swatches={['#000000', '#FFFFFF', '#7c3aed', '#2563eb']} />
+            <Slider label="Stroke width" min={1} max={12} step={0.5} value={style.strokeWidth} onChange={v => set('strokeWidth', v)} unit="px" />
+          </div>
+        )}
+      </SidePanel>
     </>
   );
 }
