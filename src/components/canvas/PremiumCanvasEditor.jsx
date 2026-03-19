@@ -630,7 +630,7 @@ export default function PremiumCanvasEditor({
                     ].map(({ id, label, DevIcon }) => (
                     <button key={id} onClick={() => setDeviceMode(id)}
                       className={`flex flex-col items-center gap-1 py-2 rounded-lg text-[9px] font-semibold uppercase tracking-wider transition-colors ${deviceMode === id ? 'bg-violet-600/20 text-violet-400 border border-violet-500/30' : 'bg-white/4 text-white/30 hover:bg-white/8 border border-transparent'}`}>
-                      <Icon className="w-3.5 h-3.5" />
+                      <DevIcon className="w-3.5 h-3.5" />
                       {label}
                     </button>
                   ))}
