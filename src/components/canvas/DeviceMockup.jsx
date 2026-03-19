@@ -26,13 +26,14 @@ export function MacbookMockup({ imageUrl, rotation = -2, shadowIntensity = 0.5 }
           style={{ boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.1)' }}
         />
         {/* Screen */}
-        <div className="w-full rounded-[3px] overflow-hidden" style={{ aspectRatio: '16/10' }}>
+        <div className="w-full rounded-[3px] overflow-hidden bg-white" style={{ aspectRatio: '16/10' }}>
           {imageUrl ? (
             <img
               src={imageUrl}
               alt="Screen"
-              className="w-full h-full object-cover object-top"
+              className="w-full h-full object-contain object-center"
               crossOrigin="anonymous"
+              style={{ imageRendering: 'high-quality' }}
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-[#1a1a2e] to-[#16213e]" />
