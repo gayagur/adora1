@@ -46,15 +46,17 @@ export default function Campaign() {
     refetchInterval: (query) => query.state.data?.some(a => a.status === 'generating') ? 3000 : false,
   });
 
-  const generateAsset = async (assetId, option, camp, br) => {
-    // Run generation on the backend so it doesn't depend on the browser connection
-    await base44.functions.invoke('generateAsset', {
+  const generateAsset = (assetId, option, camp, br) => {
+    // Fire and forget — backend completes the generation even if browser disconnects
+    // Frontend discovers result via refetchInterval polling
+    base44.functions.invoke('generateAsset', {
       assetId,
       option,
       campaign: camp,
       brand: br,
+    }).catch(() => {
+      // Ignore — asset will show as error via polling if backend failed
     });
-    qc.invalidateQueries({ queryKey: ['assets', campaignId] });
   };
 
   const handleAddAsset = async (option) => {

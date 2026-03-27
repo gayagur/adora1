@@ -9,9 +9,8 @@ async function doGenerate(base44, assetId, option, campaign, brand) {
   const baseImagePrompt = `Premium marketing creative for ${brand?.brand_name || 'a brand'}. Brand colors: ${brand?.brand_colors?.join(', ')}. Modern, high quality, no text. ${imageOrientation}`;
   const existingRefs = brand?.image_assets?.length > 0 ? brand.image_assets.slice(0, 2) : undefined;
 
-  const [copyResult, firstImageResult] = await Promise.all([
-    base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `You are a creative director. Generate a single ${option.label || option.asset_type} for this campaign.
+  const copyResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    prompt: `You are a creative director. Generate a single ${option.label || option.asset_type} for this campaign.
 
 Campaign: ${campaign?.title}
 Strategy Angle: ${campaign?.strategy_angle}
@@ -35,22 +34,22 @@ Generate:
 - full_caption: complete social media caption with hook, value prop, CTA, and 3-5 hashtags
 - cta: call-to-action text (e.g. "Learn More", "Try Free", "Shop Now")
 - visual_prompt: detailed AI image generation prompt. Modern premium marketing visual. NO text in image. Use brand colors. ${imageOrientation}`,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          headline: { type: "string" },
-          ad_copy: { type: "string" },
-          full_caption: { type: "string" },
-          cta: { type: "string" },
-          visual_prompt: { type: "string" }
-        }
+    response_json_schema: {
+      type: "object",
+      properties: {
+        headline: { type: "string" },
+        ad_copy: { type: "string" },
+        full_caption: { type: "string" },
+        cta: { type: "string" },
+        visual_prompt: { type: "string" }
       }
-    }),
-    base44.asServiceRole.integrations.Core.GenerateImage({
-      prompt: baseImagePrompt,
-      existing_image_urls: existingRefs
-    })
-  ]);
+    }
+  });
+
+  const firstImageResult = await base44.asServiceRole.integrations.Core.GenerateImage({
+    prompt: baseImagePrompt,
+    existing_image_urls: existingRefs
+  });
 
   const images = [firstImageResult.url];
 
@@ -72,6 +71,8 @@ Generate:
     carousel_images: isCarousel ? images : [],
     status: 'ready',
   });
+
+  console.log(`Asset ${assetId} generated successfully`);
 }
 
 Deno.serve(async (req) => {
@@ -81,13 +82,16 @@ Deno.serve(async (req) => {
 
   const { assetId, option, campaign, brand } = await req.json();
 
-  // Fire generation in background and return immediately
-  // Frontend polls via refetchInterval to detect when asset is ready
-  doGenerate(base44, assetId, option, campaign, brand).catch(async () => {
+  // Run generation fully — do NOT detach, let the function complete
+  // The frontend invoke call has its own timeout handling; the backend will finish regardless
+  try {
+    await doGenerate(base44, assetId, option, campaign, brand);
+    return Response.json({ success: true });
+  } catch (error) {
+    console.error('Generation failed:', error.message);
     try {
       await base44.asServiceRole.entities.CampaignAsset.update(assetId, { status: 'error' });
     } catch (_) { /* ignore */ }
-  });
-
-  return Response.json({ success: true, message: 'Generation started' });
+    return Response.json({ error: error.message }, { status: 500 });
+  }
 });
