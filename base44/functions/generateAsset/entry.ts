@@ -2,106 +2,169 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 async function doGenerate(base44, assetId, option, campaign, brand) {
   const isCarousel = option.asset_type === 'carousel';
-  const imageOrientation = option.asset_type === 'story' || option.asset_type === 'reel'
-    ? 'Vertical composition.'
-    : option.asset_type === 'banner' ? 'Wide horizontal layout.' : 'Square composition.';
+  const assetType = option.asset_type;
+  const platform = option.platform;
 
-  const primaryColor = brand?.brand_colors?.[0] || '#4d9081';
-  const secondaryColor = brand?.brand_colors?.[1] || '#2a4467';
+  const formatInstruction = assetType === 'story' || assetType === 'reel'
+    ? 'Vertical 9:16 format. Mobile-first. Top-to-bottom visual hierarchy.'
+    : assetType === 'banner'
+    ? 'Wide 16:9 horizontal banner. Left-to-right reading flow.'
+    : 'Square 1:1 format. Centered composition. Mobile-optimized.';
+
+  const brandColors = brand?.brand_colors?.join(', ') || '#6366f1, #1e1e2e';
+  const primaryColor = brand?.brand_colors?.[0] || '#6366f1';
+  const secondaryColor = brand?.brand_colors?.[1] || '#1e1e2e';
   const existingRefs = brand?.image_assets?.length > 0 ? brand.image_assets.slice(0, 2) : undefined;
 
-  // Step 1: Generate copy first
-  const copyResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt: `You are a creative director. Generate a single ${option.label || option.asset_type} for this campaign.
+  // ─── STAGE A: Creative Direction ────────────────────────────────────────────
+  // Think like an ad creative director, not a content writer.
+  // Produce a full creative brief before touching any image generation.
+  const creativeDirection = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    prompt: `You are a world-class performance marketing creative director at a top-tier startup studio.
+Your job is to create a REAL paid social ad — not a website screenshot, not a template, not a poster.
 
-Campaign: ${campaign?.title}
-Strategy Angle: ${campaign?.strategy_angle}
-Key Message: ${campaign?.key_message}
-Tone: ${campaign?.tone}
-Target Audience: ${campaign?.target_audience}
-Visual Direction: ${campaign?.visual_direction}
+You will analyze the brand and campaign below, then produce a complete creative brief for a single high-converting ad asset.
 
-Brand: ${brand?.brand_name}
-Brand Description: ${brand?.description}
-Brand Tone: ${brand?.tone_of_voice}
-Brand Colors: ${brand?.brand_colors?.join(', ')}
+---
+BRAND:
+- Name: ${brand?.brand_name || 'Unknown Brand'}
+- Description: ${brand?.description || ''}
+- Industry: ${brand?.industry || ''}
+- Target Audience: ${brand?.target_audience || campaign?.target_audience || ''}
+- Tone of Voice: ${brand?.tone_of_voice || ''}
+- Key Messages: ${brand?.key_messages?.join(', ') || ''}
+- Brand Colors: ${brandColors}
 
-Platform: ${option.platform}
-Content Type: ${option.asset_type}
-Format: ${option.format}
+CAMPAIGN:
+- Title: ${campaign?.title || ''}
+- Strategy Angle: ${campaign?.strategy_angle || ''}
+- Key Message: ${campaign?.key_message || ''}
+- Tone: ${campaign?.tone || ''}
+- Target Audience: ${campaign?.target_audience || ''}
+- Visual Direction: ${campaign?.visual_direction || ''}
 
-Generate:
-- headline: short, punchy headline (max 10 words)
-- ad_copy: 1-2 sentence copy for the ad
-- full_caption: complete social media caption with hook, value prop, CTA, and 3-5 hashtags
-- cta: call-to-action text (e.g. "Learn More", "Try Free", "Shop Now")
-- visual_prompt: detailed AI image generation prompt. Modern premium marketing visual. NO text in image. Use brand colors. ${imageOrientation}`,
+AD FORMAT:
+- Platform: ${platform}
+- Type: ${assetType}
+- Format: ${formatInstruction}
+---
+
+Now produce a creative brief with:
+
+1. ad_angle: The ONE strategic angle for this ad (e.g. "pain-point relief", "social proof", "aspirational outcome", "product demo moment")
+2. headline: A short, punchy hook. Max 8 words. Must stop the scroll. No generic SaaS clichés.
+3. subheadline: One supporting sentence (10–15 words). Adds clarity or tension to the headline.
+4. cta: The call-to-action button text. Short, action-oriented (e.g. "Try Free", "See How It Works", "Get Started")
+5. full_caption: Complete social caption — hook, value prop, CTA, 3-5 hashtags.
+6. focal_point: What is the SINGLE dominant visual element? (e.g. "abstract network of glowing nodes", "clean floating product card on dark background", "3D icon of a shield", "bold typographic poster")
+7. composition_plan: Describe the spatial layout. Where is the focal point? Where does the eye travel? What's in the background?
+8. visual_style: Describe the visual style in detail — colors, lighting, mood, texture, finish (e.g. "dark glass morphism with violet glow", "minimal white with editorial typography", "bold flat color blocks with geometric shapes")
+9. image_generation_prompt: The FINAL detailed prompt for the image AI. This must produce a REAL finished ad visual — not a screenshot, not a template, not an editor UI. Think: Apple ad, Stripe launch visual, Linear product moment.
+
+CRITICAL RULES FOR image_generation_prompt:
+- The image must look like a FINISHED, PRODUCTION-READY paid social ad
+- ${formatInstruction}
+- Use brand colors: ${brandColors}
+- ZERO text, labels, or words in the image
+- ZERO browser chrome, editor chrome, resize handles, canvas toolbars, pointer cursors
+- ZERO "screenshot inside poster" effect — no raw website pasted in the center
+- ZERO slide-deck or PowerPoint look
+- ZERO generic stock photo aesthetics
+- If showing product UI: show only the most powerful, cropped, enlarged, visually refined fragment — treated as hero art, not a screenshot
+- The visual must be immediately readable and impactful in under 1 second
+- Premium, modern, scroll-stopping — like a real ad from a VC-backed startup with a top design team`,
     response_json_schema: {
       type: "object",
       properties: {
+        ad_angle: { type: "string" },
         headline: { type: "string" },
-        ad_copy: { type: "string" },
-        full_caption: { type: "string" },
+        subheadline: { type: "string" },
         cta: { type: "string" },
-        visual_prompt: { type: "string" }
-      }
+        full_caption: { type: "string" },
+        focal_point: { type: "string" },
+        composition_plan: { type: "string" },
+        visual_style: { type: "string" },
+        image_generation_prompt: { type: "string" }
+      },
+      required: ["headline", "subheadline", "cta", "full_caption", "image_generation_prompt"]
     }
   });
 
-  // Step 2: Build image prompt using copyResult
-  const baseImagePrompt = `You are a world-class SaaS ad creative director. Create a premium, scroll-stopping social media advertisement image for "${brand?.brand_name || 'a brand'}".
+  console.log(`Creative direction for ${assetId}:`, JSON.stringify({
+    angle: creativeDirection.ad_angle,
+    headline: creativeDirection.headline,
+    focal_point: creativeDirection.focal_point,
+  }));
 
-STYLE: High-end SaaS ad. Think Stripe, Linear, Notion, Framer-quality visuals. Dark or light premium background. Bold visual hierarchy. Elegant whitespace. Modern typography feel. High-trust, high-conviction aesthetic.
+  // ─── STAGE B: Final Image Render ─────────────────────────────────────────────
+  // Use the creative brief to render a real finished ad image.
+  const finalImagePrompt = `${creativeDirection.image_generation_prompt}
 
-COMPOSITION (${imageOrientation}):
-- One dominant focal point — either a bold abstract visual, a beautifully rendered UI element, or a striking product metaphor
-- Strong contrast between background and foreground
-- Subtle brand color gradients: primary ${primaryColor}, secondary ${secondaryColor}
-- If showing UI: render it as a clean floating card with glassmorphism or soft shadow — not a raw screenshot
-- Generous breathing room, intentional asymmetry or strong center balance
-- Subtle geometric or abstract background texture if appropriate
+COMPOSITION: ${creativeDirection.composition_plan || ''}
+VISUAL STYLE: ${creativeDirection.visual_style || ''}
+FOCAL POINT: ${creativeDirection.focal_point || ''}
+BRAND COLORS: Primary ${primaryColor}, Secondary ${secondaryColor}
+FORMAT: ${formatInstruction}
 
-CONTENT DIRECTION: ${copyResult.visual_prompt}
-CAMPAIGN ANGLE: ${campaign?.strategy_angle || ''}
-TONE: ${campaign?.tone || brand?.tone_of_voice || 'premium, modern'}
-
-STRICT RULES:
-- NO text, NO words, NO labels in the image
-- NO browser chrome, NO canvas borders, NO resize handles, NO toolbars
-- NO template look, NO generic stock photo feel
-- NO "image inside image" raw screenshot pasted effect
-- Looks like a finished, publishable paid social ad visual
-- Premium, intentional, expensive-looking
-
-Brand colors: ${brand?.brand_colors?.join(', ')}. Platform: ${option.platform}. Format: ${option.format}.`;
+ABSOLUTE RULES — VIOLATIONS WILL RUIN THE OUTPUT:
+- NO text of any kind in the image — no labels, no captions, no UI text, no words
+- NO editor UI, canvas borders, resize handles, drag handles, selection boxes, or tooltips
+- NO browser frames unless intentionally stylized as a product moment (e.g., floating browser card with blur)
+- NO screenshot-inside-poster layout — no raw full-page website pasted in the center
+- NO slideshow, PowerPoint, or presentation template feel
+- NO tiny unreadable interface clutter
+- NO generic stock photography
+- NO awkward empty dead space
+- If showing UI: crop aggressively, zoom in, show only the most compelling fragment, rendered beautifully
+- Output must look like a REAL paid social advertisement created by a world-class design team
+- Premium, intentional, production-ready`;
 
   const firstImageResult = await base44.asServiceRole.integrations.Core.GenerateImage({
-    prompt: baseImagePrompt,
+    prompt: finalImagePrompt,
     existing_image_urls: existingRefs
   });
 
   const images = [firstImageResult.url];
 
+  // ─── CAROUSEL: Additional slides ─────────────────────────────────────────────
   if (isCarousel) {
-    const carouselFrames = [
-      `Slide 2 of 4 - Problem statement visual: ${copyResult.visual_prompt}. Brand colors: ${brand?.brand_colors?.join(', ')}. No text. High quality.`,
-      `Slide 3 of 4 - Solution/benefit visual: ${copyResult.visual_prompt}. Brand colors: ${brand?.brand_colors?.join(', ')}. No text. High quality.`,
-      `Slide 4 of 4 - Call to action / result visual: ${copyResult.visual_prompt}. Brand colors: ${brand?.brand_colors?.join(', ')}. No text. High quality.`,
+    const carouselSlides = [
+      {
+        role: "Problem slide",
+        direction: `Show the PAIN or PROBLEM the audience faces. Dark, tense mood. Abstract visual metaphor. Same style: ${creativeDirection.visual_style}. Brand colors: ${brandColors}. No text. No editor UI.`
+      },
+      {
+        role: "Solution/benefit slide",
+        direction: `Show the TRANSFORMATION or BENEFIT after using the product. Hopeful, elevated mood. Same focal point style: ${creativeDirection.focal_point}. Brand colors: ${brandColors}. No text. No editor UI.`
+      },
+      {
+        role: "Proof/CTA slide",
+        direction: `Show CONFIDENCE and OUTCOME — a moment of success, social proof, or decisive action. Strong, premium visual. Same style: ${creativeDirection.visual_style}. Brand colors: ${brandColors}. No text. No editor UI.`
+      }
     ];
-    for (const prompt of carouselFrames) {
-      const res = await base44.asServiceRole.integrations.Core.GenerateImage({ prompt, existing_image_urls: existingRefs });
+
+    for (const slide of carouselSlides) {
+      const res = await base44.asServiceRole.integrations.Core.GenerateImage({
+        prompt: `${slide.role}: ${slide.direction}\n\nFormat: ${formatInstruction}\nAbsolutely NO text, NO editor chrome, NO screenshot-in-poster. Finished premium ad visual.`,
+        existing_image_urls: existingRefs
+      });
       images.push(res.url);
     }
   }
 
+  // ─── Save result ──────────────────────────────────────────────────────────────
   await base44.asServiceRole.entities.CampaignAsset.update(assetId, {
-    ...copyResult,
+    headline: creativeDirection.headline,
+    ad_copy: creativeDirection.subheadline,
+    full_caption: creativeDirection.full_caption,
+    cta: creativeDirection.cta,
+    visual_prompt: creativeDirection.image_generation_prompt,
     preview_image: images[0],
     carousel_images: isCarousel ? images : [],
     status: 'ready',
   });
 
-  console.log(`Asset ${assetId} generated successfully`);
+  console.log(`Asset ${assetId} generated successfully — angle: ${creativeDirection.ad_angle}`);
 }
 
 Deno.serve(async (req) => {
@@ -111,8 +174,6 @@ Deno.serve(async (req) => {
 
   const { assetId, option, campaign, brand } = await req.json();
 
-  // Run generation fully — do NOT detach, let the function complete
-  // The frontend invoke call has its own timeout handling; the backend will finish regardless
   try {
     await doGenerate(base44, assetId, option, campaign, brand);
     return Response.json({ success: true });
