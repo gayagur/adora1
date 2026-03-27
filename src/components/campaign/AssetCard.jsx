@@ -19,7 +19,7 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
 
   // Consider stuck if generating for more than 5 minutes
   const isStuck = asset.status === 'generating' &&
-    asset.updated_date && (Date.now() - new Date(asset.updated_date).getTime()) > 3 * 60 * 1000;
+    asset.created_date && (Date.now() - new Date(asset.created_date).getTime()) > 3 * 60 * 1000;
   const isGenerating = asset.status === 'generating' && !isStuck;
   const carouselImages = asset.carousel_images && asset.carousel_images.length > 0 ? asset.carousel_images : [];
   const currentImage = carouselImages.length > 0 ? carouselImages[carouselIndex] : asset.preview_image;
