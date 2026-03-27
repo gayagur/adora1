@@ -67,7 +67,7 @@ export default function Campaign() {
       status: 'generating',
     });
     qc.setQueryData(['assets', campaignId], prev => [...(prev || []), placeholder]);
-    generateAsset(placeholder.id, option, campaign, brand).catch(() => toast.error('Generation failed'));
+    generateAsset(placeholder.id, option, campaign, brand);
   };
 
   const handleRegenerate = async (assetId) => {
@@ -75,8 +75,8 @@ export default function Campaign() {
     if (!asset) return;
     await base44.entities.CampaignAsset.update(assetId, { status: 'generating' });
     qc.invalidateQueries({ queryKey: ['assets', campaignId] });
-    await generateAsset(assetId, { platform: asset.platform, asset_type: asset.asset_type, format: asset.format, label: `${asset.platform} ${asset.asset_type}` }, campaign, brand);
-    toast.success('Regenerated!');
+    generateAsset(assetId, { platform: asset.platform, asset_type: asset.asset_type, format: asset.format, label: `${asset.platform} ${asset.asset_type}` }, campaign, brand);
+    toast.success('Regenerating...');
   };
 
   const handleDuplicate = async (asset) => {
