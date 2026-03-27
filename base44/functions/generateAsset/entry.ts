@@ -10,32 +10,7 @@ async function doGenerate(base44, assetId, option, campaign, brand) {
   const secondaryColor = brand?.brand_colors?.[1] || '#2a4467';
   const existingRefs = brand?.image_assets?.length > 0 ? brand.image_assets.slice(0, 2) : undefined;
 
-  const baseImagePrompt = `You are a world-class SaaS ad creative director. Create a premium, scroll-stopping social media advertisement image for "${brand?.brand_name || 'a brand'}".
-
-STYLE: High-end SaaS ad. Think Stripe, Linear, Notion, Framer-quality visuals. Dark or light premium background. Bold visual hierarchy. Elegant whitespace. Modern typography feel. High-trust, high-conviction aesthetic.
-
-COMPOSITION (${imageOrientation}):
-- One dominant focal point — either a bold abstract visual, a beautifully rendered UI element, or a striking product metaphor
-- Strong contrast between background and foreground
-- Subtle brand color gradients: primary ${primaryColor}, secondary ${secondaryColor}
-- If showing UI: render it as a clean floating card with glassmorphism or soft shadow — not a raw screenshot
-- Generous breathing room, intentional asymmetry or strong center balance
-- Subtle geometric or abstract background texture if appropriate
-
-CONTENT DIRECTION: ${copyResult.visual_prompt}
-CAMPAIGN ANGLE: ${campaign?.strategy_angle || ''}
-TONE: ${campaign?.tone || brand?.tone_of_voice || 'premium, modern'}
-
-STRICT RULES:
-- NO text, NO words, NO labels in the image
-- NO browser chrome, NO canvas borders, NO resize handles, NO toolbars
-- NO template look, NO generic stock photo feel
-- NO "image inside image" raw screenshot pasted effect
-- Looks like a finished, publishable paid social ad visual
-- Premium, intentional, expensive-looking
-
-Brand colors: ${brand?.brand_colors?.join(', ')}. Platform: ${option.platform}. Format: ${option.format}.`;
-
+  // Step 1: Generate copy first
   const copyResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
     prompt: `You are a creative director. Generate a single ${option.label || option.asset_type} for this campaign.
 
@@ -72,6 +47,33 @@ Generate:
       }
     }
   });
+
+  // Step 2: Build image prompt using copyResult
+  const baseImagePrompt = `You are a world-class SaaS ad creative director. Create a premium, scroll-stopping social media advertisement image for "${brand?.brand_name || 'a brand'}".
+
+STYLE: High-end SaaS ad. Think Stripe, Linear, Notion, Framer-quality visuals. Dark or light premium background. Bold visual hierarchy. Elegant whitespace. Modern typography feel. High-trust, high-conviction aesthetic.
+
+COMPOSITION (${imageOrientation}):
+- One dominant focal point — either a bold abstract visual, a beautifully rendered UI element, or a striking product metaphor
+- Strong contrast between background and foreground
+- Subtle brand color gradients: primary ${primaryColor}, secondary ${secondaryColor}
+- If showing UI: render it as a clean floating card with glassmorphism or soft shadow — not a raw screenshot
+- Generous breathing room, intentional asymmetry or strong center balance
+- Subtle geometric or abstract background texture if appropriate
+
+CONTENT DIRECTION: ${copyResult.visual_prompt}
+CAMPAIGN ANGLE: ${campaign?.strategy_angle || ''}
+TONE: ${campaign?.tone || brand?.tone_of_voice || 'premium, modern'}
+
+STRICT RULES:
+- NO text, NO words, NO labels in the image
+- NO browser chrome, NO canvas borders, NO resize handles, NO toolbars
+- NO template look, NO generic stock photo feel
+- NO "image inside image" raw screenshot pasted effect
+- Looks like a finished, publishable paid social ad visual
+- Premium, intentional, expensive-looking
+
+Brand colors: ${brand?.brand_colors?.join(', ')}. Platform: ${option.platform}. Format: ${option.format}.`;
 
   const firstImageResult = await base44.asServiceRole.integrations.Core.GenerateImage({
     prompt: baseImagePrompt,
