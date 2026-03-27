@@ -47,84 +47,13 @@ export default function Campaign() {
   });
 
   const generateAsset = async (assetId, option, camp, br) => {
-    const isCarousel = option.asset_type === 'carousel';
-    const imageCount = isCarousel ? 2 : 1;
-
-    const imageOrientation = option.asset_type === 'story' || option.asset_type === 'reel'
-      ? 'Vertical composition.'
-      : option.asset_type === 'banner' ? 'Wide horizontal layout.' : 'Square composition.';
-
-    const copyPromise = base44.integrations.Core.InvokeLLM({
-      prompt: `You are a creative director. Generate a single ${option.label || option.asset_type} for this campaign.
-
-Campaign: ${camp?.title}
-Strategy Angle: ${camp?.strategy_angle}
-Key Message: ${camp?.key_message}
-Tone: ${camp?.tone}
-Target Audience: ${camp?.target_audience}
-Visual Direction: ${camp?.visual_direction}
-
-Brand: ${br?.brand_name}
-Brand Description: ${br?.description}
-Brand Tone: ${br?.tone_of_voice}
-Brand Colors: ${br?.brand_colors?.join(', ')}
-
-Platform: ${option.platform}
-Content Type: ${option.asset_type}
-Format: ${option.format}
-
-Generate:
-- headline: short, punchy headline (max 10 words)
-- ad_copy: 1-2 sentence copy for the ad
-- full_caption: complete social media caption with hook, value prop, CTA, and 3-5 hashtags
-- cta: call-to-action text (e.g. "Learn More", "Try Free", "Shop Now")
-- visual_prompt: detailed AI image generation prompt. Modern premium marketing visual. NO text in image. Use brand colors. ${imageOrientation}`,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          headline: { type: "string" },
-          ad_copy: { type: "string" },
-          full_caption: { type: "string" },
-          cta: { type: "string" },
-          visual_prompt: { type: "string" }
-        }
-      }
+    // Run generation on the backend so it doesn't depend on the browser connection
+    await base44.functions.invoke('generateAsset', {
+      assetId,
+      option,
+      campaign: camp,
+      brand: br,
     });
-
-    // Generate a placeholder image in parallel with copy generation
-    const baseImagePrompt = `Premium marketing creative for ${br?.brand_name || 'a brand'}. Brand colors: ${br?.brand_colors?.join(', ')}. Modern, high quality, no text. ${imageOrientation}`;
-    const existingRefs = br?.image_assets?.length > 0 ? br.image_assets.slice(0, 2) : undefined;
-
-    const firstImagePromise = base44.integrations.Core.GenerateImage({
-      prompt: baseImagePrompt,
-      existing_image_urls: existingRefs
-    });
-
-    // Wait for copy first to get the refined visual_prompt
-    const [copyResult, firstImageResult] = await Promise.all([copyPromise, firstImagePromise]);
-
-    const images = [firstImageResult.url];
-
-    // For carousel, generate 3 more images that tell a sequential story
-    if (isCarousel) {
-      const carouselFrames = [
-        `Slide 2 of 4 - Problem statement visual: ${copyResult.visual_prompt}. Brand colors: ${br?.brand_colors?.join(', ')}. No text. High quality.`,
-        `Slide 3 of 4 - Solution/benefit visual: ${copyResult.visual_prompt}. Brand colors: ${br?.brand_colors?.join(', ')}. No text. High quality.`,
-        `Slide 4 of 4 - Call to action / result visual: ${copyResult.visual_prompt}. Brand colors: ${br?.brand_colors?.join(', ')}. No text. High quality.`,
-      ];
-      const extraImages = await Promise.all(
-        carouselFrames.map(prompt => base44.integrations.Core.GenerateImage({ prompt, existing_image_urls: existingRefs }))
-      );
-      images.push(...extraImages.map(r => r.url));
-    }
-
-    await base44.entities.CampaignAsset.update(assetId, {
-      ...copyResult,
-      preview_image: images[0],
-      carousel_images: isCarousel ? images : [],
-      status: 'ready',
-    });
-
     qc.invalidateQueries({ queryKey: ['assets', campaignId] });
   };
 
