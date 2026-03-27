@@ -11,6 +11,7 @@ import AddAssetPanel from '../components/campaign/AddAssetPanel';
 import AssetEditorPanel from '../components/campaign/AssetEditorPanel';
 import CampaignEditPanel from '../components/campaign/CampaignEditPanel';
 import BrandEditPanel from '../components/campaign/BrandEditPanel';
+import PremiumCanvasEditor from '../components/canvas/PremiumCanvasEditor';
 
 const PLATFORM_ORDER = ['instagram', 'facebook', 'linkedin', 'tiktok', 'youtube', 'twitter', 'general'];
 const PLATFORM_LABELS = { instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'X / Twitter', general: 'Display' };
@@ -24,6 +25,7 @@ export default function Campaign() {
 
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [editingAsset, setEditingAsset] = useState(null);
+  const [canvasAsset, setCanvasAsset] = useState(null);
   const [editingCampaign, setEditingCampaign] = useState(false);
   const [editingBrand, setEditingBrand] = useState(false);
 
@@ -91,6 +93,18 @@ export default function Campaign() {
   const handleAssetSaved = (updated) => {
     qc.setQueryData(['assets', campaignId], prev => prev?.map(a => a.id === updated.id ? updated : a));
     setEditingAsset(null);
+  };
+
+  const handleCanvasSaved = async (designData) => {
+    const updated = { ...canvasAsset, ...designData };
+    await base44.entities.CampaignAsset.update(canvasAsset.id, {
+      headline: designData.headline,
+      ad_copy: designData.ad_copy,
+      cta: designData.cta,
+      preview_image: designData.preview_image,
+    });
+    qc.setQueryData(['assets', campaignId], prev => prev?.map(a => a.id === canvasAsset.id ? updated : a));
+    setCanvasAsset(null);
   };
 
   const handleCampaignSaved = (updated) => {
@@ -161,6 +175,7 @@ export default function Campaign() {
                     asset={asset}
                     index={i}
                     onEdit={setEditingAsset}
+                    onCanvas={setCanvasAsset}
                     onRegenerate={handleRegenerate}
                     onDuplicate={handleDuplicate}
                   />
@@ -194,6 +209,19 @@ export default function Campaign() {
             brand={brand}
             onSave={(updated) => { qc.setQueryData(['brand', brandId], updated); setEditingBrand(false); }}
             onClose={() => setEditingBrand(false)}
+          />
+        )}
+        {canvasAsset && (
+          <PremiumCanvasEditor
+            initialHeadline={canvasAsset.headline}
+            initialSubtext={canvasAsset.ad_copy}
+            initialCta={canvasAsset.cta}
+            initialImage={canvasAsset.preview_image}
+            logoUrl={brand?.logo_url}
+            brandColors={brand?.brand_colors}
+            screenshots={brand?.image_assets}
+            onClose={() => setCanvasAsset(null)}
+            onSave={handleCanvasSaved}
           />
         )}
       </AnimatePresence>

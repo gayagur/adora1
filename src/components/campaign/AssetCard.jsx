@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Download, RefreshCw, Check, Loader2, ImageIcon, Pencil, Copy as DuplicateIcon } from 'lucide-react';
+import { Copy, Download, RefreshCw, Check, Loader2, ImageIcon, Pencil, Copy as DuplicateIcon, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
@@ -12,7 +12,7 @@ const ASSET_LABELS = {
   banner: 'Banner', video_concept: 'Video', ad: 'Ad'
 };
 
-export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplicate }) {
+export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplicate, onCanvas }) {
   const [copied, setCopied] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -146,10 +146,16 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
             {/* Action row */}
             <div className="flex gap-1.5" onClick={e => e.stopPropagation()}>
               <button
-                onClick={() => onEdit && onEdit(asset)}
+                onClick={() => onCanvas && onCanvas(asset)}
                 className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-medium border border-gray-200 text-gray-600 hover:bg-violet-50 hover:border-violet-200 hover:text-violet-700 transition-colors"
               >
-                <Pencil className="w-3 h-3" /> Edit
+                <Layers className="w-3 h-3" /> Design
+              </button>
+              <button
+                onClick={() => onEdit && onEdit(asset)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+              >
+                <Pencil className="w-3 h-3" />
               </button>
               <button onClick={copyCaption} className={`flex items-center justify-center gap-1 w-8 h-8 rounded-lg text-xs font-medium border transition-colors ${copied ? 'border-green-200 bg-green-50 text-green-600' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
                 {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
