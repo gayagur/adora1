@@ -287,11 +287,14 @@ BRAND PALETTE: warm beige, cream, terracotta, natural linen, warm oak wood
 FORMAT: ${formatInstruction}
 
 COMPOSITION RULES — CRITICAL:
-- Leave at least 40-50% of the frame as clean, empty negative space — solid or gradient background with no elements
-- Place the main subject (object, person, scene) to ONE SIDE (right or bottom preferred) — NOT centered
-- The empty area should be smooth, uncluttered, and suitable for placing large text over it
-- Think like an ad photographer: subject fills one side, clean space fills the other
-- Wide breathing room around all edges — no tight cropping
+- The empty space for text MUST BE PART OF THE IMAGE ITSELF — achieved through natural composition, NOT by adding frames, cards, boxes, or external margins
+- Place the subject (person, object, scene) to ONE SIDE of the frame — left or right — leaving the opposite side naturally open
+- The open side must be a real element of the scene: a clean wall, soft blurred background, open sky, empty desk surface, soft gradient lighting area, or defocused depth
+- Think like an editorial or advertising photographer: compose the shot so the scene itself provides breathing room
+- The empty space should feel intentional and natural — like the photographer deliberately left room in the frame
+- NEVER split the image into two sections (image box + white box)
+- NEVER add external margins, white cards, design frames, or canvas-style layouts around the image
+- The final result must look like a real photograph or real graphic — not a mockup or design template
 
 ABSOLUTE REQUIREMENTS:
 - ZERO text, words, labels, or captions anywhere in the image
