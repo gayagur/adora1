@@ -144,15 +144,15 @@ YOU MUST COMPLETE ALL 4 STEPS BEFORE WRITING THE IMAGE PROMPT.
 ---
 
 BRAND INFORMATION:
-- Brand Name: ${brand?.brand_name || 'DEXO Interior Studio'}
+- Brand Name: ${brand?.brand_name || 'Unknown Brand'}
 - Website: ${brand?.url || ''}
 - Instagram: ${brand?.social_instagram || ''}
 - Facebook: ${brand?.social_facebook || ''}
 - LinkedIn: ${brand?.social_linkedin || ''}
-- Description: ${brand?.description || 'AI-powered interior design platform'}
-- Industry: ${brand?.industry || 'Interior Design / Home Tech'}
-- Target Audience: ${brand?.target_audience || 'Design-conscious homeowners and architects'}
-- Tone of Voice: ${brand?.tone_of_voice || 'warm, premium, calm, editorial'}
+- Description: ${brand?.description || 'No description available'}
+- Industry: ${brand?.industry || 'Unknown industry'}
+- Target Audience: ${brand?.target_audience || 'General audience'}
+- Tone of Voice: ${brand?.tone_of_voice || 'professional, clear'}
 - Brand Colors: ${brandColors}
 - Visual Style Notes: ${brand?.visual_style_notes || 'not available'}
 
@@ -318,7 +318,7 @@ RETURN JSON:
 
 VISUAL STYLE: ${visualStyle}
 CONTENT ANGLE: ${angle.name} — ${angle.visualFocus}
-BRAND PALETTE: warm beige, cream, terracotta, natural linen, warm oak wood
+BRAND PALETTE: ${brandColors}
 FORMAT: ${formatInstruction}
 
 COMPOSITION RULES — CRITICAL:
