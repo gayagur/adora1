@@ -31,7 +31,8 @@ export default function AddAssetPanel({ onAdd, onClose }) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 24, scale: 0.97 }}
         transition={{ type: 'spring', damping: 28, stiffness: 340 }}
-        className="bg-white rounded-2xl w-full max-w-xl max-h-[70vh] overflow-hidden shadow-2xl"
+        className="bg-white rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col"
+        style={{ maxHeight: 'min(80vh, 600px)' }}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
@@ -44,7 +45,7 @@ export default function AddAssetPanel({ onAdd, onClose }) {
           </button>
         </div>
 
-        <div className="overflow-y-auto p-5 grid grid-cols-2 gap-2.5">
+        <div className="overflow-y-auto flex-1 p-5 grid grid-cols-2 gap-2.5">
           {ASSET_OPTIONS.map((opt, i) => (
             <button
               key={i}
