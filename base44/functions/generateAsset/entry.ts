@@ -151,46 +151,88 @@ THIS ASSET'S CREATIVE BRIEF:
 - Mood: ${angle.moodKeywords}
 - Forbidden Elements: ${angle.forbid}
 
-VISUAL STYLE FOR THIS IMAGE: ${visualStyle}
-
 AD FORMAT: ${platform} ${assetType} — ${formatInstruction}
 
 ---
 
-Your job: write the COMPLETE creative brief for ONE high-converting ad in this angle.
+You MUST follow this 4-step creative process BEFORE writing the image prompt:
+
+STEP 1 — CHOOSE VISUAL TYPE:
+Decide: Realistic (photo/lifestyle/interior/people) OR Graphic (3D illustration/abstract/UI-style/icon-based)
+Do NOT mix styles. Pick one definitively.
+
+STEP 2 — CHOOSE TEXT STRATEGY:
+Option A — Text-Heavy: leave large clean empty area for headline. Background simple or blurred. Subject pushed to one side.
+Option B — Visual-First: image dominates. Minimal text space needed. No large empty areas.
+
+STEP 3 — CHOOSE COMPOSITION (pick exactly one):
+- Left text / right image
+- Right text / left image  
+- Centered image with surrounding space
+- Full-bleed with soft overlay zone
+- Minimal poster layout
+- Asymmetrical editorial layout
+
+STEP 4 — GENERATE based on your decisions.
+
+GRAPHIC STYLE RULES (if chosen):
+- Clean 3D illustration or modern UI-style graphics
+- Elements like: charts, icons, abstract UI components, clean 3D objects
+- Premium and minimal — NOT childish or cartoon
+- Think Stripe / Linear / Notion product visuals
+
+REALISTIC STYLE RULES (if chosen):
+- Natural lighting, warm tones
+- Premium interior / lifestyle scenes
+- Clean, intentional composition
+
+TEXT SAFETY (if Text-Heavy chosen):
+- At least 40-50% of frame = clean, uncluttered, smooth background area
+- Subject placed to ONE side (not centered)
+- Empty area must be flat enough for large white or dark text
+- No busy textures or objects in the text zone
+
+STRICTLY FORBIDDEN:
+- Generating image first and hoping text fits
+- Crowded backgrounds when text is needed
+- Mixing graphic + realistic styles
+- No clear composition decision
+- Generic AI poster feel
+- Any text, labels, or words IN the image
+- Editor UI, canvas borders, toolbars
+- Forbidden angle elements: ${angle.forbid}
+
+---
 
 Return:
-1. headline: max 7 words, scroll-stopping, honest to the angle
-2. subheadline: 10-14 words supporting the headline
-3. cta: short action-oriented button text
-4. full_caption: complete social caption with hook, value, CTA, 3-5 hashtags
-5. image_generation_prompt: The final image AI prompt. Must produce a FINISHED premium ad visual.
-   - Visual style: ${visualStyle}
-   - Content angle: ${angle.visualFocus}
+1. visual_decision: exactly one line: [Type: Graphic/Realistic] [Text: Heavy/Minimal] [Layout: ___]
+2. headline: max 7 words, scroll-stopping
+3. subheadline: 10-14 words supporting the headline
+4. cta: short action-oriented button text
+5. full_caption: complete social caption with hook, value, CTA, 3-5 hashtags
+6. image_generation_prompt: The final image AI prompt. Must:
+   - Open with the visual_decision line
+   - Precisely describe composition, subject placement, and empty zones
+   - Specify exact style (Realistic or Graphic) with no ambiguity
+   - Brand palette: warm beige, cream, terracotta, natural linen, warm oak wood
    - Format: ${formatInstruction}
-   - Brand palette: warm beige, cream, terracotta, natural wood tones
-   - ABSOLUTE RULES for the image prompt:
-     * NO text, labels, words, or captions in the image
-     * NO editor UI, canvas chrome, resize handles, selection boxes
-     * NO screenshot-in-poster effect
-     * NO stock photo feel — must look like real editorial photography or premium CGI
-     * NO generic AI poster aesthetic
-     * Forbidden in this angle: ${angle.forbid}
-     * Must feel: ${angle.moodKeywords}
-     * The image must look like it was shot by a professional photographer or rendered by a top design studio`,
+   - Must feel: ${angle.moodKeywords}
+   - Production quality: top-tier brand studio or agency`,
     response_json_schema: {
       type: 'object',
       properties: {
+        visual_decision: { type: 'string' },
         headline: { type: 'string' },
         subheadline: { type: 'string' },
         cta: { type: 'string' },
         full_caption: { type: 'string' },
         image_generation_prompt: { type: 'string' },
       },
-      required: ['headline', 'subheadline', 'cta', 'full_caption', 'image_generation_prompt'],
+      required: ['visual_decision', 'headline', 'subheadline', 'cta', 'full_caption', 'image_generation_prompt'],
     },
   });
 
+  console.log('Creative decision:', creativeDirection.visual_decision);
   console.log(`Creative: angle=${angle.name}, headline="${creativeDirection.headline}"`);
 
   // ─── STAGE B: Image Render ────────────────────────────────────────────────
