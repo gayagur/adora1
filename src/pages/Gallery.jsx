@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Download, X, ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Download, X, ChevronLeft, ChevronRight, ImageIcon, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppShell from '../components/ui/AppShell';
 
@@ -19,6 +20,7 @@ const ASSET_LABELS = {
 };
 
 export default function Gallery() {
+  const navigate = useNavigate();
   const [lightbox, setLightbox] = useState(null); // { images: [], index: 0, asset }
   const [filterPlatform, setFilterPlatform] = useState('all');
 
@@ -184,12 +186,20 @@ export default function Gallery() {
                 <p className="text-white font-medium text-sm mb-1">{current.asset.headline}</p>
                 <p className="text-white/50 text-xs">{PLATFORM_ICONS[current.asset.platform]} {PLATFORM_LABELS[current.asset.platform]} · {ASSET_LABELS[current.asset.asset_type]}</p>
               </div>
-              <button
-                onClick={() => downloadImage(current.url, current.asset)}
-                className="flex items-center gap-2 h-8 px-4 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm transition-colors"
-              >
-                <Download className="w-3.5 h-3.5" /> Download
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => downloadImage(current.url, current.asset)}
+                  className="flex items-center gap-2 h-8 px-4 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" /> Download
+                </button>
+                <button
+                  onClick={() => navigate(`/Campaign?id=${current.asset.campaign_id}&brand=${current.asset.brand_id}`)}
+                  className="flex items-center gap-2 h-8 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> Open Campaign
+                </button>
+              </div>
             </motion.div>
             <div className="absolute bottom-4 text-white/40 text-xs">{lightbox.index + 1} / {lightbox.images.length}</div>
           </motion.div>
