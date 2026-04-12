@@ -99,7 +99,7 @@ function hashString(str) {
 }
 
 // ─── Core generation ─────────────────────────────────────────────────────────
-async function doGenerate(base44, assetId, option, campaign, brand, postContent, forcedVisualStyle, backgroundStyle) {
+async function doGenerate(base44, assetId, option, campaign, brand, postContent, forcedVisualStyle, backgroundStyle, backgroundTone = 'brand') {
   const assetType = option.asset_type;
   const platform = option.platform;
 
@@ -334,6 +334,9 @@ COMPOSITION RULES — CRITICAL:
 BACKGROUND REQUIREMENT (user explicitly selected — MUST follow):
 ${backgroundStyle === 'none' ? 'ISOLATED SUBJECT: Pure white or transparent background. No scene, no environment, no backdrop whatsoever. The subject appears alone, cleanly cut out.' : backgroundStyle === 'minimal' ? 'MINIMAL BACKGROUND: Soft, clean, neutral background only. Solid color, subtle gradient, or very light texture. No busy environment or scene.' : 'FULL BACKGROUND: Rich environment, scene, or setting fills the entire frame. The subject exists within a real, atmospheric place.'}
 
+BACKGROUND TONE (user explicitly selected — MUST follow):
+${backgroundTone === 'light' ? 'LIGHT TONE: Use white, cream, off-white, light gray, or soft pastel backgrounds. Bright, airy, clean feel. Absolutely NO dark backgrounds.' : backgroundTone === 'dark' ? 'DARK TONE: Use deep black, dark charcoal, navy, or dark muted backgrounds. Moody, dramatic, premium feel. Absolutely NO light or white backgrounds.' : `BRAND COLORS TONE: The background must be built from the brand's own color palette. Dominant tone: ${brand?.brand_colors?.[0] || 'match brand identity'}. Full palette: ${brand?.brand_colors?.join(', ') || 'extract from brand'}. Do NOT default to black or white — use actual brand colors.`}
+
 ${forcedVisualStyle === 'graphic' ? `GRAPHIC STYLE RENDERING RULES (CRITICAL):
 - The main subject (UI/product/device) must be rendered in sharp 3D perspective — slightly rotated, floating above the background
 - Apply a realistic drop shadow beneath the floating element
@@ -403,14 +406,12 @@ Deno.serve(async (req) => {
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { assetId, option, campaign, brand } = await req.json();
-  const forcedVisualStyle = option?.visual_style || null; // 'realistic' | 'graphic' | null
+  const forcedVisualStyle = option?.visual_style || null;
   const postContent = option?.post_content || null;
-  const backgroundStyle = option?.background || 'rich'; // 'rich' | 'minimal' | 'none'
+  const backgroundStyle = option?.background || 'rich';
+  const backgroundTone = option?.background_tone || 'brand';
 
-  // Fire-and-forget: return immediately so frontend never times out.
-  // The backend continues running and updates the entity when done.
-  // The frontend discovers the result via polling (refetchInterval).
-  doGenerate(base44, assetId, option, campaign, brand, postContent, forcedVisualStyle, backgroundStyle).catch(async (error) => {
+  doGenerate(base44, assetId, option, campaign, brand, postContent, forcedVisualStyle, backgroundStyle, backgroundTone).catch(async (error) => {
     console.error('Generation failed:', error.message);
     try {
       await base44.asServiceRole.entities.CampaignAsset.update(assetId, { status: 'error' });

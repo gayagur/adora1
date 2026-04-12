@@ -28,17 +28,25 @@ const BACKGROUND_OPTIONS = [
   { id: 'none', label: 'No Background', sub: 'Subject isolated on white or transparent background', icon: '✂️' },
 ];
 
-// Step 1 → asset type, Step 2 → visual style, Step 3 → background, Step 4 → post content
+const TONE_OPTIONS = [
+  { id: 'light', label: 'Light / Bright', sub: 'White, cream, or soft pastel tones', icon: '☀️' },
+  { id: 'dark', label: 'Dark / Moody', sub: 'Deep, dramatic, or dark backgrounds', icon: '🌙' },
+  { id: 'brand', label: 'Brand Colors', sub: 'Use the brand palette as the background tone', icon: '🎨' },
+];
+
+// Step 1 → asset type, Step 2 → visual style, Step 3 → background, Step 4 → tone, Step 5 → post content
 export default function AddAssetPanel({ onAdd, onClose }) {
   const [step, setStep] = useState(1);
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedStyle, setSelectedStyle] = useState(null);
   const [selectedBackground, setSelectedBackground] = useState(null);
+  const [selectedTone, setSelectedTone] = useState(null);
   const [postContent, setPostContent] = useState('');
 
   const handleSelectAsset = (opt) => { setSelectedOption(opt); setStep(2); };
   const handleSelectStyle = (style) => { setSelectedStyle(style); setStep(3); };
   const handleSelectBackground = (bg) => { setSelectedBackground(bg); setStep(4); };
+  const handleSelectTone = (tone) => { setSelectedTone(tone); setStep(5); };
 
   const handleBack = () => setStep(s => s - 1);
 
@@ -47,6 +55,7 @@ export default function AddAssetPanel({ onAdd, onClose }) {
       ...selectedOption,
       visual_style: selectedStyle.id,
       background: selectedBackground?.id || 'rich',
+      background_tone: selectedTone?.id || 'brand',
       post_content: postContent.trim() || null,
     });
     onClose();
@@ -56,7 +65,8 @@ export default function AddAssetPanel({ onAdd, onClose }) {
     1: { title: 'Add Content', sub: 'Choose a platform and content type' },
     2: { title: 'Visual Style', sub: selectedOption?.label },
     3: { title: 'Background Style', sub: selectedOption?.label },
-    4: { title: 'Add a Post or Idea', sub: 'Optional — helps the AI match your message' },
+    4: { title: 'Background Tone', sub: 'Light or dark?' },
+    5: { title: 'Add a Post or Idea', sub: 'Optional — helps the AI match your message' },
   };
 
   return (
@@ -149,8 +159,27 @@ export default function AddAssetPanel({ onAdd, onClose }) {
           </div>
         )}
 
-        {/* Step 4: Post content */}
+        {/* Step 4: Background Tone */}
         {step === 4 && (
+          <div className="flex-1 p-5 flex flex-col gap-3 justify-center">
+            {TONE_OPTIONS.map((tone) => (
+              <button
+                key={tone.id}
+                onClick={() => handleSelectTone(tone)}
+                className="flex items-center gap-4 p-5 rounded-2xl bg-gray-50 hover:bg-violet-50 hover:border-violet-200 border border-transparent text-left transition-all group"
+              >
+                <span className="text-3xl shrink-0">{tone.icon}</span>
+                <div>
+                  <p className="text-base font-semibold text-gray-900 group-hover:text-violet-700 transition-colors">{tone.label}</p>
+                  <p className="text-sm text-gray-400 mt-0.5">{tone.sub}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Step 5: Post content */}
+        {step === 5 && (
           <div className="flex-1 p-5 flex flex-col gap-4">
             <div className="flex items-start gap-3 p-4 rounded-xl bg-violet-50 border border-violet-100">
               <FileText className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
