@@ -138,9 +138,9 @@ export default function OnboardingStepBrand({ brandData, onUpdate, onBack, onCon
               </div>
             )}
             <div className="flex-1 space-y-2">
-              <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer transition-colors text-xs font-medium text-gray-600">
+              <label className="relative flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer transition-colors text-xs font-medium text-gray-600">
                 <Upload className="w-3.5 h-3.5" /> Upload logo
-                <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
                   const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -189,13 +189,13 @@ export default function OnboardingStepBrand({ brandData, onUpdate, onBack, onCon
               ))}
             </div>
           )}
-          <label className={`flex items-center gap-3 p-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${uploading ? 'border-violet-300 bg-violet-50' : 'border-gray-200 hover:border-violet-300 hover:bg-violet-50/30'}`}>
+          <label className={`relative flex items-center gap-3 p-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${uploading ? 'border-violet-300 bg-violet-50' : 'border-gray-200 hover:border-violet-300 hover:bg-violet-50/30'}`}>
             {uploading ? <Loader2 className="w-5 h-5 text-violet-500 animate-spin shrink-0" /> : <Upload className="w-5 h-5 text-gray-400 shrink-0" />}
             <div>
               <p className="text-sm font-medium text-gray-700">{uploading ? 'Uploading...' : 'Upload product images'}</p>
               <p className="text-xs text-gray-400">PNG, JPG, WEBP — optional</p>
             </div>
-            <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
+            <input type="file" multiple accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={handleImageUpload} disabled={uploading} />
           </label>
         </Field>
       </div>
