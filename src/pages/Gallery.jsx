@@ -126,7 +126,7 @@ export default function Gallery() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: Math.min(i * 0.02, 0.3) }}
                 className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer"
-                onClick={() => openLightbox(img)}
+                onClick={() => navigate(`/Campaign?id=${img.asset.campaign_id}&brand=${img.asset.brand_id}`)}
               >
                 <img src={img.url} alt={img.asset.headline} className="w-full h-full object-cover" />
                 {/* Hover overlay */}
