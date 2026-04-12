@@ -15,9 +15,10 @@ const FONT_CATEGORIES = {
       { label: 'Sora', value: 'Sora' },
       { label: 'Manrope', value: 'Manrope' },
       { label: 'DM Sans', value: 'DM Sans' },
-      { label: 'General Sans', value: 'General Sans' },
       { label: 'Outfit', value: 'Outfit' },
       { label: 'Urbanist', value: 'Urbanist' },
+      { label: 'Nunito', value: 'Nunito' },
+      { label: 'Figtree', value: 'Figtree' },
     ]
   },
   editorial: {
@@ -29,6 +30,9 @@ const FONT_CATEGORIES = {
       { label: 'Bodoni Moda', value: 'Bodoni Moda' },
       { label: 'Playfair Display', value: 'Playfair Display' },
       { label: 'Prata', value: 'Prata' },
+      { label: 'Lora', value: 'Lora' },
+      { label: 'Merriweather', value: 'Merriweather' },
+      { label: 'EB Garamond', value: 'EB Garamond' },
     ]
   },
   bold: {
@@ -40,7 +44,9 @@ const FONT_CATEGORIES = {
       { label: 'League Spartan', value: 'League Spartan' },
       { label: 'Space Grotesk', value: 'Space Grotesk' },
       { label: 'Oswald', value: 'Oswald' },
-      { label: 'Clash Display', value: 'Clash Display' },
+      { label: 'Righteous', value: 'Righteous' },
+      { label: 'Barlow Condensed', value: 'Barlow Condensed' },
+      { label: 'Black Han Sans', value: 'Black Han Sans' },
     ]
   },
   geometric: {
@@ -52,6 +58,19 @@ const FONT_CATEGORIES = {
       { label: 'Rubik', value: 'Rubik' },
       { label: 'Inter', value: 'Inter' },
       { label: 'Roboto', value: 'Roboto' },
+      { label: 'Work Sans', value: 'Work Sans' },
+      { label: 'Mulish', value: 'Mulish' },
+      { label: 'Jost', value: 'Jost' },
+    ]
+  },
+  handwritten: {
+    label: 'Handwritten / Creative',
+    fonts: [
+      { label: 'Caveat', value: 'Caveat' },
+      { label: 'Pacifico', value: 'Pacifico' },
+      { label: 'Dancing Script', value: 'Dancing Script' },
+      { label: 'Satisfy', value: 'Satisfy' },
+      { label: 'Kalam', value: 'Kalam' },
     ]
   },
 };

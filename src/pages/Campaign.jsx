@@ -11,7 +11,7 @@ import AddAssetPanel from '../components/campaign/AddAssetPanel';
 import AssetEditorPanel from '../components/campaign/AssetEditorPanel';
 import CampaignEditPanel from '../components/campaign/CampaignEditPanel';
 import BrandEditPanel from '../components/campaign/BrandEditPanel';
-import PremiumCanvasEditor from '../components/canvas/PremiumCanvasEditor';
+import CanvasEditor from '../components/campaign/CanvasEditor';
 
 const PLATFORM_ORDER = ['instagram', 'facebook', 'linkedin', 'tiktok', 'youtube', 'twitter', 'general'];
 const PLATFORM_LABELS = { instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'X / Twitter', general: 'Display' };
@@ -212,7 +212,7 @@ export default function Campaign() {
           />
         )}
         {canvasAsset && (
-          <PremiumCanvasEditor
+          <CanvasEditor
             initialHeadline={canvasAsset.headline}
             initialSubtext={canvasAsset.ad_copy}
             initialCta={canvasAsset.cta}
