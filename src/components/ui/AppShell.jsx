@@ -10,12 +10,12 @@ export default function AppShell({ children }) {
   if (isLanding) return <>{children}</>;
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
-      <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-white border-b border-black/[0.04]">
-        <div className="flex items-center h-full px-4 max-w-[1400px] mx-auto">
-          <Link to="/Landing" className="flex items-center gap-2 mr-6">
+    <div className="min-h-screen bg-[#FAFAF9]">
+      <header className="fixed top-0 left-0 right-0 z-50 h-[48px] bg-white border-b border-black/[0.04]">
+        <div className="flex items-center h-full px-5 max-w-[1400px] mx-auto">
+          <Link to="/Landing" className="flex items-center gap-2.5 mr-7">
             <img src={logoImg} alt="Adora" className="w-7 h-7 object-contain" />
-            <span className="text-[14px] font-semibold text-gray-900 tracking-tight">Adora</span>
+            <span className="text-[14px] font-semibold text-[#1a1a1a] tracking-[-0.01em]">Adora</span>
           </Link>
 
           <nav className="flex items-center gap-0.5">
@@ -27,15 +27,15 @@ export default function AppShell({ children }) {
             </NavItem>
           </nav>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto">
             <Link to="/Onboarding"
-              className="inline-flex items-center gap-1.5 h-[30px] px-3.5 rounded-lg bg-[#6c5ce7] hover:bg-[#5f4dd6] text-white text-[12px] font-medium transition-colors">
+              className="inline-flex items-center gap-1.5 h-[32px] px-4 rounded-full bg-[#1a1a1a] hover:bg-[#333] text-white text-[12px] font-medium transition-colors">
               <Plus className="w-3 h-3" /> New
             </Link>
           </div>
         </div>
       </header>
-      <main className="pt-12">{children}</main>
+      <main className="pt-[48px]">{children}</main>
     </div>
   );
 }
@@ -43,8 +43,8 @@ export default function AppShell({ children }) {
 function NavItem({ to, active, children }) {
   return (
     <Link to={to}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[12px] font-medium transition-colors ${
-        active ? 'bg-gray-100 text-gray-900' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${
+        active ? 'bg-[#f5f5f4] text-[#1a1a1a]' : 'text-[#1a1a1a]/35 hover:text-[#1a1a1a]/60 hover:bg-[#fafafa]'
       }`}>
       {children}
     </Link>
