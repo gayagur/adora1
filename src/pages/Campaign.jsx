@@ -15,7 +15,15 @@ import CanvasEditor from '../components/campaign/CanvasEditor';
 
 const PLATFORM_ORDER = ['instagram', 'facebook', 'linkedin', 'tiktok', 'youtube', 'twitter', 'general'];
 const PLATFORM_LABELS = { instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'X / Twitter', general: 'Display' };
-const PLATFORM_ICONS = { instagram: '📸', facebook: '📘', linkedin: '💼', tiktok: '🎵', youtube: '▶️', twitter: '🐦', general: '🖼' };
+const PLATFORM_COLORS = {
+  instagram: 'text-pink-600 bg-pink-50',
+  facebook: 'text-blue-600 bg-blue-50',
+  linkedin: 'text-sky-700 bg-sky-50',
+  tiktok: 'text-gray-900 bg-gray-100',
+  youtube: 'text-red-600 bg-red-50',
+  twitter: 'text-gray-700 bg-gray-100',
+  general: 'text-violet-600 bg-violet-50'
+};
 
 export default function Campaign() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -49,16 +57,12 @@ export default function Campaign() {
   });
 
   const generateAsset = (assetId, option, camp, br) => {
-    // Fire and forget — backend completes the generation even if browser disconnects
-    // Frontend discovers result via refetchInterval polling
     base44.functions.invoke('generateAsset', {
       assetId,
       option,
       campaign: camp,
       brand: br,
-    }).catch(() => {
-      // Ignore — asset will show as error via polling if backend failed
-    });
+    }).catch(() => {});
   };
 
   const handleAddAsset = async (option) => {
@@ -113,14 +117,13 @@ export default function Campaign() {
     refetchCampaign();
   };
 
-  // Group by platform
   const grouped = {};
   assets.forEach(a => { if (!grouped[a.platform]) grouped[a.platform] = []; grouped[a.platform].push(a); });
   const usedPlatforms = PLATFORM_ORDER.filter(p => grouped[p]?.length > 0);
 
   return (
     <AppShell>
-      <div className="min-h-screen bg-[#F7F7F8]">
+      <div className="min-h-screen bg-[#FAFAFA]">
         {campaign && (
           <CampaignHeader
             campaign={campaign}
@@ -133,26 +136,26 @@ export default function Campaign() {
 
         <div className="max-w-screen-xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-[15px] font-semibold text-gray-900 tracking-tight">
               Assets
-              {assets.length > 0 && <span className="text-gray-400 font-normal text-sm ml-2">({assets.length})</span>}
+              {assets.length > 0 && <span className="text-gray-300 font-normal text-[13px] ml-2">({assets.length})</span>}
             </h2>
             <button
               onClick={() => setShowAddPanel(true)}
-              className="flex items-center gap-2 h-9 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium transition-colors shadow-sm"
+              className="flex items-center gap-1.5 h-[34px] px-4 rounded-[9px] bg-gradient-to-b from-violet-500 to-violet-600 hover:from-violet-600 hover:to-violet-700 text-white text-[13px] font-medium transition-all shadow-sm shadow-violet-200/50 active:scale-[0.97]"
             >
-              <Plus className="w-4 h-4" /> Add Content
+              <Plus className="w-3.5 h-3.5" /> Add Content
             </button>
           </div>
 
           {assets.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="flex flex-col items-center justify-center py-28 text-center">
               <div className="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center mb-4">
-                <Plus className="w-7 h-7 text-violet-400" />
+                <Plus className="w-6 h-6 text-violet-400/70" />
               </div>
-              <h3 className="text-base font-semibold text-gray-900 mb-1.5">No content yet</h3>
-              <p className="text-sm text-gray-400 mb-6 max-w-xs">Generate posts, stories, reels, banners and more for this campaign.</p>
-              <button onClick={() => setShowAddPanel(true)} className="flex items-center gap-2 h-10 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium transition-colors">
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-1.5">No content yet</h3>
+              <p className="text-[13px] text-gray-400 mb-6 max-w-[260px] leading-relaxed">Generate posts, stories, reels, banners and more for this campaign.</p>
+              <button onClick={() => setShowAddPanel(true)} className="flex items-center gap-2 h-10 px-5 rounded-xl bg-gradient-to-b from-violet-500 to-violet-600 text-white text-sm font-medium transition-all shadow-sm shadow-violet-200/50 active:scale-[0.97]">
                 <Plus className="w-4 h-4" /> Add your first asset
               </button>
             </div>
@@ -161,14 +164,15 @@ export default function Campaign() {
           {usedPlatforms.map(platform => (
             <div key={platform} className="mb-10">
               <div className="flex items-center gap-2.5 mb-4">
-                <span className="text-lg">{PLATFORM_ICONS[platform]}</span>
-                <h3 className="font-semibold text-gray-800 text-[15px]">{PLATFORM_LABELS[platform]}</h3>
-                <span className="text-xs text-gray-400">{grouped[platform].length} item{grouped[platform].length !== 1 ? 's' : ''}</span>
-                <button onClick={() => setShowAddPanel(true)} className="ml-auto flex items-center gap-1 text-xs text-gray-400 hover:text-violet-600 transition-colors">
+                <span className={`px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-[0.08em] ${PLATFORM_COLORS[platform]}`}>
+                  {PLATFORM_LABELS[platform]}
+                </span>
+                <span className="text-[11px] text-gray-300 font-medium">{grouped[platform].length} item{grouped[platform].length !== 1 ? 's' : ''}</span>
+                <button onClick={() => setShowAddPanel(true)} className="ml-auto flex items-center gap-1 text-[12px] text-gray-400 hover:text-violet-600 transition-colors font-medium">
                   <Plus className="w-3.5 h-3.5" /> Add
                 </button>
               </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {grouped[platform].map((asset, i) => (
                   <AssetCard
                     key={asset.id}

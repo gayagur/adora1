@@ -3,10 +3,6 @@ import { Copy, Download, RefreshCw, Check, Loader2, ImageIcon, Pencil, Copy as D
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
-const PLATFORM_ICONS = {
-  instagram: '📸', facebook: '📘', linkedin: '💼',
-  tiktok: '🎵', youtube: '▶️', twitter: '🐦', general: '🖼'
-};
 const ASSET_LABELS = {
   post: 'Post', story: 'Story', reel: 'Reel', carousel: 'Carousel',
   banner: 'Banner', video_concept: 'Video', ad: 'Ad'
@@ -17,7 +13,6 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
   const [regenerating, setRegenerating] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
 
-  // Consider stuck if generating for more than 5 minutes
   const isStuck = asset.status === 'generating' &&
     asset.created_date && (Date.now() - new Date(asset.created_date).getTime()) > 8 * 60 * 1000;
   const isGenerating = asset.status === 'generating' && !isStuck;
@@ -45,7 +40,6 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
       document.body.removeChild(a); URL.revokeObjectURL(u);
       toast.success('Downloaded');
     } catch {
-      // CORS fallback — open in new tab
       window.open(currentImage, '_blank');
       toast.success('Opened in new tab');
     }
@@ -65,51 +59,55 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: Math.min(index * 0.06, 0.4) }}
-      className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-violet-200 hover:shadow-md transition-all duration-200 cursor-pointer group"
+      transition={{ delay: Math.min(index * 0.04, 0.3), duration: 0.35 }}
+      className="bg-white rounded-2xl border border-gray-100/80 overflow-hidden hover:border-gray-200 hover:shadow-lg hover:shadow-gray-100/50 transition-all duration-300 cursor-pointer group"
       onClick={() => !isGenerating && onEdit && onEdit(asset)}
     >
       {/* Image */}
-      <div className="relative bg-gray-50 aspect-square">
+      <div className="relative bg-gray-50 aspect-square overflow-hidden">
         {isStuck ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 text-center">
-            <p className="text-xs text-gray-400">Generation timed out</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 text-center bg-gray-50">
+            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+              <RefreshCw className="w-4 h-4 text-gray-400" />
+            </div>
+            <p className="text-[12px] text-gray-400 font-medium">Generation timed out</p>
             <button
               onClick={async (e) => { e.stopPropagation(); setRegenerating(true); await onRegenerate(asset.id); setRegenerating(false); }}
               disabled={regenerating}
-              className="flex items-center gap-1.5 h-8 px-3 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-medium transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 h-[30px] px-3 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-medium transition-colors disabled:opacity-50"
             >
               {regenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
               Retry
             </button>
           </div>
         ) : isGenerating ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-            <Loader2 className="w-7 h-7 text-violet-400 animate-spin" />
-            <p className="text-xs text-gray-400">Generating…</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-gray-50 to-violet-50/30">
+            <div className="relative">
+              <div className="w-10 h-10 rounded-full border-2 border-violet-200 border-t-violet-500 animate-spin" />
+            </div>
+            <p className="text-[11px] text-gray-400 font-medium">Creating asset…</p>
           </div>
         ) : currentImage ? (
           <>
-            <img src={currentImage} alt={asset.headline} className="w-full h-full object-cover" />
+            <img src={currentImage} alt={asset.headline} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
             {/* Hover overlay */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
-              <div className="bg-white rounded-xl px-3 py-1.5 text-xs font-medium text-gray-800 shadow-lg flex items-center gap-1.5">
-                <Pencil className="w-3 h-3" /> Edit
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-4">
+              <div className="flex items-center gap-1.5">
+                <span className="bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1.5 text-[11px] font-semibold text-gray-800 shadow-lg flex items-center gap-1.5">
+                  <Pencil className="w-3 h-3" /> Edit
+                </span>
               </div>
             </div>
             {/* Carousel indicators */}
             {carouselImages.length > 1 && (
-              <div className="absolute bottom-2 left-0 right-0 flex items-center justify-center gap-1">
+              <div className="absolute bottom-2.5 left-0 right-0 flex items-center justify-center gap-1">
                 {carouselImages.map((_, i) => (
                   <button
                     key={i}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCarouselIndex(i);
-                    }}
-                    className={`h-1.5 rounded-full transition-all ${i === carouselIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`}
+                    onClick={(e) => { e.stopPropagation(); setCarouselIndex(i); }}
+                    className={`rounded-full transition-all ${i === carouselIndex ? 'w-5 h-1.5 bg-white shadow-sm' : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/70'}`}
                   />
                 ))}
               </div>
@@ -117,71 +115,87 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
           </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <ImageIcon className="w-8 h-8 text-gray-300" />
+            <ImageIcon className="w-7 h-7 text-gray-200" />
           </div>
         )}
 
         {/* Badge */}
         <div className="absolute top-2.5 left-2.5">
-          <span className="px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-sm text-[11px] font-medium text-gray-700 shadow-sm">
-            {PLATFORM_ICONS[asset.platform]} {ASSET_LABELS[asset.asset_type] || asset.asset_type}
-            {carouselImages.length > 1 && <span className="ml-1">({carouselIndex + 1}/{carouselImages.length})</span>}
+          <span className="px-2 py-[3px] rounded-md bg-white/90 backdrop-blur-sm text-[10px] font-semibold text-gray-600 shadow-sm tracking-wide uppercase">
+            {asset.platform} · {ASSET_LABELS[asset.asset_type] || asset.asset_type}
+            {carouselImages.length > 1 && <span className="ml-1 text-gray-400">({carouselIndex + 1}/{carouselImages.length})</span>}
           </span>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-3.5">
         {isStuck ? (
-          <div className="h-8 rounded-lg bg-gray-100" />
+          <div className="h-8 rounded-lg bg-gray-50" />
         ) : !isGenerating ? (
           <>
-            <h3 className="font-semibold text-gray-900 text-sm leading-snug mb-1">{asset.headline}</h3>
-            <p className="text-xs text-gray-400 leading-relaxed mb-3 line-clamp-2">{asset.ad_copy}</p>
+            <h3 className="font-semibold text-gray-900 text-[13px] leading-snug mb-1 tracking-tight line-clamp-1">{asset.headline}</h3>
+            <p className="text-[11px] text-gray-400 leading-relaxed mb-3 line-clamp-2">{asset.ad_copy}</p>
 
             {asset.cta && (
-              <span className="inline-block px-2.5 py-1 rounded-lg bg-violet-50 text-violet-700 text-xs font-medium mb-3">{asset.cta}</span>
+              <span className="inline-block px-2.5 py-[3px] rounded-lg bg-violet-50 text-violet-600 text-[11px] font-semibold mb-3">{asset.cta}</span>
             )}
 
             {/* Action row */}
-            <div className="flex gap-1.5" onClick={e => e.stopPropagation()}>
+            <div className="flex gap-1 pt-2.5 border-t border-gray-50" onClick={e => e.stopPropagation()}>
               <button
                 onClick={() => onCanvas && onCanvas(asset)}
-                className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-medium border border-gray-200 text-gray-600 hover:bg-violet-50 hover:border-violet-200 hover:text-violet-700 transition-colors"
+                className="flex-1 flex items-center justify-center gap-1.5 h-[30px] rounded-lg text-[11px] font-semibold border border-gray-100 text-gray-500 hover:bg-violet-50 hover:border-violet-200 hover:text-violet-600 transition-all"
               >
                 <Layers className="w-3 h-3" /> Design
               </button>
-              <button
-                onClick={() => onEdit && onEdit(asset)}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
-              >
+              <ActionButton onClick={() => onEdit && onEdit(asset)} title="Edit">
                 <Pencil className="w-3 h-3" />
-              </button>
-              <button onClick={copyCaption} className={`flex items-center justify-center gap-1 w-8 h-8 rounded-lg text-xs font-medium border transition-colors ${copied ? 'border-green-200 bg-green-50 text-green-600' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
-                {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-              </button>
+              </ActionButton>
+              <ActionButton onClick={copyCaption} title="Copy caption" active={copied}>
+                {copied ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3" />}
+              </ActionButton>
               {asset.preview_image && (
-                <button onClick={downloadImage} className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors" title="Download current image">
-                    <Download className="w-3 h-3" />
-                  </button>
+                <ActionButton onClick={downloadImage} title="Download">
+                  <Download className="w-3 h-3" />
+                </ActionButton>
               )}
               {onDuplicate && (
-                <button onClick={handleDuplicate} className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">
+                <ActionButton onClick={handleDuplicate} title="Duplicate">
                   <DuplicateIcon className="w-3 h-3" />
-                </button>
+                </ActionButton>
               )}
               {onRegenerate && (
-                <button onClick={handleRegenerate} disabled={regenerating} className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-40 transition-colors">
+                <ActionButton onClick={handleRegenerate} disabled={regenerating} title="Regenerate">
                   <RefreshCw className={`w-3 h-3 ${regenerating ? 'animate-spin' : ''}`} />
-                </button>
+                </ActionButton>
               )}
             </div>
           </>
         ) : (
-          <div className="h-8 rounded-lg bg-gray-100 animate-pulse" />
+          <div className="space-y-2">
+            <div className="h-3 w-3/4 rounded bg-gray-100 animate-pulse" />
+            <div className="h-3 w-1/2 rounded bg-gray-50 animate-pulse" />
+          </div>
         )}
-        {isStuck && null}
       </div>
     </motion.div>
+  );
+}
+
+function ActionButton({ onClick, disabled, title, active, children }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={`w-[30px] h-[30px] flex items-center justify-center rounded-lg border transition-all disabled:opacity-30 ${
+        active
+          ? 'border-green-200 bg-green-50'
+          : 'border-gray-100 text-gray-400 hover:bg-gray-50 hover:text-gray-600'
+      }`}
+    >
+      {children}
+    </button>
   );
 }

@@ -19,7 +19,6 @@ export default function AssetEditorPanel({ asset, campaign, brand, onSave, onClo
   const [regeneratingImage, setRegeneratingImage] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [improvingField, setImprovingField] = useState(null);
-  const [activeTab, setActiveTab] = useState('edit');
   const [showCanvasEditor, setShowCanvasEditor] = useState(false);
 
   const updateField = (k, v) => setDraft(prev => ({ ...prev, [k]: v }));
@@ -132,12 +131,11 @@ Return ONLY the improved text, nothing else.`,
   }
 
   return (
-    <>
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-stretch justify-end bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-stretch justify-end bg-black/30 backdrop-blur-sm"
       onClick={onClose}
     >
       <motion.div
@@ -145,41 +143,40 @@ Return ONLY the improved text, nothing else.`,
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="bg-white w-full max-w-2xl h-full overflow-y-auto shadow-2xl"
+        className="bg-white w-full max-w-2xl h-full overflow-y-auto shadow-2xl shadow-black/10"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-6 pt-4 pb-0">
+        <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-lg border-b border-gray-100 px-6 pt-4 pb-0">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="font-semibold text-gray-900">Edit Asset</h2>
-              <p className="text-xs text-gray-400 capitalize">{asset.platform} · {asset.asset_type}</p>
+              <h2 className="font-semibold text-gray-900 text-[15px] tracking-tight">Edit Asset</h2>
+              <p className="text-[11px] text-gray-400 capitalize font-medium">{asset.platform} · {asset.asset_type}</p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-1.5 h-8 px-4 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium transition-colors disabled:opacity-60"
+                className="flex items-center gap-1.5 h-[32px] px-4 rounded-[9px] bg-gradient-to-b from-violet-500 to-violet-600 text-white text-[12px] font-semibold transition-all disabled:opacity-60 shadow-sm shadow-violet-200/40 active:scale-[0.97]"
               >
                 {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                 Save
               </button>
-              <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-                <X className="w-4 h-4 text-gray-500" />
+              <button onClick={onClose} className="w-7 h-7 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors">
+                <X className="w-4 h-4 text-gray-400" />
               </button>
             </div>
           </div>
-          {/* Tabs */}
-          <div className="flex gap-1 items-center">
-            <button
-              onClick={() => setActiveTab('edit')}
-              className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'edit' ? 'border-violet-600 text-violet-600' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
-            >
-              Edit Copy
-            </button>
+          {/* Tab bar */}
+          <div className="flex items-center">
+            <div className="flex items-center gap-1">
+              <span className="px-3 py-2 text-[12px] font-semibold text-violet-600 border-b-2 border-violet-600">
+                Edit Copy
+              </span>
+            </div>
             <button
               onClick={() => setShowCanvasEditor(true)}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 border-transparent text-violet-500 hover:text-violet-700 ml-auto"
+              className="flex items-center gap-1.5 px-3 py-2 text-[12px] font-medium text-gray-400 hover:text-violet-600 ml-auto transition-colors"
             >
               <Layers className="w-3.5 h-3.5" />
               Design Canvas
@@ -191,24 +188,23 @@ Return ONLY the improved text, nothing else.`,
           {/* Image section */}
           <div>
             <SectionLabel>Visual</SectionLabel>
-            <div className="relative rounded-2xl overflow-hidden aspect-video bg-gray-100 mb-3">
+            <div className="relative rounded-2xl overflow-hidden aspect-video bg-gray-50 mb-3 border border-gray-100">
               {regeneratingImage ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-50">
-                  <Loader2 className="w-7 h-7 text-violet-400 animate-spin" />
-                  <p className="text-xs text-gray-400">Generating new image…</p>
+                  <div className="w-8 h-8 rounded-full border-2 border-violet-200 border-t-violet-500 animate-spin" />
+                  <p className="text-[11px] text-gray-400 font-medium">Generating new image…</p>
                 </div>
               ) : draft.preview_image ? (
                 <img src={draft.preview_image} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-gray-300">No image</div>
+                <div className="absolute inset-0 flex items-center justify-center text-gray-300 text-[12px]">No image</div>
               )}
             </div>
 
-            {/* Image prompt */}
-            <label className="block mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1 block">Image Prompt</span>
+            <label className="block mb-2.5">
+              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-gray-400 mb-1.5 block">Image Prompt</span>
               <textarea
-                className={inputCls + ' resize-none text-xs'}
+                className={inputCls + ' resize-none text-[12px]'}
                 rows={3}
                 value={draft.visual_prompt || ''}
                 onChange={e => updateField('visual_prompt', e.target.value)}
@@ -220,14 +216,14 @@ Return ONLY the improved text, nothing else.`,
               <button
                 onClick={regenerateImage}
                 disabled={regeneratingImage}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                className="flex items-center gap-1.5 h-[30px] px-3 rounded-lg border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-all"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${regeneratingImage ? 'animate-spin' : ''}`} />
-                Regenerate Image
+                <RefreshCw className={`w-3 h-3 ${regeneratingImage ? 'animate-spin' : ''}`} />
+                Regenerate
               </button>
-              <label className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer transition-colors">
-                {uploadingImage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                Replace Image
+              <label className="flex items-center gap-1.5 h-[30px] px-3 rounded-lg border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer transition-all">
+                {uploadingImage ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+                Replace
                 <input type="file" accept="image/*" className="hidden" onChange={uploadImage} disabled={uploadingImage} />
               </label>
             </div>
@@ -240,7 +236,7 @@ Return ONLY the improved text, nothing else.`,
               <button
                 onClick={regenerateText}
                 disabled={regeneratingText}
-                className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-700 text-xs font-medium transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 h-[26px] px-3 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-600 text-[11px] font-semibold transition-colors disabled:opacity-50"
               >
                 {regeneratingText ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
                 Regenerate All
@@ -284,16 +280,14 @@ Return ONLY the improved text, nothing else.`,
         </div>
       </motion.div>
     </motion.div>
-    </>
   );
 }
 
-
 function SectionLabel({ children }) {
-  return <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{children}</p>;
+  return <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-gray-400 mb-3">{children}</p>;
 }
 
-const inputCls = 'w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all';
+const inputCls = 'w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-[13px] text-gray-900 placeholder-gray-300 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all';
 
 function TextField({ label, value, onChange, multiline, rows = 3, placeholder, onImprove, improving, onImproveAction }) {
   const [showActions, setShowActions] = useState(false);
@@ -301,24 +295,24 @@ function TextField({ label, value, onChange, multiline, rows = 3, placeholder, o
   return (
     <div className="mb-4">
       <div className="flex items-center justify-between mb-1.5">
-        <label className="text-xs font-medium text-gray-600">{label}</label>
+        <label className="text-[12px] font-medium text-gray-600">{label}</label>
         {onImprove && (
           <div className="relative">
             <button
               onClick={() => setShowActions(prev => !prev)}
               disabled={improving}
-              className="flex items-center gap-1 text-[11px] text-violet-500 hover:text-violet-700 font-medium disabled:opacity-50"
+              className="flex items-center gap-1 text-[11px] text-violet-500 hover:text-violet-700 font-semibold disabled:opacity-50 transition-colors"
             >
               {improving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
               Improve <ChevronDown className="w-2.5 h-2.5" />
             </button>
             {showActions && (
-              <div className="absolute right-0 top-5 z-20 bg-white rounded-xl border border-gray-100 shadow-lg p-1 min-w-[140px]">
+              <div className="absolute right-0 top-6 z-20 bg-white rounded-xl border border-gray-100 shadow-xl shadow-gray-100/50 p-1 min-w-[140px]">
                 {onImprove.map(action => (
                   <button
                     key={action.label}
                     onClick={() => { onImproveAction(action); setShowActions(false); }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-700 hover:bg-violet-50 hover:text-violet-700 rounded-lg transition-colors"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-[12px] text-gray-600 hover:bg-violet-50 hover:text-violet-700 rounded-lg transition-colors font-medium"
                   >
                     <action.icon className="w-3.5 h-3.5" />
                     {action.label}

@@ -10,10 +10,6 @@ const PLATFORM_LABELS = {
   instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn',
   tiktok: 'TikTok', youtube: 'YouTube', twitter: 'X / Twitter', general: 'Display'
 };
-const PLATFORM_ICONS = {
-  instagram: '📸', facebook: '📘', linkedin: '💼',
-  tiktok: '🎵', youtube: '▶️', twitter: '🐦', general: '🖼'
-};
 const ASSET_LABELS = {
   post: 'Post', story: 'Story', reel: 'Reel', carousel: 'Carousel',
   banner: 'Banner', video_concept: 'Video', ad: 'Ad'
@@ -21,7 +17,7 @@ const ASSET_LABELS = {
 
 export default function Gallery() {
   const navigate = useNavigate();
-  const [lightbox, setLightbox] = useState(null); // { images: [], index: 0, asset }
+  const [lightbox, setLightbox] = useState(null);
   const [filterPlatform, setFilterPlatform] = useState('all');
 
   const { data: assets = [], isLoading } = useQuery({
@@ -29,7 +25,6 @@ export default function Gallery() {
     queryFn: () => base44.entities.CampaignAsset.list('-created_date', 500),
   });
 
-  // Collect all images with metadata
   const allImages = [];
   assets.forEach(asset => {
     if (asset.status !== 'ready') return;
@@ -40,16 +35,12 @@ export default function Gallery() {
   });
 
   const platforms = [...new Set(assets.filter(a => a.status === 'ready').map(a => a.platform))];
-
-  const filtered = filterPlatform === 'all'
-    ? allImages
-    : allImages.filter(img => img.asset.platform === filterPlatform);
+  const filtered = filterPlatform === 'all' ? allImages : allImages.filter(img => img.asset.platform === filterPlatform);
 
   const openLightbox = (img) => {
     const idx = filtered.indexOf(img);
     setLightbox({ images: filtered, index: idx });
   };
-
   const closeLightbox = () => setLightbox(null);
   const prev = () => setLightbox(l => ({ ...l, index: (l.index - 1 + l.images.length) % l.images.length }));
   const next = () => setLightbox(l => ({ ...l, index: (l.index + 1) % l.images.length }));
@@ -75,38 +66,29 @@ export default function Gallery() {
     <AppShell>
       <div className="max-w-screen-xl mx-auto px-6 py-10">
         {/* Header */}
-        <div className="flex items-start justify-between mb-8">
+        <div className="flex items-end justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Image Gallery</h1>
-            <p className="text-sm text-gray-400 mt-1">{filtered.length} image{filtered.length !== 1 ? 's' : ''}</p>
+            <h1 className="text-[1.625rem] font-bold text-gray-900 tracking-tight">Gallery</h1>
+            <p className="text-[13px] text-gray-400 mt-1.5">{filtered.length} image{filtered.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
 
         {/* Platform filter */}
         {platforms.length > 1 && (
-          <div className="flex flex-wrap gap-2 mb-8">
-            <button
-              onClick={() => setFilterPlatform('all')}
-              className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${filterPlatform === 'all' ? 'bg-violet-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-            >
-              All
-            </button>
+          <div className="flex flex-wrap gap-1.5 mb-8">
+            <FilterPill active={filterPlatform === 'all'} onClick={() => setFilterPlatform('all')}>All</FilterPill>
             {platforms.map(p => (
-              <button
-                key={p}
-                onClick={() => setFilterPlatform(p)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${filterPlatform === p ? 'bg-violet-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-              >
-                {PLATFORM_ICONS[p]} {PLATFORM_LABELS[p]}
-              </button>
+              <FilterPill key={p} active={filterPlatform === p} onClick={() => setFilterPlatform(p)}>
+                {PLATFORM_LABELS[p]}
+              </FilterPill>
             ))}
           </div>
         )}
 
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
             {[...Array(10)].map((_, i) => (
-              <div key={i} className="aspect-square rounded-xl bg-gray-100 animate-pulse" />
+              <div key={i} className="aspect-square rounded-2xl bg-gray-100/80 animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
@@ -115,37 +97,37 @@ export default function Gallery() {
               <ImageIcon className="w-7 h-7 text-violet-300" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No images yet</h3>
-            <p className="text-sm text-gray-400 max-w-xs">Generate campaign assets to see images here.</p>
+            <p className="text-[13px] text-gray-400 max-w-[260px] leading-relaxed">Generate campaign assets to see images here.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
             {filtered.map((img, i) => (
               <motion.div
                 key={`${img.asset.id}-${img.slideIndex}`}
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: Math.min(i * 0.02, 0.3) }}
-                className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer"
-                onClick={() => navigate(`/Campaign?id=${img.asset.campaign_id}&brand=${img.asset.brand_id}`)}
+                transition={{ delay: Math.min(i * 0.02, 0.25), duration: 0.3 }}
+                className="group relative aspect-square rounded-2xl overflow-hidden bg-gray-100 cursor-pointer"
+                onClick={() => openLightbox(img)}
               >
-                <img src={img.url} alt={img.asset.headline} className="w-full h-full object-cover" />
+                <img src={img.url} alt={img.asset.headline} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
                 {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-200 flex flex-col justify-end p-2">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p className="text-white text-xs font-medium line-clamp-2 mb-1">{img.asset.headline}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/70 text-[10px]">{PLATFORM_ICONS[img.asset.platform]} {ASSET_LABELS[img.asset.asset_type]}</span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); downloadImage(img.url, img.asset); }}
-                        className="w-6 h-6 rounded-md bg-white/20 hover:bg-white/40 flex items-center justify-center transition-colors"
-                      >
-                        <Download className="w-3 h-3 text-white" />
-                      </button>
-                    </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3">
+                  <p className="text-white text-[11px] font-medium line-clamp-2 mb-1.5">{img.asset.headline}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 text-[10px] font-medium uppercase tracking-wider">
+                      {PLATFORM_LABELS[img.asset.platform]} · {ASSET_LABELS[img.asset.asset_type]}
+                    </span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); downloadImage(img.url, img.asset); }}
+                      className="w-7 h-7 rounded-lg bg-white/15 hover:bg-white/30 flex items-center justify-center transition-colors backdrop-blur-sm"
+                    >
+                      <Download className="w-3 h-3 text-white" />
+                    </button>
                   </div>
                 </div>
                 {img.totalSlides > 1 && (
-                  <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-black/50 text-[9px] text-white font-medium">
+                  <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-black/40 backdrop-blur-sm text-[9px] text-white font-semibold tracking-wide">
                     {img.slideIndex + 1}/{img.totalSlides}
                   </div>
                 )}
@@ -162,49 +144,66 @@ export default function Gallery() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center"
             onClick={closeLightbox}
           >
-            <button onClick={closeLightbox} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10">
+            <button onClick={closeLightbox} className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10">
               <X className="w-5 h-5" />
             </button>
-            <button onClick={(e) => { e.stopPropagation(); prev(); }} className="absolute left-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10">
+            <button onClick={(e) => { e.stopPropagation(); prev(); }} className="absolute left-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <button onClick={(e) => { e.stopPropagation(); next(); }} className="absolute right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10">
+            <button onClick={(e) => { e.stopPropagation(); next(); }} className="absolute right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10">
               <ChevronRight className="w-5 h-5" />
             </button>
             <motion.div
               key={lightbox.index}
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="max-w-2xl max-h-[85vh] flex flex-col items-center gap-4"
+              className="max-w-2xl max-h-[85vh] flex flex-col items-center gap-5"
               onClick={e => e.stopPropagation()}
             >
-              <img src={current.url} alt={current.asset.headline} className="max-h-[70vh] max-w-full rounded-xl object-contain shadow-2xl" />
+              <img src={current.url} alt={current.asset.headline} className="max-h-[70vh] max-w-full rounded-2xl object-contain shadow-2xl" />
               <div className="text-center">
-                <p className="text-white font-medium text-sm mb-1">{current.asset.headline}</p>
-                <p className="text-white/50 text-xs">{PLATFORM_ICONS[current.asset.platform]} {PLATFORM_LABELS[current.asset.platform]} · {ASSET_LABELS[current.asset.asset_type]}</p>
+                <p className="text-white font-semibold text-[14px] mb-1">{current.asset.headline}</p>
+                <p className="text-white/40 text-[11px] font-medium uppercase tracking-wider">
+                  {PLATFORM_LABELS[current.asset.platform]} · {ASSET_LABELS[current.asset.asset_type]}
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => downloadImage(current.url, current.asset)}
-                  className="flex items-center gap-2 h-8 px-4 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm transition-colors"
+                  className="flex items-center gap-2 h-[34px] px-4 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[12px] font-medium transition-colors"
                 >
                   <Download className="w-3.5 h-3.5" /> Download
                 </button>
                 <button
                   onClick={() => navigate(`/Campaign?id=${current.asset.campaign_id}&brand=${current.asset.brand_id}`)}
-                  className="flex items-center gap-2 h-8 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm transition-colors"
+                  className="flex items-center gap-2 h-[34px] px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-[12px] font-medium transition-colors"
                 >
                   <ExternalLink className="w-3.5 h-3.5" /> Open Campaign
                 </button>
               </div>
             </motion.div>
-            <div className="absolute bottom-4 text-white/40 text-xs">{lightbox.index + 1} / {lightbox.images.length}</div>
+            <div className="absolute bottom-5 text-white/30 text-[11px] font-medium">{lightbox.index + 1} / {lightbox.images.length}</div>
           </motion.div>
         )}
       </AnimatePresence>
     </AppShell>
+  );
+}
+
+function FilterPill({ active, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3.5 py-[6px] rounded-lg text-[12px] font-medium transition-all ${
+        active
+          ? 'bg-violet-600 text-white shadow-sm shadow-violet-200/50'
+          : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300'
+      }`}
+    >
+      {children}
+    </button>
   );
 }
