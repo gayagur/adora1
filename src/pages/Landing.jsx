@@ -57,105 +57,62 @@ export default function Landing() {
       </nav>
 
       {/* Hero */}
-      <section className="pt-32 pb-24 px-6 md:px-16 relative overflow-hidden">
+      <section className="pt-40 pb-32 px-6 relative overflow-hidden">
         {/* bg glow */}
-        <div className="absolute top-0 left-1/3 w-[700px] h-[500px] bg-violet-600/8 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-violet-600/10 rounded-full blur-[120px] pointer-events-none" />
 
-        <div className="max-w-6xl mx-auto flex items-center gap-16 min-h-[520px] relative z-10">
-          {/* Left — text */}
-          <motion.div
-            initial={{ opacity: 0, x: -24 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7 }}
-            className="flex-1 flex flex-col justify-center"
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.04] text-[11px] font-medium text-violet-300 mb-10 w-fit tracking-wide">
-              <Zap className="w-3 h-3" />
-              AI Marketing Studio
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className="max-w-4xl mx-auto text-center relative z-10"
+        >
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 text-xs font-medium text-violet-300 mb-8">
+            <Zap className="w-3 h-3" />
+            AI Marketing Studio
+          </div>
+
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-[-0.03em] leading-[1.03] text-balance">
+            Turn any website into a{' '}
+            <span className="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">
+              full marketing campaign
+            </span>
+          </h1>
+
+          <p className="mt-7 text-lg sm:text-xl text-white/45 max-w-xl mx-auto leading-relaxed font-light">
+            Analyze a URL, generate strategic campaign themes, and create multi-platform assets — all in one workspace.
+          </p>
+
+          {/* URL form */}
+          <form onSubmit={handleSubmit} className="mt-10 max-w-lg mx-auto">
+            <div className="relative flex items-center gap-2 p-1.5 rounded-xl bg-white/[0.06] border border-white/10 backdrop-blur-sm">
+              <input
+                type="text"
+                value={url}
+                onChange={e => setUrl(e.target.value)}
+                placeholder="https://yourbrand.com"
+                className="flex-1 bg-transparent pl-4 pr-2 py-2.5 text-sm text-white placeholder-white/30 outline-none"
+              />
+              <button
+                type="submit"
+                className="flex items-center gap-2 h-10 px-5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors shrink-0"
+              >
+                Analyze
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
-
-            <h1
-              className="text-[56px] md:text-[68px] font-semibold leading-[1.12] tracking-[-0.035em] text-white mb-6"
-              style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}
-            >
-              Design your space<br />
-              <span className="text-white/40">your way.</span>
-            </h1>
-
-            <p
-              className="text-[17px] text-white/50 leading-relaxed mb-10 max-w-sm"
-              style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontWeight: 400 }}
-            >
-              From idea to reality &mdash; with DEXO.
-            </p>
-
-            {/* URL form */}
-            <form onSubmit={handleSubmit} className="max-w-md">
-              <div className="relative flex items-center gap-2 p-1.5 rounded-xl bg-white/[0.05] border border-white/[0.1] backdrop-blur-sm">
-                <input
-                  type="text"
-                  value={url}
-                  onChange={e => setUrl(e.target.value)}
-                  placeholder="https://yourbrand.com"
-                  className="flex-1 bg-transparent pl-4 pr-2 py-2.5 text-sm text-white placeholder-white/25 outline-none"
-                  style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}
-                />
-                <button
-                  type="submit"
-                  className="flex items-center gap-2 h-10 px-5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors shrink-0"
-                >
-                  Analyze
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </form>
-          </motion.div>
-
-          {/* Right — visual */}
-          <motion.div
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.15 }}
-            className="hidden md:flex flex-1 items-center justify-center"
-          >
-            <div className="relative w-[280px]">
-              {/* Phone frame */}
-              <div className="relative w-[260px] mx-auto rounded-[40px] bg-[#18181B] border border-white/10 shadow-2xl overflow-hidden" style={{ height: 520 }}>
-                {/* Notch */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-7 bg-[#09090B] rounded-b-2xl z-10 flex items-center justify-center">
-                  <div className="w-2 h-2 rounded-full bg-white/10" />
-                </div>
-                {/* Screen content — gradient placeholder */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#1a0a2e] via-[#0f0f1a] to-[#09090B] flex flex-col items-center justify-center gap-4 px-6">
-                  <div className="w-16 h-16 rounded-2xl bg-violet-600/30 border border-violet-400/20 flex items-center justify-center">
-                    <Sparkles className="w-7 h-7 text-violet-300" />
-                  </div>
-                  <div className="space-y-2 w-full">
-                    <div className="h-2.5 bg-white/10 rounded-full w-3/4 mx-auto" />
-                    <div className="h-2 bg-white/6 rounded-full w-1/2 mx-auto" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 w-full mt-2">
-                    {[0,1,2,3].map(i => (
-                      <div key={i} className="h-24 rounded-xl bg-white/[0.04] border border-white/[0.07]" />
-                    ))}
-                  </div>
-                </div>
-              </div>
-              {/* Glow behind phone */}
-              <div className="absolute inset-0 -z-10 blur-[60px] bg-violet-600/15 rounded-full" />
-            </div>
-          </motion.div>
-        </div>
+          </form>
+        </motion.div>
 
         {/* Campaign theme chips preview */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.7 }}
-          className="mt-16 flex flex-wrap justify-start gap-2.5 max-w-6xl mx-auto"
+          transition={{ delay: 0.4, duration: 0.7 }}
+          className="mt-16 flex flex-wrap justify-center gap-2.5 max-w-2xl mx-auto"
         >
           {CAMPAIGN_THEMES.map(t => (
-            <div key={t.label} className={`px-3.5 py-1.5 rounded-full text-[11px] font-medium bg-gradient-to-r ${t.color} text-white shadow-md opacity-80`}>
+            <div key={t.label} className={`px-4 py-2 rounded-full text-xs font-medium bg-gradient-to-r ${t.color} text-white shadow-lg`}>
               {t.label}
             </div>
           ))}
