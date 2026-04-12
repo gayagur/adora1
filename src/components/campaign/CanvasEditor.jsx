@@ -731,7 +731,7 @@ export default function CanvasEditor({
                     {editingText === 'cta' ? (
                       <input autoFocus
                         className="outline-none bg-transparent font-semibold text-white text-center"
-                        style={{ backgroundColor: accentColor, padding: '8px 20px', borderRadius: 999, fontSize: subtextSize * 0.9, ...textStyle }}
+                        style={{ backgroundColor: accentColor, padding: '8px 20px', borderRadius: 999, fontSize: subtextSize * 0.9, ...bodyFontStyle }}
                         value={cta}
                         onChange={e => setCta(e.target.value)}
                         onBlur={() => setEditingText(null)}

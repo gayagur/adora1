@@ -3,11 +3,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 const ACCESS_KEY = Deno.env.get('SCREENSHOTONE_ACCESS_KEY');
 
 const SECTIONS = [
-  { label: 'Hero',         scroll_to: 0,    full_page: false },
-  { label: 'Product',      scroll_to: 800,  full_page: false },
-  { label: 'Features',     scroll_to: 1600, full_page: false },
-  { label: 'Social Proof', scroll_to: 2400, full_page: false },
-  { label: 'Full Page',    scroll_to: 0,    full_page: true  },
+  { label: 'Hero',      full_page: false },
+  { label: 'Full Page', full_page: true  },
 ];
 
 function buildScreenshotUrl(url, options = {}) {
@@ -27,9 +24,6 @@ function buildScreenshotUrl(url, options = {}) {
 
   if (options.full_page) {
     params.set('full_page', 'true');
-  } else if (options.scroll_to > 0) {
-    params.set('scroll_into_view_adjust_top', '0');
-    params.set('scroll_to', String(options.scroll_to));
   }
 
   return `https://api.screenshotone.com/take?${params.toString()}`;
