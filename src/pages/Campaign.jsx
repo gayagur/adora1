@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, ArrowLeft, X } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { Plus } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import AppShell from '../components/ui/AppShell';
 import CampaignHeader from '../components/campaign/CampaignHeader';
@@ -23,10 +23,9 @@ export default function Campaign() {
   const brandId = urlParams.get('brand');
   const qc = useQueryClient();
 
-  // UI modes
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [editingAsset, setEditingAsset] = useState(null);
-  const [refiningAsset, setRefiningAsset] = useState(null); // Refine mode
+  const [refiningAsset, setRefiningAsset] = useState(null);
   const [editingCampaign, setEditingCampaign] = useState(false);
   const [editingBrand, setEditingBrand] = useState(false);
 
@@ -77,17 +76,10 @@ export default function Campaign() {
     toast.success('Duplicated');
   };
 
-  const handleAssetSaved = (updated) => {
-    qc.setQueryData(['assets', campaignId], prev => prev?.map(a => a.id === updated.id ? updated : a));
-    setEditingAsset(null);
-  };
-
+  const handleAssetSaved = (updated) => { qc.setQueryData(['assets', campaignId], prev => prev?.map(a => a.id === updated.id ? updated : a)); setEditingAsset(null); };
   const handleRefineSaved = async (designData) => {
     const updated = { ...refiningAsset, ...designData };
-    await base44.entities.CampaignAsset.update(refiningAsset.id, {
-      headline: designData.headline, ad_copy: designData.ad_copy,
-      cta: designData.cta, preview_image: designData.preview_image,
-    });
+    await base44.entities.CampaignAsset.update(refiningAsset.id, { headline: designData.headline, ad_copy: designData.ad_copy, cta: designData.cta, preview_image: designData.preview_image });
     qc.setQueryData(['assets', campaignId], prev => prev?.map(a => a.id === refiningAsset.id ? updated : a));
     setRefiningAsset(null);
   };
@@ -98,87 +90,59 @@ export default function Campaign() {
     try { await recordFeedback(brandId, asset, action); } catch (e) {}
   };
 
-  // Group assets by platform
   const grouped = {};
   assets.forEach(a => { if (!grouped[a.platform]) grouped[a.platform] = []; grouped[a.platform].push(a); });
   const usedPlatforms = PLATFORM_ORDER.filter(p => grouped[p]?.length > 0);
   const readyAssets = assets.filter(a => a.status === 'ready');
 
-  // ── REFINE MODE ──────────────────────────────────────────────────────────
-  if (refiningAsset) {
-    return (
-      <RefineView
-        asset={refiningAsset}
-        brand={brand}
-        onClose={() => setRefiningAsset(null)}
-        onSave={handleRefineSaved}
-      />
-    );
-  }
+  if (refiningAsset) return <RefineView asset={refiningAsset} brand={brand} onClose={() => setRefiningAsset(null)} onSave={handleRefineSaved} />;
 
-  // ── GENERATE MODE (default) ──────────────────────────────────────────────
   return (
     <AppShell>
-      <div className="min-h-screen bg-[#fafafa]">
-        {campaign && (
-          <CampaignHeader
-            campaign={campaign}
-            brandName={brand?.brand_name}
-            assetCount={readyAssets.length}
-            onEdit={() => setEditingCampaign(true)}
-            onEditBrand={brand ? () => setEditingBrand(true) : undefined}
-          />
-        )}
+      <div style={{ minHeight: '100vh', background: '#F8F8F7' }}>
+        {campaign && <CampaignHeader campaign={campaign} brandName={brand?.brand_name} assetCount={readyAssets.length} onEdit={() => setEditingCampaign(true)} onEditBrand={brand ? () => setEditingBrand(true) : undefined} />}
 
-        <div className="max-w-[1200px] mx-auto px-5 py-6">
-          {/* Toolbar */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <h2 className="text-[14px] font-semibold text-gray-900">
-                Generated Creatives
-                {readyAssets.length > 0 && <span className="text-gray-300 font-normal ml-1.5">({readyAssets.length})</span>}
-              </h2>
-            </div>
-            <button onClick={() => setShowAddPanel(true)}
-              className="flex items-center gap-1.5 h-[30px] px-3.5 rounded-lg bg-[#6c5ce7] hover:bg-[#5f4dd6] text-white text-[12px] font-medium transition-colors">
-              <Plus className="w-3 h-3" /> Generate
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+            <h2 style={{ fontSize: 14, fontWeight: 600, color: '#1A1612' }}>
+              Generated Creatives
+              {readyAssets.length > 0 && <span style={{ color: 'rgba(26,22,18,0.2)', fontWeight: 400, marginLeft: 6 }}>({readyAssets.length})</span>}
+            </h2>
+            <button onClick={() => setShowAddPanel(true)} style={{
+              display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 16px', borderRadius: 999,
+              background: '#1A1612', color: '#fff', fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+            }}>
+              <Plus style={{ width: 12, height: 12 }} /> Generate
             </button>
           </div>
 
-          {/* Empty state */}
           {assets.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
-                <Plus className="w-5 h-5 text-gray-300" />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '100px 0', textAlign: 'center' }}>
+              <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(26,22,18,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <Plus style={{ width: 20, height: 20, color: 'rgba(26,22,18,0.15)' }} />
               </div>
-              <h3 className="text-[14px] font-semibold text-gray-900 mb-1">No creatives yet</h3>
-              <p className="text-[12px] text-gray-400 mb-5 max-w-[220px]">Generate your first batch of creatives for this campaign.</p>
-              <button onClick={() => setShowAddPanel(true)}
-                className="flex items-center gap-2 h-9 px-4 rounded-lg bg-[#6c5ce7] text-white text-[13px] font-medium">
-                <Plus className="w-3.5 h-3.5" /> Generate creatives
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: '#1A1612', marginBottom: 4 }}>No creatives yet</h3>
+              <p style={{ fontSize: 12, color: 'rgba(26,22,18,0.35)', marginBottom: 20, maxWidth: 220 }}>Generate your first batch of creatives.</p>
+              <button onClick={() => setShowAddPanel(true)} style={{
+                display: 'flex', alignItems: 'center', gap: 8, height: 36, padding: '0 18px', borderRadius: 999,
+                background: '#1A1612', color: '#fff', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+              }}>
+                <Plus style={{ width: 14, height: 14 }} /> Generate creatives
               </button>
             </div>
           )}
 
-          {/* Asset grid — organized by platform */}
           {usedPlatforms.map(platform => (
-            <div key={platform} className="mb-8">
-              <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-[12px] font-semibold text-gray-500 uppercase tracking-[0.08em]">{PLATFORM_LABELS[platform]}</h3>
-                <span className="text-[10px] text-gray-300">{grouped[platform].length}</span>
+            <div key={platform} style={{ marginBottom: 32 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <h3 style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(26,22,18,0.3)' }}>{PLATFORM_LABELS[platform]}</h3>
+                <span style={{ fontSize: 10, color: 'rgba(26,22,18,0.15)' }}>{grouped[platform].length}</span>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
                 {grouped[platform].map((asset, i) => (
-                  <AssetCard
-                    key={asset.id}
-                    asset={asset}
-                    index={i}
-                    onEdit={setEditingAsset}
-                    onRefine={setRefiningAsset}
-                    onRegenerate={handleRegenerate}
-                    onDuplicate={handleDuplicate}
-                    onFeedback={handleFeedback}
-                  />
+                  <AssetCard key={asset.id} asset={asset} index={i}
+                    onEdit={setEditingAsset} onRefine={setRefiningAsset}
+                    onRegenerate={handleRegenerate} onDuplicate={handleDuplicate} onFeedback={handleFeedback} />
                 ))}
               </div>
             </div>
@@ -188,20 +152,9 @@ export default function Campaign() {
 
       <AnimatePresence>
         {showAddPanel && <AddAssetPanel onAdd={handleAddAsset} onClose={() => setShowAddPanel(false)} />}
-        {editingAsset && (
-          <AssetEditorPanel asset={editingAsset} campaign={campaign} brand={brand}
-            onSave={handleAssetSaved} onClose={() => setEditingAsset(null)} />
-        )}
-        {editingCampaign && campaign && (
-          <CampaignEditPanel campaign={campaign}
-            onSave={(u) => { qc.setQueryData(['campaign', campaignId], u); setEditingCampaign(false); refetchCampaign(); }}
-            onClose={() => setEditingCampaign(false)} />
-        )}
-        {editingBrand && brand && (
-          <BrandEditPanel brand={brand}
-            onSave={(u) => { qc.setQueryData(['brand', brandId], u); setEditingBrand(false); }}
-            onClose={() => setEditingBrand(false)} />
-        )}
+        {editingAsset && <AssetEditorPanel asset={editingAsset} campaign={campaign} brand={brand} onSave={handleAssetSaved} onClose={() => setEditingAsset(null)} />}
+        {editingCampaign && campaign && <CampaignEditPanel campaign={campaign} onSave={(u) => { qc.setQueryData(['campaign', campaignId], u); setEditingCampaign(false); refetchCampaign(); }} onClose={() => setEditingCampaign(false)} />}
+        {editingBrand && brand && <BrandEditPanel brand={brand} onSave={(u) => { qc.setQueryData(['brand', brandId], u); setEditingBrand(false); }} onClose={() => setEditingBrand(false)} />}
       </AnimatePresence>
     </AppShell>
   );

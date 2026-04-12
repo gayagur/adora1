@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Serif+Display&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,26 +6,27 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 220 20% 10%;
+    /* Warm neutral palette — unified with landing page */
+    --background: 40 20% 97%;      /* #F8F8F7 warm off-white */
+    --foreground: 24 16% 10%;       /* #1A1612 warm dark */
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 10%;
+    --card-foreground: 24 16% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 10%;
-    --primary: 250 50% 50%;
+    --popover-foreground: 24 16% 10%;
+    --primary: 24 16% 10%;          /* dark warm — primary buttons */
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 96%;
-    --secondary-foreground: 220 12% 40%;
-    --muted: 220 10% 96%;
-    --muted-foreground: 220 8% 52%;
-    --accent: 250 50% 96%;
-    --accent-foreground: 250 50% 40%;
+    --secondary: 30 8% 95%;         /* warm light surface */
+    --secondary-foreground: 24 10% 35%;
+    --muted: 30 8% 95%;
+    --muted-foreground: 24 8% 45%;
+    --accent: 255 58% 62%;          /* #6c5ce7 purple — restrained accent */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 10% 93%;
-    --input: 220 10% 93%;
-    --ring: 250 50% 50%;
-    --radius: 0.625rem;
+    --border: 24 10% 92%;           /* warm subtle border */
+    --input: 24 10% 92%;
+    --ring: 255 58% 62%;
+    --radius: 0.75rem;
   }
 }
 
@@ -39,10 +40,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-  }
-  h1, h2, h3, h4 {
-    font-family: 'Inter', sans-serif;
-    letter-spacing: -0.025em;
+    color: #1A1612;
   }
 }
 

@@ -367,9 +367,10 @@ function buildFeatureVector(decision: CreativeDecision): number[] {
 
   // One-hot encode format (6 dims)
   for (const f of FORMAT_TYPES) vector.push(decision.format === f ? 1 : 0);
-  // One-hot encode visualType (2 dims)
+  // One-hot encode visualType (3 dims)
   vector.push(decision.visualType === 'realistic' ? 1 : 0);
   vector.push(decision.visualType === 'graphic' ? 1 : 0);
+  vector.push(decision.visualType === 'animation' ? 1 : 0);
   // One-hot encode composition (8 dims)
   for (const c of COMPOSITIONS) vector.push(decision.composition === c ? 1 : 0);
   // One-hot encode textDensity (3 dims)
@@ -552,6 +553,7 @@ function selectCreativeDecision(
   };
 
   const visualType = forcedVisualStyle || (angle.contentType === 'abstract_conceptual' || angle.contentType === 'editorial_typography' || angle.contentType === 'data_stats' ? 'graphic' : 'realistic');
+  // Animation is only used when explicitly forced by user
 
   const format = formatPicker(assetIndex * 7 + campaignSeed);
   const composition = compositionPicker(assetIndex * 11 + campaignSeed + 3);
@@ -715,6 +717,22 @@ ${decision.visualType === 'graphic' ? `GRAPHIC STYLE MANDATE:
 - Reference quality: Stripe, Apple, Linear, Figma campaigns
 - NEVER: cartoon, clipart, flat generic illustration, random abstract geometry` : ''}
 
+${decision.visualType === 'animation' ? `ANIMATION / ILLUSTRATION STYLE MANDATE:
+- Premium illustrated visual — NOT cartoon, NOT clipart, NOT flat vector
+- Think Apple, Stripe, Linear, Notion campaign illustrations
+- 2.5D or light 3D feel with depth, soft shadows, smooth gradients
+- Clean compositions with intentional lighting and dimensionality
+- Slightly stylized but still sharp, modern, and professional
+- Soft ambient lighting, subtle reflections, premium material feel
+- Can include: isometric scenes, product illustrations, character illustrations,
+  conceptual scenes, abstract dimensional compositions
+- Colors should feel refined and harmonious — not oversaturated
+- The result should look like a premium brand illustration, not a generic stock vector
+- Reference quality: Apple marketing illustrations, Stripe visual assets,
+  Linear product visuals, Notion campaign art
+- NEVER: childish cartoon, flat clipart, comic style, exaggerated features,
+  generic stock illustration, low-quality vector art` : ''}
+
 ${decision.visualType === 'realistic' ? `REALISTIC STYLE MANDATE:
 - Natural or studio lighting appropriate to this brand
 - Premium scenes with clear subject and sense of place
@@ -849,7 +867,7 @@ function mutateDecision(decision: CreativeDecision, attempt: number): CreativeDe
       mutated.composition = COMPOSITIONS[(COMPOSITIONS.indexOf(decision.composition) + 1) % COMPOSITIONS.length];
       break;
     case 1:
-      mutated.visualType = decision.visualType === 'realistic' ? 'graphic' : 'realistic';
+      mutated.visualType = decision.visualType === 'realistic' ? 'graphic' : decision.visualType === 'graphic' ? 'animation' : 'realistic';
       break;
     case 2:
       mutated.contentType = CONTENT_TYPE_LIST[(CONTENT_TYPE_LIST.indexOf(decision.contentType) + 1) % CONTENT_TYPE_LIST.length];

@@ -17,7 +17,8 @@ const ASSET_OPTIONS = [
 
 const STYLES = [
   { id: 'realistic', label: 'Realistic', sub: 'Photography, lifestyle, people' },
-  { id: 'graphic', label: 'Graphic / 3D', sub: 'Illustration, abstract, UI' },
+  { id: 'graphic', label: 'Graphic / 3D', sub: 'Abstract, UI mockups, 3D objects' },
+  { id: 'animation', label: 'Animation', sub: 'Premium illustrated, 2.5D, stylized' },
 ];
 
 const INTENTS = [
@@ -43,62 +44,51 @@ export default function AddAssetPanel({ onAdd, onClose }) {
   const [postContent, setPostContent] = useState('');
 
   const back = () => setStep(s => s - 1);
-
   const confirm = () => {
-    onAdd({
-      ...selected,
-      visual_style: style?.id || 'realistic',
-      background: 'rich',
-      background_tone: tone,
-      creative_intent: intent?.id || 'auto',
-      post_content: postContent.trim() || null,
-    });
+    onAdd({ ...selected, visual_style: style?.id || 'realistic', background: 'rich', background_tone: tone, creative_intent: intent?.id || 'auto', post_content: postContent.trim() || null });
     onClose();
   };
 
-  const titles = {
-    1: 'Choose format',
-    2: 'Visual style',
-    3: 'Creative direction',
-    4: 'Post content',
-  };
+  const titles = { 1: 'Choose format', 2: 'Visual style', 3: 'Creative direction', 4: 'Post content' };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm" onClick={onClose}>
-      <motion.div initial={{ opacity: 0, y: 16, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16 }}
+      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(4px)' }}
+      onClick={onClose}>
+      <motion.div initial={{ opacity: 0, y: 12, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 12 }}
         transition={{ type: 'spring', damping: 28, stiffness: 340 }}
-        className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl shadow-black/10 flex flex-col"
-        style={{ maxHeight: '75vh' }} onClick={e => e.stopPropagation()}>
+        style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 420, overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', maxHeight: '75vh' }}
+        onClick={e => e.stopPropagation()}>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 shrink-0">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid rgba(26,22,18,0.06)' }}>
           <div>
-            {step > 1 && <button onClick={back} className="text-[10px] text-[#6c5ce7] font-semibold mb-0.5">← Back</button>}
-            <h3 className="text-[14px] font-semibold text-gray-900 tracking-tight">{titles[step]}</h3>
+            {step > 1 && <button onClick={back} style={{ fontSize: 10, color: 'rgba(108,92,231,0.7)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', marginBottom: 2, display: 'block', fontFamily: 'inherit' }}>← Back</button>}
+            <h3 style={{ fontSize: 14, fontWeight: 600, color: '#1A1612', letterSpacing: '-0.01em' }}>{titles[step]}</h3>
           </div>
-          <div className="flex items-center gap-2.5">
-            <div className="flex gap-0.5">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', gap: 3 }}>
               {[1,2,3,4].map(i => (
-                <div key={i} className={`h-1 rounded-full transition-all ${i <= step ? 'w-4 bg-[#6c5ce7]' : 'w-1.5 bg-gray-200'}`} />
+                <div key={i} style={{ height: 3, borderRadius: 3, transition: 'all 0.2s', width: i <= step ? 16 : 6, background: i <= step ? '#1A1612' : 'rgba(26,22,18,0.1)' }} />
               ))}
             </div>
-            <button onClick={onClose} className="w-6 h-6 rounded-md hover:bg-gray-100 flex items-center justify-center">
-              <X className="w-3.5 h-3.5 text-gray-400" />
+            <button onClick={onClose} style={{ width: 24, height: 24, borderRadius: 8, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <X style={{ width: 14, height: 14, color: 'rgba(26,22,18,0.3)' }} />
             </button>
           </div>
         </div>
 
         {/* Step 1: Format */}
         {step === 1 && (
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="grid grid-cols-2 gap-1.5">
+          <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               {ASSET_OPTIONS.map(opt => (
-                <button key={`${opt.platform}-${opt.asset_type}`}
-                  onClick={() => { setSelected(opt); setStep(2); }}
-                  className="flex items-center gap-2.5 p-3 rounded-lg border border-gray-100 hover:border-[#6c5ce7]/30 hover:bg-[#6c5ce7]/[0.02] text-left transition-all group">
-                  <span className="text-[10px] font-bold text-gray-300 group-hover:text-[#6c5ce7] uppercase tracking-wider shrink-0">{opt.sub}</span>
-                  <span className="text-[12px] font-medium text-gray-700 group-hover:text-gray-900">{opt.label}</span>
+                <button key={`${opt.platform}-${opt.asset_type}`} onClick={() => { setSelected(opt); setStep(2); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, borderRadius: 12, border: '1px solid rgba(26,22,18,0.06)', background: '#fff', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(26,22,18,0.12)'; e.currentTarget.style.background = 'rgba(26,22,18,0.02)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(26,22,18,0.06)'; e.currentTarget.style.background = '#fff'; }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(26,22,18,0.2)', textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0 }}>{opt.sub}</span>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: '#1A1612' }}>{opt.label}</span>
                 </button>
               ))}
             </div>
@@ -107,15 +97,17 @@ export default function AddAssetPanel({ onAdd, onClose }) {
 
         {/* Step 2: Style */}
         {step === 2 && (
-          <div className="flex-1 p-5 flex flex-col gap-2 justify-center">
+          <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center' }}>
             {STYLES.map(s => (
               <button key={s.id} onClick={() => { setStyle(s); setStep(3); }}
-                className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-[#6c5ce7]/30 hover:bg-[#6c5ce7]/[0.02] text-left transition-all group">
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderRadius: 14, border: '1px solid rgba(26,22,18,0.06)', background: '#fff', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(26,22,18,0.12)'; e.currentTarget.style.background = 'rgba(26,22,18,0.02)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(26,22,18,0.06)'; e.currentTarget.style.background = '#fff'; }}>
                 <div>
-                  <p className="text-[13px] font-semibold text-gray-900">{s.label}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{s.sub}</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#1A1612' }}>{s.label}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(26,22,18,0.35)', marginTop: 2 }}>{s.sub}</p>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-gray-200 group-hover:text-[#6c5ce7] transition-colors" />
+                <ArrowRight style={{ width: 14, height: 14, color: 'rgba(26,22,18,0.15)' }} />
               </button>
             ))}
           </div>
@@ -123,36 +115,37 @@ export default function AddAssetPanel({ onAdd, onClose }) {
 
         {/* Step 3: Intent + Tone */}
         {step === 3 && (
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-gray-400 mb-2">Direction</p>
-              <div className="space-y-1">
-                {INTENTS.map(i => (
-                  <button key={i.id} onClick={() => setIntent(i)}
-                    className={`w-full flex items-center justify-between p-3 rounded-lg border text-left transition-all ${
-                      intent?.id === i.id ? 'border-[#6c5ce7]/30 bg-[#6c5ce7]/[0.04]' : 'border-gray-100 hover:border-gray-200'
-                    }`}>
-                    <div>
-                      <p className="text-[12px] font-medium text-gray-800">{i.label}</p>
-                      <p className="text-[10px] text-gray-400">{i.sub}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
+          <div style={{ flex: 1, overflow: 'auto', padding: 20 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(26,22,18,0.25)', marginBottom: 8 }}>Direction</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 20 }}>
+              {INTENTS.map(i => (
+                <button key={i.id} onClick={() => setIntent(i)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 12, borderRadius: 10,
+                    border: intent?.id === i.id ? '1px solid rgba(26,22,18,0.15)' : '1px solid rgba(26,22,18,0.06)',
+                    background: intent?.id === i.id ? 'rgba(26,22,18,0.03)' : '#fff',
+                    cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
+                  }}>
+                  <div>
+                    <p style={{ fontSize: 12, fontWeight: 500, color: '#1A1612' }}>{i.label}</p>
+                    <p style={{ fontSize: 10, color: 'rgba(26,22,18,0.3)' }}>{i.sub}</p>
+                  </div>
+                </button>
+              ))}
             </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-gray-400 mb-2">Tone</p>
-              <div className="flex gap-1.5">
-                {TONES.map(t => (
-                  <button key={t.id} onClick={() => setTone(t.id)}
-                    className={`flex-1 py-2 rounded-lg text-[11px] font-medium transition-all ${
-                      tone === t.id ? 'bg-[#6c5ce7]/10 text-[#6c5ce7] border border-[#6c5ce7]/20' : 'bg-gray-50 text-gray-500 border border-transparent'
-                    }`}>{t.label}</button>
-                ))}
-              </div>
+            <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(26,22,18,0.25)', marginBottom: 8 }}>Tone</p>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+              {TONES.map(t => (
+                <button key={t.id} onClick={() => setTone(t.id)}
+                  style={{
+                    flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 11, fontWeight: 500, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                    background: tone === t.id ? '#1A1612' : 'rgba(26,22,18,0.04)',
+                    color: tone === t.id ? '#fff' : 'rgba(26,22,18,0.4)',
+                  }}>{t.label}</button>
+              ))}
             </div>
             <button onClick={() => setStep(4)}
-              className="w-full h-10 rounded-xl bg-[#6c5ce7] hover:bg-[#5f4dd6] text-white text-[12px] font-semibold transition-colors mt-2">
+              style={{ width: '100%', height: 40, borderRadius: 999, background: '#1A1612', color: '#fff', fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
               Continue
             </button>
           </div>
@@ -160,20 +153,28 @@ export default function AddAssetPanel({ onAdd, onClose }) {
 
         {/* Step 4: Post content */}
         {step === 4 && (
-          <div className="flex-1 p-5 flex flex-col gap-3">
-            <div className="flex items-start gap-2.5 p-3 rounded-lg bg-[#6c5ce7]/[0.04] border border-[#6c5ce7]/10">
-              <FileText className="w-3.5 h-3.5 text-[#6c5ce7] mt-0.5 shrink-0" />
-              <p className="text-[11px] text-gray-600 leading-relaxed">
-                Paste your caption or idea. The AI will translate the meaning into a visual — not just illustrate keywords.
+          <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: 12, borderRadius: 12, background: 'rgba(108,92,231,0.04)', border: '1px solid rgba(108,92,231,0.08)' }}>
+              <FileText style={{ width: 14, height: 14, color: 'rgba(108,92,231,0.5)', marginTop: 2, flexShrink: 0 }} />
+              <p style={{ fontSize: 11, color: 'rgba(26,22,18,0.5)', lineHeight: 1.5 }}>
+                Paste your caption or idea. The AI will translate the meaning into a visual.
               </p>
             </div>
             <textarea
-              className="flex-1 w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-[12px] text-gray-800 placeholder-gray-300 outline-none focus:border-[#6c5ce7]/40 resize-none transition-colors"
-              rows={5} placeholder="Example: Our AI tool helps designers create room concepts in minutes, not hours."
+              style={{
+                flex: 1, width: '100%', padding: '10px 12px', borderRadius: 12,
+                background: 'rgba(26,22,18,0.03)', border: '1px solid rgba(26,22,18,0.06)',
+                fontSize: 12, color: '#1A1612', outline: 'none', resize: 'none', fontFamily: 'inherit',
+              }}
+              rows={5} placeholder="Example: Our AI tool helps designers create room concepts in minutes."
               value={postContent} onChange={e => setPostContent(e.target.value)} autoFocus />
             <button onClick={confirm}
-              className="w-full h-10 rounded-xl bg-[#6c5ce7] hover:bg-[#5f4dd6] text-white text-[12px] font-semibold transition-colors flex items-center justify-center gap-1.5">
-              <Sparkles className="w-3 h-3" />
+              style={{
+                width: '100%', height: 40, borderRadius: 999, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                background: '#1A1612', color: '#fff', fontSize: 12, fontWeight: 600,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}>
+              <Sparkles style={{ width: 12, height: 12 }} />
               {postContent.trim() ? 'Generate from post' : 'Generate'}
             </button>
           </div>

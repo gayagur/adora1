@@ -10,42 +10,55 @@ export default function AppShell({ children }) {
   if (isLanding) return <>{children}</>;
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9]">
-      <header className="fixed top-0 left-0 right-0 z-50 h-[48px] bg-white border-b border-black/[0.04]">
-        <div className="flex items-center h-full px-5 max-w-[1400px] mx-auto">
-          <Link to="/Landing" className="flex items-center gap-2.5 mr-7">
-            <img src={logoImg} alt="Adora" className="w-7 h-7 object-contain" />
-            <span className="text-[14px] font-semibold text-[#1a1a1a] tracking-[-0.01em]">Adora</span>
+    <div className="min-h-screen" style={{ background: '#F8F8F7' }}>
+      <header style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
+        height: 52, display: 'flex', alignItems: 'center',
+        background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(26,22,18,0.06)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', width: '100%', maxWidth: 1400, margin: '0 auto', padding: '0 20px' }}>
+          <Link to="/Landing" style={{ display: 'flex', alignItems: 'center', gap: 10, marginRight: 28, textDecoration: 'none' }}>
+            <img src={logoImg} alt="Adora" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#1A1612', letterSpacing: '-0.01em' }}>Adora</span>
           </Link>
 
-          <nav className="flex items-center gap-0.5">
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <NavItem to="/Dashboard" active={location.pathname === '/Dashboard' || location.pathname.startsWith('/Campaign')}>
-              <LayoutGrid className="w-3.5 h-3.5" /> Campaigns
+              <LayoutGrid style={{ width: 14, height: 14 }} /> Campaigns
             </NavItem>
             <NavItem to="/Gallery" active={location.pathname === '/Gallery'}>
-              <Images className="w-3.5 h-3.5" /> Gallery
+              <Images style={{ width: 14, height: 14 }} /> Gallery
             </NavItem>
           </nav>
 
-          <div className="ml-auto">
-            <Link to="/Onboarding"
-              className="inline-flex items-center gap-1.5 h-[32px] px-4 rounded-full bg-[#1a1a1a] hover:bg-[#333] text-white text-[12px] font-medium transition-colors">
-              <Plus className="w-3 h-3" /> New
+          <div style={{ marginLeft: 'auto' }}>
+            <Link to="/Onboarding" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              height: 32, padding: '0 16px', borderRadius: 999,
+              background: '#1A1612', color: '#fff',
+              fontSize: 12, fontWeight: 600, textDecoration: 'none',
+            }}>
+              <Plus style={{ width: 12, height: 12 }} /> New
             </Link>
           </div>
         </div>
       </header>
-      <main className="pt-[48px]">{children}</main>
+      <main style={{ paddingTop: 52 }}>{children}</main>
     </div>
   );
 }
 
 function NavItem({ to, active, children }) {
   return (
-    <Link to={to}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${
-        active ? 'bg-[#f5f5f4] text-[#1a1a1a]' : 'text-[#1a1a1a]/35 hover:text-[#1a1a1a]/60 hover:bg-[#fafafa]'
-      }`}>
+    <Link to={to} style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      padding: '6px 12px', borderRadius: 8,
+      fontSize: 12, fontWeight: 500, textDecoration: 'none',
+      background: active ? 'rgba(26,22,18,0.05)' : 'transparent',
+      color: active ? '#1A1612' : 'rgba(26,22,18,0.35)',
+      transition: 'all 0.15s ease',
+    }}>
       {children}
     </Link>
   );
