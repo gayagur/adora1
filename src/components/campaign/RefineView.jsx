@@ -114,7 +114,7 @@ const FRAMES = {
 // CONSTRAINED DRAG HOOK
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function useConstrainedDrag(canvasRef, bounds = { maxX: 15, maxY: 15 }) {
+function useFreeDrag(canvasRef) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const dragging = useRef(false);
   const start = useRef({ mx: 0, my: 0, ox: 0, oy: 0 });
@@ -133,13 +133,7 @@ function useConstrainedDrag(canvasRef, bounds = { maxX: 15, maxY: 15 }) {
       if (!r) return;
       const dx = ((ev.clientX - start.current.mx) / r.width) * 100;
       const dy = ((ev.clientY - start.current.my) / r.height) * 100;
-      // Clamp to bounds
-      const nx = Math.max(-bounds.maxX, Math.min(bounds.maxX, start.current.ox + dx));
-      const ny = Math.max(-bounds.maxY, Math.min(bounds.maxY, start.current.oy + dy));
-      // Snap to center (within 1.5% = snap)
-      const snapX = Math.abs(nx) < 1.5 ? 0 : nx;
-      const snapY = Math.abs(ny) < 1.5 ? 0 : ny;
-      setOffset({ x: snapX, y: snapY });
+      setOffset({ x: start.current.ox + dx, y: start.current.oy + dy });
     };
     const onUp = () => {
       dragging.current = false;
@@ -148,7 +142,7 @@ function useConstrainedDrag(canvasRef, bounds = { maxX: 15, maxY: 15 }) {
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
-  }, [canvasRef, offset, bounds]);
+  }, [canvasRef, offset]);
 
   return [offset, setOffset, onPointerDown];
 }
@@ -219,10 +213,10 @@ export default function RefineView({ asset, brand, onClose, onSave }) {
   const [logoOpacity, setLogoOpacity] = useState(0.85);
 
   // ── Constrained Drag Offsets ───────────────────────────────────────────────
-  const [headlineOff, setHeadlineOff, headlineDrag] = useConstrainedDrag(canvasRef, { maxX: 45, maxY: 45 });
-  const [subtextOff, setSubtextOff, subtextDrag] = useConstrainedDrag(canvasRef, { maxX: 40, maxY: 40 });
-  const [ctaOff, setCtaOff, ctaDrag] = useConstrainedDrag(canvasRef, { maxX: 45, maxY: 40 });
-  const [logoOff, setLogoOff, logoDrag] = useConstrainedDrag(canvasRef, { maxX: 45, maxY: 45 });
+  const [headlineOff, setHeadlineOff, headlineDrag] = useFreeDrag(canvasRef);
+  const [subtextOff, setSubtextOff, subtextDrag] = useFreeDrag(canvasRef);
+  const [ctaOff, setCtaOff, ctaDrag] = useFreeDrag(canvasRef);
+  const [logoOff, setLogoOff, logoDrag] = useFreeDrag(canvasRef);
 
   // ── UI State ───────────────────────────────────────────────────────────────
   const [saving, setSaving] = useState(false);
