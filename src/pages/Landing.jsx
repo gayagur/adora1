@@ -23,6 +23,8 @@ export default function Landing() {
       position: 'relative',
       overflow: 'hidden',
     }}>
+      {/* Load DM Serif Display for headline */}
+      <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
 
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
       <nav style={{
@@ -69,9 +71,10 @@ export default function Landing() {
           {/* Headline */}
           <h1 style={{
             fontSize: 72,
-            fontWeight: 700,
-            lineHeight: 1.05,
-            letterSpacing: '-0.035em',
+            fontFamily: "'DM Serif Display', Georgia, serif",
+            fontWeight: 400,
+            lineHeight: 1.08,
+            letterSpacing: '-0.01em',
             color: '#1A1612',
             margin: 0,
           }}>
@@ -177,7 +180,7 @@ export default function Landing() {
           <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(26,22,18,0.3)', marginBottom: 10 }}>
             How it works
           </p>
-          <h2 style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.03em', color: '#1A1612', margin: 0 }}>
+          <h2 style={{ fontSize: 34, fontFamily: "'DM Serif Display', Georgia, serif", fontWeight: 400, letterSpacing: '-0.01em', color: '#1A1612', margin: 0 }}>
             From URL to campaign in minutes
           </h2>
         </div>
@@ -207,7 +210,7 @@ export default function Landing() {
 
       {/* ── CTA ────────────────────────────────────────────────────────────── */}
       <section style={{ padding: '60px 24px 100px', textAlign: 'center', position: 'relative', zIndex: 2 }}>
-        <h2 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 12, color: '#1A1612' }}>Ready to start?</h2>
+        <h2 style={{ fontSize: 30, fontFamily: "'DM Serif Display', Georgia, serif", fontWeight: 400, letterSpacing: '-0.01em', marginBottom: 12, color: '#1A1612' }}>Ready to start?</h2>
         <p style={{ fontSize: 14, color: 'rgba(26,22,18,0.35)', marginBottom: 28 }}>
           Paste a URL and get a full campaign system in seconds.
         </p>
