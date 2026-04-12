@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ASSET_OPTIONS = [
@@ -34,13 +34,19 @@ const VISUAL_STYLES = [
 
 export default function AddAssetPanel({ onAdd, onClose }) {
   const [selectedOption, setSelectedOption] = React.useState(null);
+  const [selectedStyle, setSelectedStyle] = React.useState(null);
+  const [postContent, setPostContent] = React.useState('');
 
   const handleSelectAsset = (opt) => {
     setSelectedOption(opt);
   };
 
   const handleSelectStyle = (style) => {
-    onAdd({ ...selectedOption, visual_style: style.id });
+    setSelectedStyle(style);
+  };
+
+  const handleConfirm = () => {
+    onAdd({ ...selectedOption, visual_style: selectedStyle.id, post_content: postContent.trim() || null });
     onClose();
   };
 
@@ -63,7 +69,13 @@ export default function AddAssetPanel({ onAdd, onClose }) {
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
           <div>
-            {selectedOption ? (
+            {selectedStyle ? (
+              <>
+                <button onClick={() => setSelectedStyle(null)} className="text-xs text-violet-500 hover:text-violet-700 font-medium mb-0.5">← Back</button>
+                <h3 className="font-semibold text-gray-900">Add a Post or Idea</h3>
+                <p className="text-xs text-gray-400 mt-0.5">Optional — helps the AI match your message</p>
+              </>
+            ) : selectedOption ? (
               <>
                 <button onClick={() => setSelectedOption(null)} className="text-xs text-violet-500 hover:text-violet-700 font-medium mb-0.5">← Back</button>
                 <h3 className="font-semibold text-gray-900">Choose Visual Style</h3>
@@ -81,7 +93,28 @@ export default function AddAssetPanel({ onAdd, onClose }) {
           </button>
         </div>
 
-        {!selectedOption ? (
+        {selectedStyle ? (
+          <div className="flex-1 p-5 flex flex-col gap-4">
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-violet-50 border border-violet-100">
+              <FileText className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
+              <p className="text-xs text-violet-700 leading-relaxed">Paste your caption, blog post, or idea below. The AI will match the visual to your message.</p>
+            </div>
+            <textarea
+              className="flex-1 w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 resize-none transition-all"
+              rows={6}
+              placeholder="Paste your caption, idea, or message here..."
+              value={postContent}
+              onChange={e => setPostContent(e.target.value)}
+              autoFocus
+            />
+            <button
+              onClick={handleConfirm}
+              className="w-full h-11 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold transition-colors"
+            >
+              {postContent.trim() ? 'Generate from Post' : 'Generate without Post'}
+            </button>
+          </div>
+        ) : !selectedOption ? (
           <div className="overflow-y-auto flex-1 p-5 grid grid-cols-2 gap-2.5">
             {ASSET_OPTIONS.map((opt, i) => (
               <button

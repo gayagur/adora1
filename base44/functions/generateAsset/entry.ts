@@ -99,7 +99,7 @@ function hashString(str) {
 }
 
 // ─── Core generation ─────────────────────────────────────────────────────────
-async function doGenerate(base44, assetId, option, campaign, brand) {
+async function doGenerate(base44, assetId, option, campaign, brand, postContent) {
   const assetType = option.asset_type;
   const platform = option.platform;
 
@@ -163,6 +163,10 @@ CAMPAIGN:
 - Visual Direction: ${campaign?.visual_direction || ''}
 
 THIS ASSET BRIEF:
+${postContent ? `- POST / CAPTION PROVIDED BY USER:
+"${postContent}"
+
+  IMPORTANT: This post is the PRIMARY source of truth for this asset. The visual MUST reflect the message and idea in this post directly. Extract the core message, emotional tone, and subject from the post and build the entire creative around it.` : ''}
 - Content Angle: ${angle.name} — ${angle.concept}
 - Visual Focus: ${angle.visualFocus}
 - Mood: ${angle.moodKeywords}
@@ -365,11 +369,12 @@ Deno.serve(async (req) => {
 
   const { assetId, option, campaign, brand } = await req.json();
   const forcedVisualStyle = option?.visual_style || null; // 'realistic' | 'graphic' | null
+  const postContent = option?.post_content || null;
 
   // Fire-and-forget: return immediately so frontend never times out.
   // The backend continues running and updates the entity when done.
   // The frontend discovers the result via polling (refetchInterval).
-  doGenerate(base44, assetId, option, campaign, brand).catch(async (error) => {
+  doGenerate(base44, assetId, option, campaign, brand, postContent).catch(async (error) => {
     console.error('Generation failed:', error.message);
     try {
       await base44.asServiceRole.entities.CampaignAsset.update(assetId, { status: 'error' });
