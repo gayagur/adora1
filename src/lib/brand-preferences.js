@@ -38,34 +38,45 @@ export async function saveBrandPreferences(brandId, preferences) {
  * Record feedback for an asset and update brand preferences.
  * @param {string} brandId
  * @param {Object} asset - the CampaignAsset object
- * @param {'like'|'dislike'|'save'|'hide'} action
+ * @param {'like'|'dislike'|'save'|'hide'|null} action - null means cleared
  */
 export async function recordFeedback(brandId, asset, action) {
+  // Update asset feedback field — set to empty string if null (clearing feedback)
+  try {
+    await base44.entities.CampaignAsset.update(asset.id, {
+      feedback: action || '',
+    });
+  } catch (e) {
+    console.error('Failed to update asset feedback:', e);
+    return;
+  }
+
+  // Only update brand preferences for meaningful actions
   const isPositive = action === 'like' || action === 'save';
   const isNegative = action === 'dislike' || action === 'hide';
-
-  // Update asset feedback field
-  await base44.entities.CampaignAsset.update(asset.id, {
-    feedback: action,
-  });
-
   if (!isPositive && !isNegative) return;
 
-  // Load and update brand preferences
-  const prefs = await loadBrandPreferences(brandId);
+  try {
+    // Load and update brand preferences
+    const prefs = await loadBrandPreferences(brandId);
 
-  // Extract features from asset
-  const features = asset.style_features
-    ? (typeof asset.style_features === 'string' ? JSON.parse(asset.style_features) : asset.style_features)
-    : {};
+    // Extract features from asset (may not exist on older assets)
+    let features = {};
+    try {
+      features = asset.style_features
+        ? (typeof asset.style_features === 'string' ? JSON.parse(asset.style_features) : asset.style_features)
+        : {};
+    } catch (_) { /* ignore parse errors */ }
 
-  if (features.format) updatePreference(prefs, 'formats', features.format, isPositive);
-  if (features.angleId) updatePreference(prefs, 'angles', features.angleId, isPositive);
-  if (features.visualType) updatePreference(prefs, 'visualTypes', features.visualType, isPositive);
-  if (features.composition) updatePreference(prefs, 'compositions', features.composition, isPositive);
-  if (features.contentType) updatePreference(prefs, 'contentTypes', features.contentType, isPositive);
-  if (features.textDensity) updatePreference(prefs, 'textDensities', features.textDensity, isPositive);
+    if (features.format) updatePreference(prefs, 'formats', features.format, isPositive);
+    if (features.angleId) updatePreference(prefs, 'angles', features.angleId, isPositive);
+    if (features.visualType) updatePreference(prefs, 'visualTypes', features.visualType, isPositive);
+    if (features.composition) updatePreference(prefs, 'compositions', features.composition, isPositive);
+    if (features.contentType) updatePreference(prefs, 'contentTypes', features.contentType, isPositive);
+    if (features.textDensity) updatePreference(prefs, 'textDensities', features.textDensity, isPositive);
 
-  await saveBrandPreferences(brandId, prefs);
-  return prefs;
+    await saveBrandPreferences(brandId, prefs);
+  } catch (e) {
+    console.error('Failed to update brand preferences:', e);
+  }
 }

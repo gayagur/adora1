@@ -219,10 +219,10 @@ export default function RefineView({ asset, brand, onClose, onSave }) {
   const [logoOpacity, setLogoOpacity] = useState(0.85);
 
   // ── Constrained Drag Offsets ───────────────────────────────────────────────
-  const [headlineOff, setHeadlineOff, headlineDrag] = useConstrainedDrag(canvasRef, { maxX: 20, maxY: 20 });
-  const [subtextOff, setSubtextOff, subtextDrag] = useConstrainedDrag(canvasRef, { maxX: 15, maxY: 15 });
-  const [ctaOff, setCtaOff, ctaDrag] = useConstrainedDrag(canvasRef, { maxX: 20, maxY: 15 });
-  const [logoOff, setLogoOff, logoDrag] = useConstrainedDrag(canvasRef, { maxX: 25, maxY: 25 });
+  const [headlineOff, setHeadlineOff, headlineDrag] = useConstrainedDrag(canvasRef, { maxX: 45, maxY: 45 });
+  const [subtextOff, setSubtextOff, subtextDrag] = useConstrainedDrag(canvasRef, { maxX: 40, maxY: 40 });
+  const [ctaOff, setCtaOff, ctaDrag] = useConstrainedDrag(canvasRef, { maxX: 45, maxY: 40 });
+  const [logoOff, setLogoOff, logoDrag] = useConstrainedDrag(canvasRef, { maxX: 45, maxY: 45 });
 
   // ── UI State ───────────────────────────────────────────────────────────────
   const [saving, setSaving] = useState(false);
@@ -247,10 +247,10 @@ export default function RefineView({ asset, brand, onClose, onSave }) {
 
   // Text shadow CSS
   const headlineShadow = txtShadow ? `0 2px ${txtShadowBlur}px ${txtShadowColor}` : (hasOverlay ? '0 2px 16px rgba(0,0,0,0.3)' : 'none');
-  const headlineStroke = txtStroke ? { WebkitTextStroke: `${txtStrokeWidth}px ${txtStrokeColor}` } : {};
+  const headlineStroke = txtStroke ? { WebkitTextStroke: `${txtStrokeWidth}px ${txtStrokeColor}`, paintOrder: 'stroke fill' } : {};
 
   // Image filter CSS
-  const imgFilter = `opacity(${imgOpacity}) blur(${imgBlur}px) brightness(${imgBrightness}%) contrast(${imgContrast}%) saturate(${imgSaturation}%) grayscale(${imgGrayscale}%)`;
+  const imgFilter = `blur(${imgBlur}px) brightness(${imgBrightness}%) contrast(${imgContrast}%) saturate(${imgSaturation}%) grayscale(${imgGrayscale}%)`;
 
   // Frame config
   const frameConfig = FRAMES[frame];
@@ -338,12 +338,12 @@ export default function RefineView({ asset, brand, onClose, onSave }) {
                     {isDeviceFrame ? (
                       <DeviceFrame type={frameConfig.device}>
                         <img src={image} alt="" className="w-full h-full object-cover" crossOrigin="anonymous"
-                          style={{ filter: imgFilter, borderRadius: imgRadius }} />
+                          style={{ filter: imgFilter, borderRadius: imgRadius, opacity: imgOpacity }} />
                       </DeviceFrame>
                     ) : (
                       <div style={frameConfig?.style || {}}>
                         <img src={image} alt="" className="w-full h-full object-cover" crossOrigin="anonymous"
-                          style={{ filter: imgFilter, borderRadius: imgRadius, ...(frameConfig?.style || {}) }} />
+                          style={{ filter: imgFilter, borderRadius: imgRadius, opacity: imgOpacity, ...(frameConfig?.style || {}) }} />
                       </div>
                     )}
                   </div>
@@ -421,10 +421,10 @@ export default function RefineView({ asset, brand, onClose, onSave }) {
 
                 {/* ── Logo — draggable ─────────────────────────────────────── */}
                 {showLogo && logoUrl && (
-                  <div className={`absolute ${logoPositionClass}`}
+                  <div className={`absolute ${logoPositionClass} cursor-grab active:cursor-grabbing touch-none select-none`}
                     style={{ width: `${logoSize}%`, minWidth: 20, transform: `translate(${logoOff.x}%, ${logoOff.y}%)` }}
-                    onPointerDown={logoDrag} className2="cursor-grab active:cursor-grabbing touch-none">
-                    <img src={logoUrl} alt="" className="w-full h-auto object-contain cursor-grab active:cursor-grabbing touch-none select-none"
+                    onPointerDown={logoDrag}>
+                    <img src={logoUrl} alt="" className="w-full h-auto object-contain pointer-events-none"
                       style={{ opacity: logoOpacity }} crossOrigin="anonymous" />
                   </div>
                 )}
