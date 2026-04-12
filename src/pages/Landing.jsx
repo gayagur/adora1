@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles, Zap, Grid3X3, BarChart3, MonitorSmartphone, PenTool } from 'lucide-react';
+import { ArrowRight, Zap, Grid3X3, BarChart3, MonitorSmartphone, PenTool } from 'lucide-react';
 import { motion } from 'framer-motion';
+import logoImg from '@/assets/logo.png';
 
 const STEPS = [
   { n: '01', title: 'Paste a URL', desc: 'We analyze the brand — colors, tone, audience, visual style — in seconds.' },
@@ -29,9 +30,7 @@ export default function Landing() {
       {/* Nav */}
       <nav className="fixed top-0 inset-x-0 z-50 h-14 flex items-center justify-between px-6 bg-[#09090b]/70 backdrop-blur-2xl border-b border-white/[0.04]">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-[#6c5ce7] flex items-center justify-center">
-            <Sparkles className="w-3.5 h-3.5 text-white" />
-          </div>
+          <img src={logoImg} alt="Adora" className="w-7 h-7 object-contain" />
           <span className="text-[14px] font-semibold tracking-tight">Adora</span>
         </div>
         <div className="flex items-center gap-4">

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Sparkles, LayoutGrid, Images, Plus } from 'lucide-react';
+import { LayoutGrid, Images, Plus } from 'lucide-react';
+import logoImg from '@/assets/logo.png';
 
 export default function AppShell({ children }) {
   const location = useLocation();
@@ -12,15 +13,11 @@ export default function AppShell({ children }) {
     <div className="min-h-screen bg-[#fafafa]">
       <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-white border-b border-black/[0.04]">
         <div className="flex items-center h-full px-4 max-w-[1400px] mx-auto">
-          {/* Logo */}
           <Link to="/Landing" className="flex items-center gap-2 mr-6">
-            <div className="w-7 h-7 rounded-lg bg-[#6c5ce7] flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5 text-white" />
-            </div>
+            <img src={logoImg} alt="Adora" className="w-7 h-7 object-contain" />
             <span className="text-[14px] font-semibold text-gray-900 tracking-tight">Adora</span>
           </Link>
 
-          {/* Nav */}
           <nav className="flex items-center gap-0.5">
             <NavItem to="/Dashboard" active={location.pathname === '/Dashboard' || location.pathname.startsWith('/Campaign')}>
               <LayoutGrid className="w-3.5 h-3.5" /> Campaigns
@@ -30,7 +27,6 @@ export default function AppShell({ children }) {
             </NavItem>
           </nav>
 
-          {/* Actions */}
           <div className="ml-auto flex items-center gap-2">
             <Link to="/Onboarding"
               className="inline-flex items-center gap-1.5 h-[30px] px-3.5 rounded-lg bg-[#6c5ce7] hover:bg-[#5f4dd6] text-white text-[12px] font-medium transition-colors">
