@@ -254,14 +254,15 @@ Deno.serve(async (req) => {
 
   const { assetId, option, campaign, brand } = await req.json();
 
-  try {
-    await doGenerate(base44, assetId, option, campaign, brand);
-    return Response.json({ success: true });
-  } catch (error) {
+  // Fire-and-forget: return immediately so frontend never times out.
+  // The backend continues running and updates the entity when done.
+  // The frontend discovers the result via polling (refetchInterval).
+  doGenerate(base44, assetId, option, campaign, brand).catch(async (error) => {
     console.error('Generation failed:', error.message);
     try {
       await base44.asServiceRole.entities.CampaignAsset.update(assetId, { status: 'error' });
     } catch (_) { /* ignore */ }
-    return Response.json({ error: error.message }, { status: 500 });
-  }
+  });
+
+  return Response.json({ success: true, message: 'Generation started' });
 });
