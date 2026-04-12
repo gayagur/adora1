@@ -279,15 +279,15 @@ export default function RefineView({ asset, brand, onClose, onSave }) {
 
                 {/* Image */}
                 {image && L.imageZone && (
-                  <div className="absolute overflow-hidden" style={{ left: L.imageZone.left, top: L.imageZone.top, width: L.imageZone.width, height: L.imageZone.height }}>
+                  <div className="absolute" style={{ left: L.imageZone.left, top: L.imageZone.top, width: L.imageZone.width, height: L.imageZone.height, overflow: fc?.device ? 'visible' : 'hidden' }}>
                     {fc?.device ? (
-                      <DeviceFrame type={fc.device}>
-                        <img src={image} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" style={{ filter: imgFilter, borderRadius: imgRadius, opacity: imgOpacity }} />
-                      </DeviceFrame>
-                    ) : (
-                      <div style={fc?.css || {}}>
-                        <img src={image} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" style={{ filter: imgFilter, borderRadius: imgRadius, opacity: imgOpacity, ...(fc?.css || {}) }} />
+                      <DeviceFrame type={fc.device} imgSrc={image} imgFilter={imgFilter} imgOpacity={imgOpacity} imgRadius={imgRadius} />
+                    ) : fc?.css ? (
+                      <div className="w-full h-full" style={fc.css}>
+                        <img src={image} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" style={{ filter: imgFilter, opacity: imgOpacity, borderRadius: fc.css.borderRadius || imgRadius }} />
                       </div>
+                    ) : (
+                      <img src={image} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" style={{ filter: imgFilter, opacity: imgOpacity, borderRadius: imgRadius }} />
                     )}
                   </div>
                 )}
@@ -541,24 +541,48 @@ export default function RefineView({ asset, brand, onClose, onSave }) {
 // SUB-COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function DeviceFrame({ type, children }) {
+function DeviceFrame({ type, imgSrc, imgFilter, imgOpacity, imgRadius }) {
   if (type === 'iphone') return (
-    <div className="w-[70%] mx-auto mt-[8%]">
-      <div className="relative rounded-[20px] border-[3px] border-[#d1d1d0] bg-[#1a1a1a] overflow-hidden shadow-lg" style={{ paddingBottom: '200%' }}>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[35%] h-[3%] bg-[#1a1a1a] rounded-b-xl z-10" />
-        <div className="absolute inset-[2px] rounded-[17px] overflow-hidden">{children}</div>
+    <div className="w-[65%] mx-auto" style={{ marginTop: '8%' }}>
+      <div className="relative rounded-[22px] bg-[#1a1a1a] overflow-visible" style={{ padding: '4px', boxShadow: '0 8px 32px rgba(0,0,0,0.15)' }}>
+        {/* Outer shell */}
+        <div className="relative rounded-[20px] border-[2.5px] border-[#3a3a3a] bg-[#1a1a1a] overflow-hidden">
+          {/* Notch */}
+          <div className="relative w-full flex justify-center" style={{ height: '6%' }}>
+            <div className="w-[30%] h-full bg-[#1a1a1a] rounded-b-xl" />
+          </div>
+          {/* Screen */}
+          <div className="relative w-full overflow-hidden" style={{ aspectRatio: '9/19.5' }}>
+            <img src={imgSrc} alt="" className="w-full h-full object-cover" crossOrigin="anonymous"
+              style={{ filter: imgFilter, opacity: imgOpacity }} />
+          </div>
+          {/* Bottom bar */}
+          <div className="relative w-full flex justify-center py-[2%]">
+            <div className="w-[30%] h-[4px] bg-[#3a3a3a] rounded-full" />
+          </div>
+        </div>
       </div>
     </div>
   );
+
   if (type === 'laptop') return (
-    <div className="w-[85%] mx-auto mt-[5%]">
-      <div className="relative rounded-t-xl border-[3px] border-[#d1d1d0] bg-[#e5e5e3] overflow-hidden shadow-md" style={{ paddingBottom: '62%' }}>
-        <div className="absolute inset-[2px] rounded-t-lg overflow-hidden">{children}</div>
+    <div className="w-[88%] mx-auto" style={{ marginTop: '4%' }}>
+      {/* Screen */}
+      <div className="relative rounded-t-xl bg-[#2a2a2a] overflow-hidden" style={{ padding: '3px 3px 0 3px', boxShadow: '0 4px 24px rgba(0,0,0,0.12)' }}>
+        <div className="relative rounded-t-lg overflow-hidden bg-[#1a1a1a]" style={{ aspectRatio: '16/10' }}>
+          <img src={imgSrc} alt="" className="w-full h-full object-cover" crossOrigin="anonymous"
+            style={{ filter: imgFilter, opacity: imgOpacity }} />
+        </div>
       </div>
-      <div className="w-[110%] -ml-[5%] h-[4%] bg-[#d1d1d0] rounded-b-lg" />
+      {/* Base / keyboard */}
+      <div className="relative w-[108%] -ml-[4%]">
+        <div className="h-[6px] bg-[#c8c8c6] rounded-b-lg" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }} />
+        <div className="w-[15%] h-[3px] bg-[#b5b5b3] rounded-b mx-auto" />
+      </div>
     </div>
   );
-  return <>{children}</>;
+
+  return <img src={imgSrc} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" style={{ filter: imgFilter, opacity: imgOpacity, borderRadius: imgRadius }} />;
 }
 
 function FontPicker({ value, onChange, search, onSearch }) {
