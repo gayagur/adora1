@@ -69,14 +69,14 @@ const CONTENT_ANGLES = [
 ];
 
 const VISUAL_STYLES = [
-  'minimal premium — generous white space, one focal element, editorial clarity',
-  'editorial magazine — asymmetric composition, rich detail, magazine-quality lighting',
-  'bold typography — strong typographic hierarchy, minimal imagery, graphic design focus',
-  'cinematic lifestyle — wide angle, film-like color grade, golden hour, emotional depth',
-  'product-focused — clean background, product hero, sharp detail',
-  'soft neutral aesthetic — beige, cream, warm grays, gentle shadows, spa-like calm',
-  'modern tech — dark background, precise grid, glowing accents, clean interface feel',
-  'collage / layered — overlapping elements, textural richness, editorial depth',
+  'editorial magazine — strong focal subject, asymmetric composition, rich warm lighting, magazine-quality depth of field',
+  'cinematic lifestyle — wide angle, film-like color grade, golden hour, one clear subject in intentional environment',
+  'product hero — subject centered or offset, clean complementary background, sharp detail, premium studio lighting',
+  'soft neutral aesthetic — one clear object or scene, beige/cream/warm gray tones, gentle shadows, serene and purposeful',
+  'modern tech — one UI or product element as hero, dark or light background, precise composition, glowing accents',
+  'collage / layered — overlapping real elements with clear visual hierarchy, one dominant subject, editorial depth',
+  'architectural minimal — clean lines, one strong subject (room / object / person), intentional negative space as part of the scene',
+  'bold editorial — strong contrast, one unmistakable focal point, graphic yet real, premium brand feel',
 ];
 
 // Deterministically rotate angles + styles so every batch is diverse
@@ -216,21 +216,28 @@ STEP 4 — GENERATE:
 
 Write the final image prompt based on ALL decisions above.
 
+EVERY IMAGE — REGARDLESS OF STYLE — MUST HAVE:
+- ONE clear focal point: a product, person, scene, object, or UI element
+- Intentional composition: the subject is deliberately placed, lit, and framed
+- Visual meaning: the image communicates something real about the brand
+- "Minimal" means clean and uncluttered, NOT empty or subject-less
+
 If Visual Type = Graphic:
 - Clean 3D illustration or modern UI-style graphics
-- Think Stripe / Linear / Notion product visuals
-- Elements: charts, icons, abstract UI components, clean 3D objects
-- Premium and minimal — NOT childish or cartoon
+- Think Stripe / Linear / Notion product visuals — always with a REAL product or interface as the hero
+- Elements: a rendered object, UI dashboard, 3D device, or product in context
+- Premium and minimal — NOT childish, NOT cartoon, NOT random geometric shapes with no meaning
 
 If Visual Type = Realistic:
 - Natural lighting, intentional composition
-- Premium interior / lifestyle scenes
+- Premium interior / lifestyle / product scenes with a clear subject
 - Warm or cool tones per brand rules
+- Always: a person, room, object, or meaningful scene — never a blurry abstract
 
 If Text Strategy = A (Text-Heavy):
 - Subject placed to ONE side, NOT centered
-- Opposite side = clean flat area for text
-- No busy textures in empty zone
+- Opposite side = natural empty area (wall, sky, surface, soft blur) — part of the scene itself, not a box or frame
+- No busy textures in the open zone
 
 ABSOLUTE FORBIDDEN IN IMAGE:
 - Any text, words, labels, captions
