@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Download, RefreshCw, Check, Loader2, ImageIcon, Pencil, Copy as DuplicateIcon, Layers } from 'lucide-react';
+import { Copy, Download, RefreshCw, Check, Loader2, ImageIcon, Pencil, Copy as DuplicateIcon, Layers, ThumbsUp, ThumbsDown, Bookmark, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
@@ -8,10 +8,11 @@ const ASSET_LABELS = {
   banner: 'Banner', video_concept: 'Video', ad: 'Ad'
 };
 
-export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplicate, onCanvas }) {
+export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplicate, onCanvas, onFeedback }) {
   const [copied, setCopied] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [feedbackState, setFeedbackState] = useState(asset.feedback || null);
 
   const isStuck = asset.status === 'generating' &&
     asset.created_date && (Date.now() - new Date(asset.created_date).getTime()) > 8 * 60 * 1000;
@@ -41,7 +42,6 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
       toast.success('Downloaded');
     } catch {
       window.open(currentImage, '_blank');
-      toast.success('Opened in new tab');
     }
   };
 
@@ -57,12 +57,27 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
     onDuplicate(asset);
   };
 
+  const handleFeedback = (action, e) => {
+    e.stopPropagation();
+    const newState = feedbackState === action ? null : action;
+    setFeedbackState(newState);
+    if (onFeedback) onFeedback(asset, newState);
+    if (newState === 'like') toast.success('Liked — preferences updated');
+    if (newState === 'dislike') toast.success('Noted — will adapt future generations');
+    if (newState === 'save') toast.success('Saved');
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.04, 0.3), duration: 0.35 }}
-      className="bg-white rounded-2xl border border-gray-100/80 overflow-hidden hover:border-gray-200 hover:shadow-lg hover:shadow-gray-100/50 transition-all duration-300 cursor-pointer group"
+      className={`bg-white rounded-2xl border overflow-hidden transition-all duration-300 cursor-pointer group ${
+        feedbackState === 'hide' ? 'opacity-40 border-gray-100' :
+        feedbackState === 'like' ? 'border-emerald-200 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-50' :
+        feedbackState === 'save' ? 'border-violet-200 hover:border-violet-300 hover:shadow-lg hover:shadow-violet-50' :
+        'border-gray-100/80 hover:border-gray-200 hover:shadow-lg hover:shadow-gray-100/50'
+      }`}
       onClick={() => !isGenerating && onEdit && onEdit(asset)}
     >
       {/* Image */}
@@ -84,22 +99,42 @@ export default function AssetCard({ asset, index, onEdit, onRegenerate, onDuplic
           </div>
         ) : isGenerating ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-gray-50 to-violet-50/30">
-            <div className="relative">
-              <div className="w-10 h-10 rounded-full border-2 border-violet-200 border-t-violet-500 animate-spin" />
-            </div>
+            <div className="w-10 h-10 rounded-full border-2 border-violet-200 border-t-violet-500 animate-spin" />
             <p className="text-[11px] text-gray-400 font-medium">Creating asset…</p>
           </div>
         ) : currentImage ? (
           <>
             <img src={currentImage} alt={asset.headline} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
-            {/* Hover overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-4">
-              <div className="flex items-center gap-1.5">
-                <span className="bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1.5 text-[11px] font-semibold text-gray-800 shadow-lg flex items-center gap-1.5">
-                  <Pencil className="w-3 h-3" /> Edit
-                </span>
-              </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300" />
+
+            {/* Feedback buttons — top right, always visible on hover */}
+            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+              <FeedbackButton
+                active={feedbackState === 'like'}
+                activeColor="bg-emerald-500 text-white"
+                onClick={(e) => handleFeedback('like', e)}
+                title="Like — improves future generations"
+              >
+                <ThumbsUp className="w-3 h-3" />
+              </FeedbackButton>
+              <FeedbackButton
+                active={feedbackState === 'dislike'}
+                activeColor="bg-red-500 text-white"
+                onClick={(e) => handleFeedback('dislike', e)}
+                title="Dislike — adapts future generations"
+              >
+                <ThumbsDown className="w-3 h-3" />
+              </FeedbackButton>
+              <FeedbackButton
+                active={feedbackState === 'save'}
+                activeColor="bg-violet-500 text-white"
+                onClick={(e) => handleFeedback('save', e)}
+                title="Save"
+              >
+                <Bookmark className="w-3 h-3" />
+              </FeedbackButton>
             </div>
+
             {/* Carousel indicators */}
             {carouselImages.length > 1 && (
               <div className="absolute bottom-2.5 left-0 right-0 flex items-center justify-center gap-1">
@@ -193,6 +228,22 @@ function ActionButton({ onClick, disabled, title, active, children }) {
         active
           ? 'border-green-200 bg-green-50'
           : 'border-gray-100 text-gray-400 hover:bg-gray-50 hover:text-gray-600'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function FeedbackButton({ active, activeColor, onClick, title, children }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+        active
+          ? activeColor
+          : 'bg-black/20 backdrop-blur-sm text-white hover:bg-black/40'
       }`}
     >
       {children}

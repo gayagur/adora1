@@ -1,286 +1,890 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// ─── Content Angle Library (16 angles for maximum diversity) ─────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 1: TYPE DEFINITIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface BrandStyle {
+  archetype: string;
+  colorTendency: string;
+  visualIdentity: string;
+  compositionStyle: string;
+  emotionalSignature: string;
+  temperature: string;
+  preferredAngles: string[];
+  avoidAngles: string[];
+}
+
+interface MessageAnalysis {
+  coreMessage: string;
+  emotionalTone: string;
+  visualStrategy: 'literal' | 'metaphorical' | 'contextual' | 'product_led' | 'abstract';
+  textShouldBeHero: boolean;
+}
+
+interface CreativeDecision {
+  angleId: string;
+  angleName: string;
+  format: string;
+  visualType: string;
+  composition: string;
+  textDensity: string;
+  contentType: string;
+  focalPoint: string;
+  sceneDescription: string;
+  negativeSpaceStrategy: string;
+  visualStyle: string;
+}
+
+interface FeatureVector {
+  format: string;
+  visualType: string;
+  composition: string;
+  textDensity: string;
+  contentType: string;
+  angleId: string;
+  angleIndex: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 2: CONTENT ANGLE LIBRARY (16 universal angles)
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const CONTENT_ANGLES = [
   {
-    id: 'interior_inspiration',
-    name: 'Interior Inspiration',
-    concept: 'A beautifully designed space that feels aspirational and warm',
-    visualFocus: 'wide editorial shot of a stunning interior — warm lighting, natural textures, curated objects, soft shadows',
-    moodKeywords: 'aspirational, warm, serene, premium, lifestyle',
-    forbid: 'people, tech, UI, text, posters',
+    id: 'product_hero',
+    name: 'Product Hero',
+    concept: 'The product, service, or offering as the clear focal point',
+    visualFocus: 'product or service element centered or offset against clean backdrop — sharp detail, intentional lighting, premium feel',
+    moodKeywords: 'premium, focused, aspirational, clean, hero',
+    forbid: 'cluttered scenes, people overshadowing product, text overlays',
+    contentType: 'product_object',
+  },
+  {
+    id: 'product_in_use',
+    name: 'Product in Context',
+    visualFocus: 'hands or person interacting with the product naturally — phone, laptop, tool, physical product — in a real environment',
+    concept: 'A real person using the product or service in their natural environment',
+    moodKeywords: 'authentic, relatable, human, editorial',
+    forbid: 'fake UI, cluttered screens, stock photo feel, harsh lighting',
+    contentType: 'people_lifestyle',
+  },
+  {
+    id: 'lifestyle_moment',
+    name: 'Lifestyle Moment',
+    concept: 'People genuinely enjoying a moment related to the brand value',
+    visualFocus: 'candid lifestyle scene — person or people in a warm, real moment. Golden hour light, real emotions, beautiful environment.',
+    moodKeywords: 'emotional, warm, authentic, aspirational',
+    forbid: 'posed stock photography, fake smiles, generic setups',
+    contentType: 'people_lifestyle',
+  },
+  {
+    id: 'environmental_portrait',
+    name: 'Environmental Portrait',
+    concept: 'A person embedded in their meaningful environment — the space tells the story',
+    visualFocus: 'wide environmental portrait — subject sits or stands naturally in a workspace, studio, or designed space. Shallow depth of field.',
+    moodKeywords: 'authentic, narrative, cinematic, warm, editorial',
+    forbid: 'studio backdrop, posed headshots, generic office',
+    contentType: 'people_lifestyle',
   },
   {
     id: 'before_after',
     name: 'Before / After',
-    concept: 'Visual transformation — chaos vs designed calm',
-    visualFocus: 'split-panel composition: left side dim chaotic scene, right side the same scene transformed — warm, minimal, elegant',
+    concept: 'Visual transformation showing the impact of the product or service',
+    visualFocus: 'split-panel composition: left side chaotic/old/raw, right side transformed/new/refined — unified color palette',
     moodKeywords: 'contrast, transformation, dramatic, editorial',
     forbid: 'text overlays, labels, arrows, UI elements',
-  },
-  {
-    id: 'product_in_use',
-    name: 'Product in Use',
-    concept: 'A real person interacting with the product naturally',
-    visualFocus: 'close-up of hands holding a phone or laptop with a clean app UI visible on screen, warm environment in background',
-    moodKeywords: 'human, relatable, premium, editorial, tech-meets-life',
-    forbid: 'fake UI, cluttered screens, stock photo feel, harsh lighting',
-  },
-  {
-    id: 'creator_side',
-    name: 'Creator / Craftsman',
-    concept: 'The human behind the work — a craftsman, architect, or designer at work',
-    visualFocus: 'workshop or studio scene — hands working on materials, sketches, or tools. Warm studio light, dust particles in beam',
-    moodKeywords: 'authentic, crafted, warm, cinematic, artisan',
-    forbid: 'tech, screens, UI, digital elements',
-  },
-  {
-    id: 'ai_tech',
-    name: 'AI / Tech Visualization',
-    concept: 'Abstract visualization of intelligence meets practical application',
-    visualFocus: 'clean dark surface with glowing abstract network nodes forming a meaningful pattern, or split showing raw data becoming a beautifully rendered output — minimal, modern, tech-forward',
-    moodKeywords: 'futuristic, minimal, precise, modern, abstract',
-    forbid: 'cluttered interfaces, generic sci-fi, harsh neons, clichéd AI imagery',
-  },
-  {
-    id: 'lifestyle',
-    name: 'Lifestyle',
-    concept: 'People genuinely enjoying a moment — emotional and warm',
-    visualFocus: 'candid lifestyle moment — person reading, working, or having coffee in a beautifully designed space. Golden hour light.',
-    moodKeywords: 'emotional, warm, authentic, slow living, aspirational',
-    forbid: 'posed stock photography, fake smiles, generic setups',
-  },
-  {
-    id: 'typography',
-    name: 'Graphic / Typography',
-    concept: 'A bold typographic creative with a single powerful visual element',
-    visualFocus: 'ultra-clean cream or warm neutral background, generous whitespace, a single thin geometric accent. No photography.',
-    moodKeywords: 'bold, minimal, editorial, Apple-like, premium',
-    forbid: 'photography, busy backgrounds, decorative elements, clip art',
+    contentType: 'process_journey',
   },
   {
     id: 'process_journey',
     name: 'Process / Journey',
-    concept: 'Visual storytelling of a journey from idea to result',
-    visualFocus: 'four-panel or sequential grid showing progression: sketch → render → refinement → finished result. Clean editorial style, warm tones.',
-    moodKeywords: 'narrative, process, transformation, craft, journey',
-    forbid: 'text labels, arrows with words, infographic style, UI screenshots',
+    concept: 'Visual storytelling of a progression from start to finish',
+    visualFocus: 'sequential grid or flow showing progression: idea → development → refinement → result. Clean editorial style.',
+    moodKeywords: 'narrative, process, transformation, craft',
+    forbid: 'text labels, arrows with words, infographic style',
+    contentType: 'process_journey',
+  },
+  {
+    id: 'typography_editorial',
+    name: 'Bold Editorial',
+    concept: 'A typographic creative with powerful visual hierarchy and a single accent element',
+    visualFocus: 'ultra-clean background, generous whitespace, one geometric or brand accent element. No photography.',
+    moodKeywords: 'bold, minimal, editorial, premium, typographic',
+    forbid: 'photography, busy backgrounds, decorative elements, clip art',
+    contentType: 'editorial_typography',
+  },
+  {
+    id: 'abstract_3d',
+    name: 'Abstract / 3D Conceptual',
+    concept: 'Abstract visualization that embodies the brand concept',
+    visualFocus: 'abstract 3D forms, geometric compositions, or surreal scenes that metaphorically represent the brand message — minimal, precise, striking',
+    moodKeywords: 'futuristic, minimal, precise, modern, abstract',
+    forbid: 'cluttered interfaces, generic sci-fi, harsh neons, clichéd imagery',
+    contentType: 'abstract_conceptual',
   },
   {
     id: 'macro_detail',
     name: 'Macro Detail',
     concept: 'Extreme close-up on a material, texture, or detail that tells the brand story',
-    visualFocus: 'macro photography or extreme zoom on a single premium material — wood grain, fabric weave, metal finish, glass edge — lit with dramatic side-light. The texture becomes a landscape.',
+    visualFocus: 'macro photography — extreme zoom on a premium surface, material, or element. Dramatic side-light, shallow depth.',
     moodKeywords: 'intimate, textural, premium, sensory, cinematic',
     forbid: 'wide shots, people, text, generic surfaces',
+    contentType: 'product_object',
   },
   {
     id: 'overhead_flatlay',
     name: 'Overhead Flat-Lay',
     concept: 'Carefully arranged brand-relevant objects from directly above',
-    visualFocus: 'top-down view of curated objects arranged on a clean surface — tools, materials, devices, samples — intentional negative space between items. Clean, bright, editorial.',
+    visualFocus: 'top-down view of curated objects on a clean surface — tools, materials, products — intentional negative space between items.',
     moodKeywords: 'organized, curated, editorial, clean, intentional',
     forbid: 'cluttered arrangements, random objects, dark moody lighting',
-  },
-  {
-    id: 'environmental_portrait',
-    name: 'Environmental Portrait',
-    concept: 'A person deeply embedded in their environment — the space tells the story',
-    visualFocus: 'wide environmental portrait — subject sits or stands naturally in a designed workspace, studio, or meaningful space. The environment and the person tell the story together. Shallow depth of field on background.',
-    moodKeywords: 'authentic, narrative, cinematic, warm, editorial',
-    forbid: 'studio backdrop, posed headshots, generic office settings',
+    contentType: 'product_object',
   },
   {
     id: 'duality_contrast',
     name: 'Duality / Contrast',
     concept: 'Two opposing concepts reflected against each other',
-    visualFocus: 'visual duality — left vs right, top vs bottom: analog/digital, chaos/order, old/new, raw/refined. Strong center divide, each side tells its own story, one color palette unites them.',
+    visualFocus: 'visual duality — left vs right: old/new, analog/digital, chaos/order. Strong center divide, one color palette unites them.',
     moodKeywords: 'dramatic, conceptual, editorial, contrast, narrative',
     forbid: 'text labels, arrows, obvious infographic elements',
+    contentType: 'abstract_conceptual',
   },
   {
     id: 'gradient_atmosphere',
     name: 'Gradient Atmosphere',
-    concept: 'A strong color gradient environment with a single focal element',
-    visualFocus: 'rich, smooth gradient background from brand colors — a single 3D object, product, or silhouette floats as the focal point. Dramatic lighting, premium feel, minimal but striking.',
+    concept: 'A rich color environment with a single striking focal element',
+    visualFocus: 'smooth gradient background from brand colors — a single 3D object, product, or silhouette as focal point. Dramatic lighting.',
     moodKeywords: 'premium, modern, brand-forward, minimal, bold',
     forbid: 'multiple objects, cluttered elements, text, generic shapes',
+    contentType: 'abstract_conceptual',
   },
   {
     id: 'film_still',
-    name: 'Cinematic Film Still',
-    concept: 'A single cinematic frame extracted from a high-budget film',
-    visualFocus: 'ultra-wide aspect ratio feel, cinematic color grade (teal-orange or muted cool tones), one strong subject in an atmospheric setting, shallow depth of field, film grain. The brand is implied, not shown.',
+    name: 'Cinematic Frame',
+    concept: 'A single cinematic frame that could be from a high-budget production',
+    visualFocus: 'cinematic color grade, one strong subject in atmospheric setting, shallow depth of field, subtle film grain.',
     moodKeywords: 'cinematic, atmospheric, editorial, premium, moody',
-    forbid: 'bright colors, flat lighting, stock photo feel, direct product shots',
+    forbid: 'bright flat colors, flat lighting, stock photo feel, direct product placement',
+    contentType: 'people_lifestyle',
   },
   {
     id: 'portal_window',
     name: 'Portal / Window',
-    concept: 'A frame within the frame revealing the brand world inside',
-    visualFocus: 'a physical or conceptual window/portal/arch/doorway — through it we see the brand world. The frame is in the real world (concrete, wood, stone), the view through it reveals a beautiful branded scene.',
+    concept: 'A frame within the frame revealing the brand world',
+    visualFocus: 'a physical or conceptual window/portal/arch — through it we see the brand world. Frame in the real world, view reveals branded scene.',
     moodKeywords: 'conceptual, inviting, editorial, discovery, premium',
     forbid: 'generic stock frames, obvious compositing, text overlays',
+    contentType: 'abstract_conceptual',
   },
   {
     id: 'motion_energy',
     name: 'Motion / Energy',
-    concept: 'A subject captured in implied motion with dynamic energy',
-    visualFocus: 'a single subject in motion — fabric flowing, particles scattering, liquid splashing, hands in action — captured with implied speed. Motion blur on the environment, sharp on the subject. Dynamic, energetic, alive.',
+    concept: 'Dynamic energy and movement captured in a single frame',
+    visualFocus: 'subject in motion — fabric flowing, particles scattering, liquid moving, hands in action. Motion blur on environment, sharp on subject.',
     moodKeywords: 'dynamic, energetic, alive, editorial, premium',
     forbid: 'static posed subjects, stock photography, cluttered backgrounds',
+    contentType: 'people_lifestyle',
+  },
+  {
+    id: 'data_social_proof',
+    name: 'Data / Social Proof',
+    concept: 'Metrics, numbers, or proof points visualized beautifully',
+    visualFocus: 'clean visualization of data, metrics, or social proof — rendered as elegant 3D charts, floating numbers, or sculptural data forms.',
+    moodKeywords: 'precise, modern, authoritative, clean, trustworthy',
+    forbid: 'clipart charts, generic infographics, busy dashboards, text-heavy',
+    contentType: 'data_stats',
   },
 ];
 
-// ─── Visual Styles (expanded for greater variety) ────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 3: VISUAL STYLES & FORMATS
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const VISUAL_STYLES = [
-  'editorial magazine — strong focal subject, asymmetric composition, rich warm lighting, magazine-quality depth of field',
-  'cinematic lifestyle — wide angle, film-like color grade, golden hour, one clear subject in intentional environment',
+  'editorial magazine — strong focal subject, asymmetric composition, rich lighting, magazine-quality depth of field',
+  'cinematic lifestyle — wide angle, film color grade, golden hour, one subject in intentional environment',
   'product hero — subject centered or offset, clean complementary background, sharp detail, premium studio lighting',
-  'soft neutral aesthetic — one clear object or scene, beige/cream/warm gray tones, gentle shadows, serene and purposeful',
-  'modern tech — one UI or product element as hero, dark or light background, precise composition, glowing accents',
-  'collage / layered — overlapping real elements with clear visual hierarchy, one dominant subject, editorial depth',
+  'soft neutral aesthetic — one clear object or scene, muted warm tones, gentle shadows, serene and purposeful',
+  'modern tech — one element as hero, dark or light background, precise composition, glowing accents',
+  'collage / layered — overlapping elements with clear visual hierarchy, one dominant subject, editorial depth',
   'architectural minimal — clean lines, one strong subject, intentional negative space as part of the scene',
   'bold editorial — strong contrast, one unmistakable focal point, graphic yet real, premium brand feel',
   'warm documentary — natural light, candid angles, real textures, slightly desaturated, authentic and raw',
-  'high fashion — dramatic poses or compositions, strong shadows, color blocking, editorial perfection',
+  'high fashion — dramatic compositions, strong shadows, color blocking, editorial perfection',
 ];
 
-// ─── Brand Archetype System ─────────────────────────────────────────────────
-const BRAND_ARCHETYPES = {
-  'saas_tech': {
-    preferredAngles: ['product_in_use', 'ai_tech', 'gradient_atmosphere', 'typography'],
-    colorTendency: 'cool',
-    compositionStyle: 'clean, geometric, precise',
-    avoidAngles: ['interior_inspiration', 'creator_side'],
-  },
-  'lifestyle_consumer': {
-    preferredAngles: ['lifestyle', 'environmental_portrait', 'film_still', 'motion_energy'],
-    colorTendency: 'warm',
-    compositionStyle: 'candid, natural, warm',
-    avoidAngles: ['ai_tech', 'gradient_atmosphere'],
-  },
-  'ecommerce_product': {
-    preferredAngles: ['product_in_use', 'overhead_flatlay', 'macro_detail', 'before_after'],
-    colorTendency: 'brand-driven',
-    compositionStyle: 'product-focused, clean, aspirational',
-    avoidAngles: ['ai_tech', 'portal_window'],
-  },
-  'interior_design': {
-    preferredAngles: ['interior_inspiration', 'before_after', 'creator_side', 'macro_detail'],
-    colorTendency: 'warm neutral',
-    compositionStyle: 'editorial, architectural, warm',
-    avoidAngles: ['ai_tech', 'gradient_atmosphere'],
-  },
-  'creative_agency': {
-    preferredAngles: ['typography', 'duality_contrast', 'portal_window', 'film_still'],
-    colorTendency: 'bold',
-    compositionStyle: 'experimental, editorial, bold',
-    avoidAngles: ['lifestyle', 'interior_inspiration'],
-  },
-  'health_wellness': {
-    preferredAngles: ['lifestyle', 'environmental_portrait', 'macro_detail', 'motion_energy'],
-    colorTendency: 'warm natural',
-    compositionStyle: 'natural, serene, warm',
-    avoidAngles: ['ai_tech', 'typography'],
-  },
-  'education': {
-    preferredAngles: ['product_in_use', 'process_journey', 'environmental_portrait', 'lifestyle'],
-    colorTendency: 'warm professional',
-    compositionStyle: 'approachable, clear, warm',
-    avoidAngles: ['gradient_atmosphere', 'macro_detail'],
-  },
-  'finance_professional': {
-    preferredAngles: ['typography', 'gradient_atmosphere', 'ai_tech', 'product_in_use'],
-    colorTendency: 'cool professional',
-    compositionStyle: 'precise, premium, clean',
-    avoidAngles: ['creator_side', 'interior_inspiration'],
-  },
-  'general': {
-    preferredAngles: [],
-    colorTendency: 'brand-driven',
-    compositionStyle: 'balanced, clean, intentional',
-    avoidAngles: [],
-  },
-};
+const FORMAT_TYPES = ['text_first', 'ui_product', 'graphic_3d', 'realistic_photo', 'editorial_poster', 'minimal_concept'];
+const COMPOSITIONS = ['centered', 'left_subject', 'right_subject', 'full_bleed', 'split', 'asymmetric_editorial', 'overhead', 'macro_closeup'];
+const TEXT_DENSITIES = ['heavy', 'light', 'none'];
+const CONTENT_TYPE_LIST = ['ui_product', 'people_lifestyle', 'product_object', 'interior_space', 'abstract_conceptual', 'process_journey', 'data_stats', 'editorial_typography'];
 
-// ─── Creative Intent Mapping ─────────────────────────────────────────────────
-const INTENT_ANGLE_MAP = {
-  'product': ['product_in_use', 'overhead_flatlay', 'macro_detail', 'before_after'],
-  'lifestyle': ['lifestyle', 'environmental_portrait', 'film_still', 'motion_energy'],
-  'editorial': ['typography', 'duality_contrast', 'gradient_atmosphere', 'portal_window'],
-  'data': ['ai_tech', 'typography', 'gradient_atmosphere', 'process_journey'],
-  'abstract': ['gradient_atmosphere', 'portal_window', 'duality_contrast', 'motion_energy'],
-};
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 4: BRAND ANALYSIS (Universal — no hardcoded brand logic)
+// ═══════════════════════════════════════════════════════════════════════════════
 
-// ─── Helper: Classify brand archetype from industry ─────────────────────────
-function classifyBrand(industry, description) {
-  const text = `${industry} ${description}`.toLowerCase();
-  if (text.match(/saas|software|tech|app|platform|api|cloud|ai |artificial/)) return 'saas_tech';
-  if (text.match(/interior|furniture|home|decor|design studio|architect/)) return 'interior_design';
-  if (text.match(/shop|store|ecommerce|e-commerce|retail|fashion|clothing|jewelry|beauty/)) return 'ecommerce_product';
-  if (text.match(/agency|creative|design|branding|marketing|studio/)) return 'creative_agency';
-  if (text.match(/health|wellness|fitness|yoga|meditation|nutrition|organic/)) return 'health_wellness';
-  if (text.match(/education|learning|course|training|school|university|teach/)) return 'education';
-  if (text.match(/finance|banking|invest|insurance|accounting|legal|consult/)) return 'finance_professional';
-  if (text.match(/lifestyle|blog|travel|food|restaurant|cafe|hotel/)) return 'lifestyle_consumer';
-  return 'general';
+function classifyBrandArchetype(industry: string, description: string, visualNotes: string): BrandStyle {
+  const text = `${industry} ${description} ${visualNotes}`.toLowerCase();
+
+  // Score-based classification — each archetype gets scored by keyword matches
+  const archetypes: Record<string, { keywords: RegExp; colorTendency: string; visualIdentity: string; compositionStyle: string; emotionalSignature: string; temperature: string; preferredAngles: string[]; avoidAngles: string[] }> = {
+    'saas_tech': {
+      keywords: /saas|software|tech|app\b|platform|api|cloud|ai\b|artificial|startup|devtool|developer|analytics|automation|dashboard|crm|erp/,
+      colorTendency: 'cool blues, purples, or brand-specific',
+      visualIdentity: 'clean, precise, product-focused',
+      compositionStyle: 'geometric, minimal, precise',
+      emotionalSignature: 'professional, innovative, trustworthy',
+      temperature: 'cool',
+      preferredAngles: ['product_hero', 'product_in_use', 'abstract_3d', 'gradient_atmosphere', 'data_social_proof'],
+      avoidAngles: ['lifestyle_moment', 'macro_detail'],
+    },
+    'ecommerce_product': {
+      keywords: /shop|store|ecommerce|e-commerce|retail|fashion|clothing|jewelry|beauty|cosmetic|skincare|accessories|brand|luxury|boutique/,
+      colorTendency: 'brand-driven, often warm or luxurious',
+      visualIdentity: 'product-centric, aspirational, editorial',
+      compositionStyle: 'product-hero, lifestyle, editorial',
+      emotionalSignature: 'aspirational, desirable, premium',
+      temperature: 'warm-to-neutral',
+      preferredAngles: ['product_hero', 'lifestyle_moment', 'macro_detail', 'overhead_flatlay', 'film_still'],
+      avoidAngles: ['abstract_3d', 'data_social_proof'],
+    },
+    'creative_agency': {
+      keywords: /agency|creative|design|branding|marketing|studio|media|advertising|digital agency|production/,
+      colorTendency: 'bold, high-contrast, or refined',
+      visualIdentity: 'experimental, editorial, conceptual',
+      compositionStyle: 'asymmetric, bold, editorial',
+      emotionalSignature: 'bold, creative, confident',
+      temperature: 'dynamic',
+      preferredAngles: ['typography_editorial', 'duality_contrast', 'portal_window', 'film_still', 'motion_energy'],
+      avoidAngles: ['data_social_proof'],
+    },
+    'health_wellness': {
+      keywords: /health|wellness|fitness|yoga|meditation|nutrition|organic|natural|supplement|mental health|therapy|mindful/,
+      colorTendency: 'natural greens, warm earth tones, soft pastels',
+      visualIdentity: 'natural, serene, human-centered',
+      compositionStyle: 'natural, open, breathing room',
+      emotionalSignature: 'calm, nurturing, trustworthy',
+      temperature: 'warm',
+      preferredAngles: ['lifestyle_moment', 'environmental_portrait', 'motion_energy', 'macro_detail'],
+      avoidAngles: ['abstract_3d', 'data_social_proof', 'typography_editorial'],
+    },
+    'education_learning': {
+      keywords: /education|learning|course|training|school|university|teach|tutoring|online course|academy|bootcamp|skill/,
+      colorTendency: 'warm, approachable, professional',
+      visualIdentity: 'clear, approachable, inspiring',
+      compositionStyle: 'structured, clear, warm',
+      emotionalSignature: 'inspiring, supportive, trustworthy',
+      temperature: 'warm',
+      preferredAngles: ['product_in_use', 'process_journey', 'environmental_portrait', 'lifestyle_moment', 'data_social_proof'],
+      avoidAngles: ['gradient_atmosphere', 'portal_window'],
+    },
+    'finance_professional': {
+      keywords: /finance|banking|invest|insurance|accounting|legal|consult|advisory|wealth|fintech|payment|crypto/,
+      colorTendency: 'dark navy, deep green, gold accents',
+      visualIdentity: 'precise, premium, authoritative',
+      compositionStyle: 'structured, premium, confident',
+      emotionalSignature: 'trustworthy, authoritative, premium',
+      temperature: 'cool',
+      preferredAngles: ['typography_editorial', 'gradient_atmosphere', 'data_social_proof', 'product_hero'],
+      avoidAngles: ['lifestyle_moment', 'motion_energy'],
+    },
+    'food_hospitality': {
+      keywords: /food|restaurant|cafe|coffee|bakery|hotel|hospitality|travel|tourism|dining|chef|recipe|catering/,
+      colorTendency: 'warm, appetizing, rich',
+      visualIdentity: 'sensory, warm, inviting',
+      compositionStyle: 'lifestyle, overhead, macro',
+      emotionalSignature: 'inviting, sensory, warm',
+      temperature: 'warm',
+      preferredAngles: ['macro_detail', 'overhead_flatlay', 'lifestyle_moment', 'environmental_portrait', 'film_still'],
+      avoidAngles: ['abstract_3d', 'data_social_proof', 'typography_editorial'],
+    },
+    'interior_architecture': {
+      keywords: /interior|furniture|home|decor|architect|real estate|property|renovation|landscape|construction/,
+      colorTendency: 'warm neutrals, earthy, refined',
+      visualIdentity: 'editorial, spatial, atmospheric',
+      compositionStyle: 'architectural, editorial, spacious',
+      emotionalSignature: 'aspirational, refined, warm',
+      temperature: 'warm-neutral',
+      preferredAngles: ['lifestyle_moment', 'before_after', 'macro_detail', 'film_still', 'environmental_portrait'],
+      avoidAngles: ['abstract_3d', 'data_social_proof'],
+    },
+    'lifestyle_consumer': {
+      keywords: /lifestyle|blog|travel|social|community|subscription|membership|content|creator|influencer|personal brand/,
+      colorTendency: 'vibrant or curated pastels',
+      visualIdentity: 'lifestyle, authentic, curated',
+      compositionStyle: 'candid, warm, editorial',
+      emotionalSignature: 'relatable, aspirational, authentic',
+      temperature: 'warm',
+      preferredAngles: ['lifestyle_moment', 'environmental_portrait', 'film_still', 'motion_energy', 'overhead_flatlay'],
+      avoidAngles: ['data_social_proof', 'gradient_atmosphere'],
+    },
+  };
+
+  // Score each archetype
+  let bestArchetype = 'general';
+  let bestScore = 0;
+  for (const [key, config] of Object.entries(archetypes)) {
+    const matches = text.match(config.keywords);
+    const score = matches ? matches.length : 0;
+    if (score > bestScore) {
+      bestScore = score;
+      bestArchetype = key;
+    }
+  }
+
+  if (bestScore === 0) {
+    return {
+      archetype: 'general',
+      colorTendency: 'brand-driven',
+      visualIdentity: 'adaptable, clean',
+      compositionStyle: 'balanced, clean, intentional',
+      emotionalSignature: 'professional, clear',
+      temperature: 'neutral',
+      preferredAngles: [],
+      avoidAngles: [],
+    };
+  }
+
+  const matched = archetypes[bestArchetype];
+  return {
+    archetype: bestArchetype,
+    colorTendency: matched.colorTendency,
+    visualIdentity: matched.visualIdentity,
+    compositionStyle: matched.compositionStyle,
+    emotionalSignature: matched.emotionalSignature,
+    temperature: matched.temperature,
+    preferredAngles: matched.preferredAngles,
+    avoidAngles: matched.avoidAngles,
+  };
 }
 
-// ─── Smart angle + style picker with diversity ──────────────────────────────
-function pickAngleAndStyle(assetIndex, campaignSeed, archetype, creativeIntent, usedAngleIds) {
-  let candidateAngles = [...CONTENT_ANGLES];
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 5: FEATURE EMBEDDING & SIMILARITY
+// ═══════════════════════════════════════════════════════════════════════════════
 
-  // If user specified a creative intent, prefer those angles
-  if (creativeIntent && creativeIntent !== 'auto' && INTENT_ANGLE_MAP[creativeIntent]) {
-    const preferredIds = INTENT_ANGLE_MAP[creativeIntent];
-    candidateAngles.sort((a, b) => {
-      const aPreferred = preferredIds.includes(a.id) ? 0 : 1;
-      const bPreferred = preferredIds.includes(b.id) ? 0 : 1;
-      return aPreferred - bPreferred;
-    });
-  }
-  // Otherwise, use brand archetype preferences
-  else if (archetype && BRAND_ARCHETYPES[archetype]) {
-    const arch = BRAND_ARCHETYPES[archetype];
-    // Remove angles the archetype should avoid
-    if (arch.avoidAngles.length > 0) {
-      candidateAngles = candidateAngles.filter(a => !arch.avoidAngles.includes(a.id));
-    }
-    // Boost preferred angles to front
-    if (arch.preferredAngles.length > 0) {
-      candidateAngles.sort((a, b) => {
-        const aIdx = arch.preferredAngles.indexOf(a.id);
-        const bIdx = arch.preferredAngles.indexOf(b.id);
-        if (aIdx >= 0 && bIdx >= 0) return aIdx - bIdx;
-        if (aIdx >= 0) return -1;
-        if (bIdx >= 0) return 1;
-        return 0;
-      });
-    }
-  }
+function buildFeatureVector(decision: CreativeDecision): number[] {
+  const vector: number[] = [];
 
-  // Deprioritize already-used angles for diversity
-  if (usedAngleIds.length > 0) {
-    candidateAngles.sort((a, b) => {
-      const aUsed = usedAngleIds.includes(a.id) ? 1 : 0;
-      const bUsed = usedAngleIds.includes(b.id) ? 1 : 0;
-      return aUsed - bUsed;
-    });
-  }
+  // One-hot encode format (6 dims)
+  for (const f of FORMAT_TYPES) vector.push(decision.format === f ? 1 : 0);
+  // One-hot encode visualType (2 dims)
+  vector.push(decision.visualType === 'realistic' ? 1 : 0);
+  vector.push(decision.visualType === 'graphic' ? 1 : 0);
+  // One-hot encode composition (8 dims)
+  for (const c of COMPOSITIONS) vector.push(decision.composition === c ? 1 : 0);
+  // One-hot encode textDensity (3 dims)
+  for (const t of TEXT_DENSITIES) vector.push(decision.textDensity === t ? 1 : 0);
+  // One-hot encode contentType (8 dims)
+  for (const ct of CONTENT_TYPE_LIST) vector.push(decision.contentType === ct ? 1 : 0);
+  // Angle as normalized index (1 dim)
+  const angleIdx = CONTENT_ANGLES.findIndex(a => a.id === decision.angleId);
+  vector.push(angleIdx >= 0 ? angleIdx / CONTENT_ANGLES.length : 0.5);
 
-  // Pick from candidates using deterministic rotation
-  const angleIdx = (assetIndex + campaignSeed) % candidateAngles.length;
-  const angle = candidateAngles[angleIdx];
-
-  // Style rotation
-  const styleIdx = (assetIndex * 3 + campaignSeed + 1) % VISUAL_STYLES.length;
-  const visualStyle = VISUAL_STYLES[styleIdx];
-
-  return { angle, visualStyle };
+  return vector;
 }
 
-function hashString(str) {
+function cosineSimilarity(a: number[], b: number[]): number {
+  if (a.length !== b.length) return 0;
+  let dot = 0, magA = 0, magB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    magA += a[i] * a[i];
+    magB += b[i] * b[i];
+  }
+  magA = Math.sqrt(magA);
+  magB = Math.sqrt(magB);
+  if (magA === 0 || magB === 0) return 0;
+  return dot / (magA * magB);
+}
+
+function isTooSimilar(newVec: number[], existingVecs: number[][], threshold = 0.88): boolean {
+  for (const existing of existingVecs) {
+    if (cosineSimilarity(newVec, existing) > threshold) return true;
+  }
+  return false;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 6: VARIATION ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface VariationState {
+  usedAngleIds: string[];
+  usedFormats: string[];
+  usedCompositions: string[];
+  usedVisualTypes: string[];
+  usedContentTypes: string[];
+  featureVectors: number[][];
+}
+
+function buildVariationState(existingAssets: any[]): VariationState {
+  const state: VariationState = {
+    usedAngleIds: [],
+    usedFormats: [],
+    usedCompositions: [],
+    usedVisualTypes: [],
+    usedContentTypes: [],
+    featureVectors: [],
+  };
+
+  for (const asset of existingAssets) {
+    if (!asset.style_features) continue;
+    const features = typeof asset.style_features === 'string'
+      ? JSON.parse(asset.style_features)
+      : asset.style_features;
+
+    if (features.angleId) state.usedAngleIds.push(features.angleId);
+    if (features.format) state.usedFormats.push(features.format);
+    if (features.composition) state.usedCompositions.push(features.composition);
+    if (features.visualType) state.usedVisualTypes.push(features.visualType);
+    if (features.contentType) state.usedContentTypes.push(features.contentType);
+    if (features.featureVector) state.featureVectors.push(features.featureVector);
+  }
+
+  return state;
+}
+
+function selectAngle(
+  variationState: VariationState,
+  brandStyle: BrandStyle,
+  creativeIntent: string | null,
+  assetIndex: number,
+  campaignSeed: number,
+  brandPrefs: any
+): { angle: typeof CONTENT_ANGLES[0]; angleIndex: number } {
+  let candidates = [...CONTENT_ANGLES];
+
+  // 1. Remove avoided angles for this brand archetype
+  if (brandStyle.avoidAngles.length > 0) {
+    candidates = candidates.filter(a => !brandStyle.avoidAngles.includes(a.id));
+  }
+
+  // 2. Apply creative intent filter if specified
+  const intentAngleMap: Record<string, string[]> = {
+    'product': ['product_hero', 'product_in_use', 'overhead_flatlay', 'macro_detail', 'before_after'],
+    'lifestyle': ['lifestyle_moment', 'environmental_portrait', 'film_still', 'motion_energy'],
+    'editorial': ['typography_editorial', 'duality_contrast', 'gradient_atmosphere', 'portal_window'],
+    'data': ['data_social_proof', 'typography_editorial', 'gradient_atmosphere', 'process_journey'],
+    'abstract': ['abstract_3d', 'gradient_atmosphere', 'portal_window', 'duality_contrast', 'motion_energy'],
+  };
+
+  if (creativeIntent && creativeIntent !== 'auto' && intentAngleMap[creativeIntent]) {
+    const preferredIds = intentAngleMap[creativeIntent];
+    candidates.sort((a, b) => {
+      const aP = preferredIds.includes(a.id) ? 0 : 1;
+      const bP = preferredIds.includes(b.id) ? 0 : 1;
+      return aP - bP;
+    });
+  } else if (brandStyle.preferredAngles.length > 0) {
+    // Sort preferred angles to front
+    candidates.sort((a, b) => {
+      const aIdx = brandStyle.preferredAngles.indexOf(a.id);
+      const bIdx = brandStyle.preferredAngles.indexOf(b.id);
+      if (aIdx >= 0 && bIdx >= 0) return aIdx - bIdx;
+      if (aIdx >= 0) return -1;
+      if (bIdx >= 0) return 1;
+      return 0;
+    });
+  }
+
+  // 3. Deprioritize already-used angles for diversity
+  if (variationState.usedAngleIds.length > 0) {
+    const usedCounts: Record<string, number> = {};
+    variationState.usedAngleIds.forEach(id => { usedCounts[id] = (usedCounts[id] || 0) + 1; });
+    candidates.sort((a, b) => {
+      return (usedCounts[a.id] || 0) - (usedCounts[b.id] || 0);
+    });
+  }
+
+  // 4. Apply brand preference weighting (70% preference, 30% exploration)
+  const anglePrefs = brandPrefs?.angles || {};
+  if (Object.keys(anglePrefs).length > 0 && Math.random() > 0.3) {
+    candidates.sort((a, b) => {
+      const aScore = anglePrefs[a.id]?.score || 0;
+      const bScore = anglePrefs[b.id]?.score || 0;
+      return bScore - aScore; // higher score first
+    });
+  }
+
+  // 5. Pick using deterministic rotation among top candidates
+  const topN = Math.min(candidates.length, 6);
+  const idx = (assetIndex + campaignSeed) % topN;
+  const angle = candidates[idx];
+  const angleIndex = CONTENT_ANGLES.findIndex(a => a.id === angle.id);
+
+  return { angle, angleIndex };
+}
+
+function selectCreativeDecision(
+  angle: typeof CONTENT_ANGLES[0],
+  angleIndex: number,
+  variationState: VariationState,
+  brandStyle: BrandStyle,
+  forcedVisualStyle: string | null,
+  assetIndex: number,
+  campaignSeed: number,
+  brandPrefs: any
+): CreativeDecision {
+  // Select format — avoid repeats, prefer unused
+  const formatPicker = (seed: number) => {
+    const unused = FORMAT_TYPES.filter(f => !variationState.usedFormats.includes(f));
+    const pool = unused.length > 0 ? unused : FORMAT_TYPES;
+    return pool[seed % pool.length];
+  };
+
+  // Select composition — avoid repeats
+  const compositionPicker = (seed: number) => {
+    const unused = COMPOSITIONS.filter(c => !variationState.usedCompositions.includes(c));
+    const pool = unused.length > 0 ? unused : COMPOSITIONS;
+    return pool[seed % pool.length];
+  };
+
+  // Select text density — based on angle and content type
+  const textDensityPicker = () => {
+    if (angle.id === 'typography_editorial') return 'heavy';
+    if (angle.id === 'data_social_proof') return 'light';
+    if (['macro_detail', 'film_still', 'motion_energy'].includes(angle.id)) return 'none';
+    // Avoid repeating the same density
+    const densityCounts: Record<string, number> = {};
+    variationState.usedContentTypes.forEach(t => { densityCounts[t] = (densityCounts[t] || 0) + 1; });
+    const unused = TEXT_DENSITIES.filter(d => !variationState.usedFormats.includes(d));
+    return unused.length > 0 ? unused[(assetIndex + campaignSeed) % unused.length] : TEXT_DENSITIES[(assetIndex + campaignSeed) % TEXT_DENSITIES.length];
+  };
+
+  const visualType = forcedVisualStyle || (angle.contentType === 'abstract_conceptual' || angle.contentType === 'editorial_typography' || angle.contentType === 'data_stats' ? 'graphic' : 'realistic');
+
+  const format = formatPicker(assetIndex * 7 + campaignSeed);
+  const composition = compositionPicker(assetIndex * 11 + campaignSeed + 3);
+  const textDensity = textDensityPicker();
+
+  const visualStyleIdx = (assetIndex * 3 + campaignSeed + 1) % VISUAL_STYLES.length;
+
+  return {
+    angleId: angle.id,
+    angleName: angle.name,
+    format,
+    visualType,
+    composition,
+    textDensity,
+    contentType: angle.contentType,
+    focalPoint: '', // Filled by LLM
+    sceneDescription: '', // Filled by LLM
+    negativeSpaceStrategy: '', // Filled by LLM
+    visualStyle: VISUAL_STYLES[visualStyleIdx],
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 7: PROMPT BUILDER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function buildCreativeDirectionPrompt(
+  brand: any,
+  campaign: any,
+  postContent: string | null,
+  decision: CreativeDecision,
+  angle: typeof CONTENT_ANGLES[0],
+  brandStyle: BrandStyle,
+  formatInstruction: string,
+  forcedVisualStyle: string | null,
+  creativeIntent: string | null,
+): string {
+  const brandColors = brand?.brand_colors?.join(', ') || 'inferred from brand identity';
+  const primaryColor = brand?.brand_colors?.[0] || 'inferred from brand';
+
+  const postSection = postContent ? `
+POST / CAPTION PROVIDED BY USER:
+"${postContent}"
+
+CRITICAL — POST CONTENT ANALYSIS (do this BEFORE anything else):
+1. Extract the CORE MESSAGE — what is the user really communicating? (1 sentence)
+2. Identify the EMOTIONAL TONE — inspiring? urgent? playful? authoritative? warm? provocative?
+3. Determine the VALUE PROPOSITION — what benefit or promise is embedded?
+4. Choose VISUAL TRANSLATION STRATEGY:
+   - LITERAL: show the actual thing described
+   - METAPHORICAL: represent the feeling or concept through analogy
+   - CONTEXTUAL: show the world/environment the message lives in
+   - PRODUCT-LED: product/service as hero, message implied by context
+   - ABSTRACT: emotional/conceptual visualization of the idea
+5. Decide: should TEXT be the visual hero, or should the IMAGE carry the meaning?
+6. The final image must FEEL like this post when you look at it — not just illustrate random words.
+
+DO NOT just pick keywords from the post and describe them as a scene.
+TRANSLATE the meaning into a visual a creative director would approve.` : '';
+
+  return `You are a world-class creative director at a top global agency.
+You create premium, visually stunning marketing assets that feel intentional, not generated.
+
+YOU MUST COMPLETE ALL STEPS BEFORE WRITING THE IMAGE PROMPT.
+
+═══ BRAND ═══
+- Name: ${brand?.brand_name || 'Unknown Brand'}
+- Website: ${brand?.url || ''}
+- Instagram: ${brand?.social_instagram || ''}
+- Facebook: ${brand?.social_facebook || ''}
+- LinkedIn: ${brand?.social_linkedin || ''}
+- Description: ${brand?.description || 'Not available'}
+- Industry: ${brand?.industry || 'Unknown'}
+- Target Audience: ${brand?.target_audience || 'General'}
+- Tone of Voice: ${brand?.tone_of_voice || 'professional'}
+- Brand Colors: ${brandColors}
+- Primary Color: ${primaryColor}
+- Visual Style Notes: ${brand?.visual_style_notes || 'not available'}
+- Brand Archetype: ${brandStyle.archetype}
+- Visual Identity: ${brandStyle.visualIdentity}
+- Color Tendency: ${brandStyle.colorTendency}
+- Emotional Signature: ${brandStyle.emotionalSignature}
+- Temperature: ${brandStyle.temperature}
+
+═══ CAMPAIGN ═══
+- Title: ${campaign?.title || ''}
+- Strategy: ${campaign?.strategy_angle || ''}
+- Key Message: ${campaign?.key_message || ''}
+- Visual Direction: ${campaign?.visual_direction || ''}
+
+═══ ASSET BRIEF ═══
+${postSection}
+- Creative Intent: ${creativeIntent || 'auto'}${creativeIntent && creativeIntent !== 'auto' ? ` (user explicitly chose ${creativeIntent}-focused creative)` : ''}
+- Content Angle: ${angle.name} — ${angle.concept}
+- Visual Focus: ${angle.visualFocus}
+- Mood: ${angle.moodKeywords}
+- Forbidden: ${angle.forbid}
+- Platform Format: ${formatInstruction}
+
+═══ PRE-DECIDED CREATIVE PARAMETERS (you must use these) ═══
+- Visual Type: ${forcedVisualStyle ? forcedVisualStyle.toUpperCase() + ' (user forced)' : decision.visualType.toUpperCase() + ' (system selected)'}
+- Composition: ${decision.composition}
+- Text Density: ${decision.textDensity}
+- Content Type: ${decision.contentType}
+- Format Approach: ${decision.format}
+- Visual Style: ${decision.visualStyle}
+
+═══ STEP 1: BRAND ANALYSIS ═══
+
+Analyze this specific brand. What makes it UNIQUE? Consider:
+1. Visual identity — is it photographic, graphic, illustrative, or mixed?
+2. Color DNA — dominant colors, warm vs cool, saturated vs muted
+3. Content patterns — what type of imagery fits this brand?
+4. Emotional tone — premium / playful / technical / warm / bold / minimal?
+5. Brand temperature — warm inviting OR cool precise OR something specific?
+
+CRITICAL: Adapt to THIS brand. Do NOT apply a generic aesthetic.
+A ${brandStyle.temperature} ${brandStyle.archetype} brand needs ${brandStyle.compositionStyle} compositions.
+
+═══ STEP 2: BRAND RULES (write 6-10 specific rules) ═══
+
+Convert your analysis into strict rules. Format:
+- NEVER use [X] — because this brand is [Y]
+- ALWAYS prefer [Z] — because the brand identity is [W]
+- Colors must be [specific guidance]
+- Compositions should [specific guidance]
+- Photography/graphics should feel [specific guidance]
+
+All rules MUST come from the actual brand analysis. NOT generic "clean aesthetic".
+
+═══ STEP 3: SCENE DESIGN ═══
+
+Design the exact scene for the image:
+1. FOCAL POINT: What is the single most important element? Be specific.
+2. SCENE: Describe the full scene — setting, lighting, perspective, atmosphere
+3. NEGATIVE SPACE: Where will breathing room be? What creates it?
+   - Must be INSIDE the image through natural composition
+   - Examples: clean wall behind subject, soft bokeh, open sky, empty surface, gradient light
+   - NEVER add frames, cards, boxes, or external margins
+   - Think like a photographer composing a magazine cover
+4. VALIDATE: Does this match the brand rules from Step 2?
+
+═══ STEP 4: GENERATE ═══
+
+Write the final image prompt based on ALL decisions above.
+
+COMPOSITION MANDATE:
+- Subject to ONE SIDE, opposite side naturally open
+- Negative space from real scene elements (wall, blur, sky, surface)
+- ONE clear focal point — never a collage
+- Intentional placement, lighting, framing
+- "Minimal" = clean and purposeful, NOT empty or meaningless
+
+${decision.visualType === 'graphic' ? `GRAPHIC STYLE MANDATE:
+- Pick ONE unexpected direction that fits THIS brand specifically
+- Options: floating 3D mockup, abstract material composition, isometric illustration,
+  cinematic split (half photo/half graphic), data visualization as sculpture,
+  surreal brand scene, exploded view, gradient + focal object, blueprint aesthetic
+- Must be PREMIUM, PRECISE, and BRAND-AUTHENTIC
+- ONE clear hero element — never random shapes
+- Reference quality: Stripe, Apple, Linear, Figma campaigns
+- NEVER: cartoon, clipart, flat generic illustration, random abstract geometry` : ''}
+
+${decision.visualType === 'realistic' ? `REALISTIC STYLE MANDATE:
+- Natural or studio lighting appropriate to this brand
+- Premium scenes with clear subject and sense of place
+- Tone matches brand temperature: ${brandStyle.temperature}
+- Always: a person, product, space, or meaningful scene
+- Never: blurry abstract, generic stock, AI-generated poster feel` : ''}
+
+${decision.textDensity === 'heavy' ? `TEXT-HEAVY LAYOUT:
+- 40-50% of image is intentional negative space for text overlay
+- Subject positioned to leave clean, open area
+- Open area must be natural (wall, sky, surface, gradient) — NOT a box or frame` : ''}
+
+ABSOLUTE FORBIDDEN:
+- Text, words, labels, or captions rendered in the image
+- Editor UI, canvas borders, toolbars, chrome
+- Mixing graphic + realistic in one image
+- Screenshot-inside-poster or image-on-card layout
+- Image pasted onto a larger background/canvas
+- Generic AI poster or stock photo feel
+- Crowded backgrounds with no breathing room
+- ${angle.forbid}
+
+Format: ${formatInstruction}
+
+═══ RETURN JSON ═══
+1. brand_summary: 2-3 sentence analysis specific to THIS brand (not generic)
+2. brand_rules: array of 6-10 rules specific to THIS brand
+3. visual_decision: "[Type] [Text Density] [Composition] [Negative Space Strategy]"
+4. headline: max 7 words, scroll-stopping, specific to brand message
+5. subheadline: 10-14 words supporting headline
+6. cta: 2-4 word action text
+7. full_caption: social caption with hook, value prop, CTA, 3-5 hashtags
+8. image_generation_prompt: complete scene description a photographer could execute
+9. focal_point: what is the single main visual element
+10. scene_description: brief description of the full scene
+11. negative_space_location: where in the image the breathing room is`;
+}
+
+function buildImagePrompt(
+  creativeDirection: any,
+  decision: CreativeDecision,
+  angle: typeof CONTENT_ANGLES[0],
+  brandColors: string,
+  primaryColor: string,
+  formatInstruction: string,
+  backgroundStyle: string,
+  backgroundTone: string,
+  brandStyle: BrandStyle,
+): string {
+  return `${creativeDirection.image_generation_prompt}
+
+VISUAL STYLE: ${decision.visualStyle}
+CONTENT ANGLE: ${angle.name} — ${angle.visualFocus}
+BRAND PALETTE: ${brandColors} (primary: ${primaryColor})
+BRAND TEMPERATURE: ${brandStyle.temperature}
+FORMAT: ${formatInstruction}
+
+COMPOSITION RULES — NON-NEGOTIABLE:
+- Empty space for text MUST BE PART OF THE IMAGE — natural composition, not added frames
+- Subject to ONE SIDE, opposite side naturally open (wall, blur, sky, surface, gradient)
+- Think editorial photographer composing magazine cover
+- NEVER split image into "photo box + text box"
+- NEVER add external margins, cards, frames, or canvas layouts
+- Result must look like a real photograph or premium graphic — not a template
+
+BACKGROUND:
+${backgroundStyle === 'none' ? 'ISOLATED: Pure white or transparent. No scene. Subject alone.' : backgroundStyle === 'minimal' ? 'MINIMAL: Soft, clean, neutral. Solid color or subtle gradient. No busy environment.' : 'FULL: Rich environment fills the frame. Subject exists within a real, atmospheric place.'}
+
+TONE:
+${backgroundTone === 'light' ? 'LIGHT: White, cream, off-white, or soft pastel. Bright and airy. NO dark backgrounds.' : backgroundTone === 'dark' ? 'DARK: Deep black, charcoal, navy, or muted dark. Moody and dramatic. NO light backgrounds.' : `BRAND: Background built from brand palette. Dominant: ${primaryColor}. Full: ${brandColors}. Do NOT default to black or white.`}
+
+${decision.visualType === 'graphic' ? `GRAPHIC RENDERING:
+- Main subject in sharp 3D perspective
+- Realistic shadows for depth
+- Background: blurred environment OR rich gradient — not flat solid
+- Secondary depth elements at ~30% opacity
+- Premium SaaS/brand launch visual quality` : ''}
+
+ABSOLUTE REQUIREMENTS:
+- ZERO text, words, labels in the image
+- ZERO editor UI, canvas borders, toolbars
+- ZERO screenshot-in-poster layout
+- ZERO image-pasted-on-background layout
+- ZERO generic stock or AI poster feel
+- Image must feel: ${angle.moodKeywords}
+- Production quality: top-tier brand studio output
+- Forbidden: ${angle.forbid}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 8: QUALITY SCORING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function scoreCreativeDirection(direction: any, brandStyle: BrandStyle): number {
+  let score = 50; // baseline
+
+  // Has meaningful brand summary (not generic)
+  if (direction.brand_summary && direction.brand_summary.length > 50) score += 10;
+
+  // Has enough brand rules
+  if (direction.brand_rules && direction.brand_rules.length >= 6) score += 10;
+
+  // Headline is short enough
+  if (direction.headline) {
+    const wordCount = direction.headline.split(' ').length;
+    if (wordCount <= 7) score += 10;
+    if (wordCount > 10) score -= 20;
+  }
+
+  // Has image prompt
+  if (direction.image_generation_prompt && direction.image_generation_prompt.length > 100) score += 10;
+
+  // Has CTA
+  if (direction.cta && direction.cta.split(' ').length <= 4) score += 5;
+
+  // Has caption
+  if (direction.full_caption && direction.full_caption.length > 50) score += 5;
+
+  return Math.min(100, Math.max(0, score));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 9: MUTATION (for regeneration loop)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function mutateDecision(decision: CreativeDecision, attempt: number): CreativeDecision {
+  const mutated = { ...decision };
+
+  // Rotate through different mutation strategies
+  switch (attempt % 5) {
+    case 0:
+      mutated.composition = COMPOSITIONS[(COMPOSITIONS.indexOf(decision.composition) + 1) % COMPOSITIONS.length];
+      break;
+    case 1:
+      mutated.visualType = decision.visualType === 'realistic' ? 'graphic' : 'realistic';
+      break;
+    case 2:
+      mutated.contentType = CONTENT_TYPE_LIST[(CONTENT_TYPE_LIST.indexOf(decision.contentType) + 1) % CONTENT_TYPE_LIST.length];
+      break;
+    case 3:
+      mutated.format = FORMAT_TYPES[(FORMAT_TYPES.indexOf(decision.format) + 1) % FORMAT_TYPES.length];
+      break;
+    case 4:
+      mutated.textDensity = TEXT_DENSITIES[(TEXT_DENSITIES.indexOf(decision.textDensity) + 1) % TEXT_DENSITIES.length];
+      break;
+  }
+
+  return mutated;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 10: BRAND PREFERENCES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function loadBrandPreferences(base44: any, brandId: string): Promise<any> {
+  try {
+    const brands = await base44.asServiceRole.entities.Brand.filter({ id: brandId });
+    const brand = brands[0];
+    if (brand?.preferences) {
+      return typeof brand.preferences === 'string' ? JSON.parse(brand.preferences) : brand.preferences;
+    }
+  } catch (_) { /* ignore */ }
+  return {};
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 11: MAIN ORCHESTRATION — CreativeEngine.run()
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function hashString(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) - hash) + str.charCodeAt(i);
@@ -289,8 +893,18 @@ function hashString(str) {
   return Math.abs(hash);
 }
 
-// ─── Core generation ─────────────────────────────────────────────────────────
-async function doGenerate(base44, assetId, option, campaign, brand, postContent, forcedVisualStyle, backgroundStyle, backgroundTone, creativeIntent) {
+async function run(
+  base44: any,
+  assetId: string,
+  option: any,
+  campaign: any,
+  brand: any,
+  postContent: string | null,
+  forcedVisualStyle: string | null,
+  backgroundStyle: string,
+  backgroundTone: string,
+  creativeIntent: string | null,
+) {
   const assetType = option.asset_type;
   const platform = option.platform;
 
@@ -300,223 +914,65 @@ async function doGenerate(base44, assetId, option, campaign, brand, postContent,
     ? 'Wide 16:9 horizontal banner. Left-to-right reading flow.'
     : 'Square 1:1 format. Centered or asymmetric composition. Mobile-optimized.';
 
-  const brandColors = brand?.brand_colors?.join(', ') || 'warm beige, cream, terracotta, warm white';
-  const primaryColor = brand?.brand_colors?.[0] || '#C8A882';
-
+  const brandColors = brand?.brand_colors?.join(', ') || 'inferred from brand';
+  const primaryColor = brand?.brand_colors?.[0] || 'inferred from brand';
   const campaignSeed = hashString((campaign?.id || '') + (brand?.id || ''));
 
-  // Classify brand archetype
-  const archetype = classifyBrand(brand?.industry || '', brand?.description || '');
+  // ── Step 1: Brand Analysis ─────────────────────────────────────────────────
+  const brandStyle = classifyBrandArchetype(
+    brand?.industry || '',
+    brand?.description || '',
+    brand?.visual_style_notes || ''
+  );
+  console.log(`[Engine] Brand archetype: ${brandStyle.archetype}, temp: ${brandStyle.temperature}`);
 
-  // Pull existing assets to determine angle index + used angles
-  let existingCount = 0;
-  let usedAngleIds = [];
+  // ── Step 2: Load Variation State ───────────────────────────────────────────
+  let existingAssets: any[] = [];
   try {
-    const existing = await base44.asServiceRole.entities.CampaignAsset.filter({ campaign_id: campaign?.id || '' });
-    const others = existing.filter(a => a.id !== assetId);
-    existingCount = others.length;
-    // Track used angles from visual_prompt to avoid repetition
-    usedAngleIds = others
-      .map(a => a.visual_prompt || '')
-      .map(prompt => {
-        const match = CONTENT_ANGLES.find(angle => prompt.toLowerCase().includes(angle.id.replace('_', ' ')));
-        return match?.id;
-      })
-      .filter(Boolean);
+    existingAssets = await base44.asServiceRole.entities.CampaignAsset.filter({ campaign_id: campaign?.id || '' });
+    existingAssets = existingAssets.filter((a: any) => a.id !== assetId);
   } catch (_) { /* ignore */ }
 
-  const { angle, visualStyle } = pickAngleAndStyle(existingCount, campaignSeed, archetype, creativeIntent, usedAngleIds);
+  const variationState = buildVariationState(existingAssets);
 
-  console.log(`Asset ${assetId}: archetype="${archetype}", angle="${angle.name}", style="${visualStyle}", intent="${creativeIntent || 'auto'}"`);
+  // ── Step 3: Load Brand Preferences ─────────────────────────────────────────
+  const brandPrefs = await loadBrandPreferences(base44, brand?.id || '');
 
-  // ─── STAGE A: Creative Direction ──────────────────────────────────────────
-  const postAnalysisSection = postContent ? `
-POST / CAPTION PROVIDED BY USER:
-"${postContent}"
+  // ── Step 4: Select Angle ───────────────────────────────────────────────────
+  const { angle, angleIndex } = selectAngle(
+    variationState, brandStyle, creativeIntent,
+    existingAssets.length, campaignSeed, brandPrefs
+  );
+  console.log(`[Engine] Angle: ${angle.name} (idx: ${angleIndex})`);
 
-CRITICAL: This post is the PRIMARY source of truth for this asset.
-Before generating the image prompt, you MUST:
-1. Extract the CORE MESSAGE — what is the user really trying to communicate?
-2. Identify the EMOTIONAL TONE — is it inspiring? urgent? playful? authoritative? warm?
-3. Decide the VISUAL TRANSLATION STRATEGY:
-   - Should the visual be LITERAL (showing the actual thing described)?
-   - Should it be METAPHORICAL (representing the feeling or concept abstractly)?
-   - Should it be CONTEXTUAL (showing the world/environment the message lives in)?
-   - Should it be PRODUCT-LED (the product/service as hero with the message implied)?
-4. Determine if TEXT should be the hero or if the IMAGE should carry the message
-5. The final image must FEEL like this post when you look at it — not just illustrate random words from it
+  // ── Step 5: Create Decision ────────────────────────────────────────────────
+  let decision = selectCreativeDecision(
+    angle, angleIndex, variationState, brandStyle,
+    forcedVisualStyle, existingAssets.length, campaignSeed, brandPrefs
+  );
 
-DO NOT just pick keywords from the post and describe them as a scene.
-TRANSLATE the meaning into a visual that a creative director would be proud of.` : '';
+  // ── Step 6: Diversity Check + Regeneration Loop ────────────────────────────
+  const MAX_ATTEMPTS = 5;
+  let decisionVector = buildFeatureVector(decision);
+  let attempt = 0;
+
+  while (isTooSimilar(decisionVector, variationState.featureVectors) && attempt < MAX_ATTEMPTS) {
+    attempt++;
+    console.log(`[Engine] Decision too similar (attempt ${attempt}), mutating...`);
+    decision = mutateDecision(decision, attempt);
+    decisionVector = buildFeatureVector(decision);
+  }
+
+  console.log(`[Engine] Decision: format=${decision.format}, vis=${decision.visualType}, comp=${decision.composition}, text=${decision.textDensity}, content=${decision.contentType}`);
+
+  // ── Step 7: Creative Direction via LLM ─────────────────────────────────────
+  const prompt = buildCreativeDirectionPrompt(
+    brand, campaign, postContent, decision, angle,
+    brandStyle, formatInstruction, forcedVisualStyle, creativeIntent
+  );
 
   const creativeDirection = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt: `You are a world-class brand strategist and creative director at a top agency.
-
-YOU MUST COMPLETE ALL 4 STEPS BEFORE WRITING THE IMAGE PROMPT.
-
----
-
-BRAND INFORMATION:
-- Brand Name: ${brand?.brand_name || 'Unknown Brand'}
-- Website: ${brand?.url || ''}
-- Instagram: ${brand?.social_instagram || ''}
-- Facebook: ${brand?.social_facebook || ''}
-- LinkedIn: ${brand?.social_linkedin || ''}
-- Description: ${brand?.description || 'No description available'}
-- Industry: ${brand?.industry || 'Unknown industry'}
-- Target Audience: ${brand?.target_audience || 'General audience'}
-- Tone of Voice: ${brand?.tone_of_voice || 'professional, clear'}
-- Brand Colors: ${brandColors}
-- Primary Color: ${primaryColor}
-- Visual Style Notes: ${brand?.visual_style_notes || 'not available'}
-- Brand Archetype: ${archetype} (${BRAND_ARCHETYPES[archetype]?.compositionStyle || 'balanced'})
-
-CAMPAIGN:
-- Title: ${campaign?.title || ''}
-- Strategy: ${campaign?.strategy_angle || ''}
-- Key Message: ${campaign?.key_message || ''}
-- Visual Direction: ${campaign?.visual_direction || ''}
-
-THIS ASSET BRIEF:
-${postAnalysisSection}
-- Creative Intent: ${creativeIntent || 'auto'} ${creativeIntent && creativeIntent !== 'auto' ? `(User specifically requested ${creativeIntent}-focused creative)` : ''}
-- Content Angle: ${angle.name} — ${angle.concept}
-- Visual Focus: ${angle.visualFocus}
-- Mood: ${angle.moodKeywords}
-- Forbidden: ${angle.forbid}
-- Platform: ${platform} ${assetType} — ${formatInstruction}
-
-===
-
-STEP 1 — ANALYZE THE BRAND (use internet context provided):
-
-Based on ALL brand information above AND what you can find about this brand online:
-1. Visual Identity: Is it realistic/photographic OR graphic/illustrated/3D? What's the feel?
-2. Color DNA: dominant colors, warm vs cool, saturated vs muted, background tones
-3. Composition Patterns: text-heavy or visual-heavy? editorial or product-centric?
-4. Content Type: people / product / UI / abstract / spaces / nature?
-5. Emotional Signature: premium / playful / technical / creative / warm / clinical?
-6. Brand Temperature: warm and inviting OR cool and precise OR somewhere specific?
-
-CRITICAL: If this is a ${archetype} brand, respect the typical visual language of that category.
-Do NOT apply a warm lifestyle aesthetic to a cold SaaS brand, or a tech aesthetic to a warm lifestyle brand.
-
-===
-
-STEP 2 — BUILD BRAND RULES (MANDATORY — write 6-10 rules):
-
-Convert analysis into strict, specific rules. Examples:
-- NEVER use warm tones — this is a cool, precise tech brand
-- ALWAYS keep compositions clean with deliberate negative space
-- Prefer subject-offset compositions over centered
-- Colors must be drawn from: [specific palette]
-- Photography style should feel editorial, not stock
-- Backgrounds should be [specific guidance]
-
-All rules must come from the actual brand analysis. NOT generic "nice aesthetic".
-These rules are LAW for the image prompt.
-
-===
-
-STEP 3 — CHOOSE CREATIVE DIRECTION (must follow brand rules):
-
-${forcedVisualStyle ? `IMPORTANT: User chose visual type = "${forcedVisualStyle.toUpperCase()}". You MUST use this. Do not override.` : 'Decide: Visual Type = Realistic OR Graphic (pick one based on brand analysis, no mixing)'}
-
-- Text Strategy: pick one based on the brand and post content:
-  A (Text-Heavy): 40-50% of image is intentional negative space for headline
-  B (Visual-First): image dominates, text is a secondary overlay
-  C (No Text): image carries the entire message alone
-
-- Composition: pick exactly ONE:
-  • Subject left, clean space right — for headline placement
-  • Subject right, clean space left — editorial asymmetric
-  • Centered subject with surrounding breathing room
-  • Full-bleed image with soft gradient zone for text
-  • Minimal poster layout — mostly space, one striking element
-  • Asymmetrical editorial — diagonal energy, offset elements
-  • Bird's eye / overhead — looking down at arranged elements
-  • Extreme close-up with depth — macro detail, background blur
-
-- Negative Space Strategy: describe WHERE in the image negative space will be and WHAT creates it naturally (wall, sky, blur, surface, gradient, etc.)
-
-Validate: do your decisions match the brand rules? If not — revise.
-
-===
-
-STEP 4 — GENERATE:
-
-Write the final image prompt based on ALL decisions above.
-
-EVERY IMAGE — REGARDLESS OF STYLE — MUST HAVE:
-- ONE clear focal point: a product, person, scene, object, or element
-- Intentional composition: the subject is deliberately placed, lit, and framed
-- Visual meaning: the image communicates something real about the brand
-- Negative space INSIDE the image: achieved through natural scene composition
-- "Minimal" means clean and uncluttered, NOT empty or meaningless
-
-NEGATIVE SPACE RULES — CRITICAL:
-- The empty space for text MUST BE PART OF THE IMAGE ITSELF
-- It is created by natural elements: a clean wall behind a subject, soft bokeh background, open sky, empty desk surface, gradient lighting, defocused area
-- Subject goes to ONE SIDE of the frame, opposite side is naturally open
-- NEVER create negative space by adding a blank card/box/frame around the image
-- NEVER split the image into "photo zone" + "text zone"
-- Think like an editorial photographer composing a magazine cover shot
-
-${forcedVisualStyle === 'graphic' ? `GRAPHIC STYLE RULES:
-- Pick ONE unexpected direction that fits the brand:
-  1. Floating 3D product/UI mockup above a blurred real environment
-  2. Abstract 3D material composition — geometric forms embodying the brand
-  3. Isometric 3D illustration of the service in use
-  4. Cinematic split — half photographic, half graphic, seamlessly merged
-  5. Data visualization as beautiful 3D sculpture
-  6. Surreal brand scene — core concept made literal poetically
-  7. Exploded view — components floating in formation
-  8. Macro material study in hyper-detail
-  9. Portal composition — frame within frame
-  10. Gradient atmosphere — rich gradient + single 3D focal element
-  11. Blueprint/technical drawing with one full-color element
-  12. Infinite depth — repeating elements creating perspective tunnel
-- Must be PREMIUM, PRECISE, and BRAND-AUTHENTIC
-- ONE clear hero element — not a collage, not random shapes
-- Reference quality: Stripe, Apple, Linear, Airbnb, Figma campaign visuals
-- NEVER: cartoon, clipart, flat generic illustration, random abstract geometry` : ''}
-
-${forcedVisualStyle === 'realistic' || !forcedVisualStyle ? `REALISTIC STYLE RULES:
-- Natural lighting, intentional composition
-- Premium scenes with a clear subject and sense of place
-- Warm or cool tones per brand rules (do NOT default to warm)
-- Always: a person, room, object, or meaningful scene
-- Never: blurry abstract, generic stock, AI-generated poster` : ''}
-
-TYPOGRAPHY AWARENESS — if headline is part of the output:
-- Maximum 7 words in headline. Shorter is better.
-- No broken words at line breaks
-- No giant text blobs that fill the entire frame
-- Headline should have clear hierarchy: big headline, smaller subline
-- Text placement must respect the negative space strategy above
-
-ABSOLUTE FORBIDDEN IN IMAGE:
-- Any text, words, labels, captions rendered in the image
-- Editor UI, canvas borders, toolbars, chrome
-- Mixing graphic + realistic styles
-- Crowded backgrounds with no breathing room
-- Generic AI poster feel or "stock photo generated by AI" look
-- Screenshot-inside-poster or image-on-card layout
-- ${angle.forbid}
-
-Format: ${formatInstruction}
-
-===
-
-RETURN JSON:
-1. brand_summary: 2-3 sentence brand analysis (specific, not generic)
-2. brand_rules: array of 6-10 rule strings (specific to THIS brand)
-3. visual_decision: one line: [Type: Graphic/Realistic] [Text: Heavy/Minimal/None] [Layout: ___] [Negative Space: ___]
-4. headline: max 7 words, scroll-stopping, specific to the brand message
-5. subheadline: 10-14 words supporting headline
-6. cta: short action button text (2-4 words)
-7. full_caption: social caption with hook, value proposition, CTA, 3-5 relevant hashtags
-8. image_generation_prompt: final detailed prompt — opens with visual_decision, describes composition precisely, specifies exact style, references brand colors, no ambiguity. Must be a complete scene description that a photographer or artist could execute.`,
+    prompt,
     add_context_from_internet: true,
     model: 'gemini_3_flash',
     response_json_schema: {
@@ -530,99 +986,67 @@ RETURN JSON:
         cta: { type: 'string' },
         full_caption: { type: 'string' },
         image_generation_prompt: { type: 'string' },
+        focal_point: { type: 'string' },
+        scene_description: { type: 'string' },
+        negative_space_location: { type: 'string' },
       },
       required: ['brand_summary', 'brand_rules', 'visual_decision', 'headline', 'subheadline', 'cta', 'full_caption', 'image_generation_prompt'],
     },
   });
 
-  console.log('Brand summary:', creativeDirection.brand_summary);
-  console.log('Brand rules:', creativeDirection.brand_rules?.join(' | '));
-  console.log('Creative decision:', creativeDirection.visual_decision);
-  console.log(`Creative: angle=${angle.name}, headline="${creativeDirection.headline}"`);
+  // ── Step 8: Quality Check ──────────────────────────────────────────────────
+  const qualityScore = scoreCreativeDirection(creativeDirection, brandStyle);
+  console.log(`[Engine] Quality score: ${qualityScore}/100`);
+  console.log(`[Engine] Brand: ${creativeDirection.brand_summary?.slice(0, 80)}...`);
+  console.log(`[Engine] Headline: "${creativeDirection.headline}"`);
 
-  // ─── STAGE B: Image Render ────────────────────────────────────────────────
+  // ── Step 9: Image Generation ───────────────────────────────────────────────
   const existingRefs = brand?.image_assets?.length > 0 ? brand.image_assets.slice(0, 2) : undefined;
 
-  const finalPrompt = `${creativeDirection.image_generation_prompt}
+  const finalPrompt = buildImagePrompt(
+    creativeDirection, decision, angle,
+    brandColors, primaryColor, formatInstruction,
+    backgroundStyle, backgroundTone, brandStyle
+  );
 
-VISUAL STYLE: ${visualStyle}
-CONTENT ANGLE: ${angle.name} — ${angle.visualFocus}
-BRAND PALETTE: ${brandColors} (primary: ${primaryColor})
-FORMAT: ${formatInstruction}
-
-COMPOSITION RULES — CRITICAL:
-- The empty space for text MUST BE PART OF THE IMAGE ITSELF — achieved through natural composition
-- Place the subject to ONE SIDE of the frame, leaving the opposite side naturally open
-- The open side must be a real element: clean wall, soft blur, open sky, empty surface, gradient lighting, defocused depth
-- Think like an editorial photographer: compose so the scene itself provides breathing room
-- The empty space should feel intentional — like the photographer deliberately left room
-- NEVER split the image into image-box + white-box
-- NEVER add external margins, cards, frames, or canvas-style layouts
-- The result must look like a real photograph or real graphic — not a mockup or template
-
-BACKGROUND REQUIREMENT:
-${backgroundStyle === 'none' ? 'ISOLATED SUBJECT: Pure white or transparent background. No scene, no environment. Subject alone, cleanly cut out.' : backgroundStyle === 'minimal' ? 'MINIMAL BACKGROUND: Soft, clean, neutral. Solid color, subtle gradient, or very light texture. No busy environment.' : 'FULL BACKGROUND: Rich environment fills the entire frame. Subject exists within a real, atmospheric place.'}
-
-BACKGROUND TONE:
-${backgroundTone === 'light' ? 'LIGHT TONE: White, cream, off-white, light gray, or soft pastel. Bright, airy, clean. NO dark backgrounds.' : backgroundTone === 'dark' ? 'DARK TONE: Deep black, charcoal, navy, or dark muted. Moody, dramatic, premium. NO light/white backgrounds.' : `BRAND COLORS: Background built from brand palette. Dominant: ${primaryColor}. Full palette: ${brandColors}. Do NOT default to black or white.`}
-
-${forcedVisualStyle === 'graphic' ? `GRAPHIC RENDERING:
-- Main subject in sharp 3D perspective — slightly rotated, floating
-- Realistic drop shadow beneath floating elements
-- Background: real blurred environment OR rich gradient — NOT a flat solid color
-- Secondary panels behind hero for depth (30% opacity or more blurred)
-- Screen/UI content must look real and functional
-- Result must feel like a premium SaaS product launch visual` : ''}
-
-ABSOLUTE REQUIREMENTS:
-- ZERO text, words, labels, or captions in the image
-- ZERO editor UI, canvas borders, toolbars
-- ZERO screenshot-in-poster layout
-- ZERO generic stock photo or AI poster feel
-- ZERO of these: ${angle.forbid}
-- The image must feel: ${angle.moodKeywords}
-- Production quality: top-tier brand studio output`;
-
-  // For angles showing screens — inject real website screenshots
-  const screenAngles = ['product_in_use', 'process_journey', 'ai_tech'];
+  // For product/tech angles, inject real screenshots as reference
+  const screenAngles = ['product_in_use', 'process_journey', 'data_social_proof'];
   const useScreenshots = screenAngles.includes(angle.id) && brand?.image_assets?.length > 0;
   const imageRefs = useScreenshots ? brand.image_assets.slice(0, 2) : existingRefs;
 
-  const screenPromptAddition = useScreenshots
-    ? `\n\nIMPORTANT: The reference images are REAL screenshots of the brand's website. Use them as screen content on any device shown. Integrate naturally.`
+  const screenAddition = useScreenshots
+    ? '\n\nREFERENCE IMAGES: These are real screenshots of the brand website. Use as screen content on any device. Integrate naturally.'
     : '';
 
   const imageResult = await base44.asServiceRole.integrations.Core.GenerateImage({
-    prompt: finalPrompt + screenPromptAddition,
+    prompt: finalPrompt + screenAddition,
     existing_image_urls: imageRefs,
   });
 
-  // ─── Carousel extra slides (with full brand context) ──────────────────────
+  // ── Step 10: Carousel Extra Slides ─────────────────────────────────────────
   const images = [imageResult.url];
   if (assetType === 'carousel') {
-    // Pick 3 different angles for carousel diversity
     const usedId = angle.id;
     const carouselAngles = CONTENT_ANGLES
-      .filter(a => a.id !== usedId)
+      .filter(a => a.id !== usedId && !brandStyle.avoidAngles.includes(a.id))
       .sort(() => Math.random() - 0.5)
       .slice(0, 3);
 
     for (const slideAngle of carouselAngles) {
       const slidePrompt = `${creativeDirection.image_generation_prompt}
 
-This is slide ${images.length + 1} of a carousel for ${brand?.brand_name || 'the brand'}.
-Content angle for this slide: ${slideAngle.name} — ${slideAngle.visualFocus}
+Slide ${images.length + 1} of carousel for ${brand?.brand_name || 'the brand'}.
+Angle: ${slideAngle.name} — ${slideAngle.visualFocus}
 Mood: ${slideAngle.moodKeywords}
 
 BRAND PALETTE: ${brandColors}
 FORMAT: ${formatInstruction}
-STYLE: ${visualStyle}
+STYLE: ${decision.visualStyle}
+BRAND RULES: ${creativeDirection.brand_rules?.join('. ')}
 
-MUST follow brand rules: ${creativeDirection.brand_rules?.join('. ')}
-
-ZERO text. ZERO editor UI. ZERO stock photo feel.
+ZERO text. ZERO editor UI. ZERO stock photo feel. ZERO image-on-card layout.
 Forbidden: ${slideAngle.forbid}
-Production quality. Premium brand studio output.`;
+Production quality. Top-tier brand studio.`;
 
       const res = await base44.asServiceRole.integrations.Core.GenerateImage({
         prompt: slidePrompt,
@@ -632,7 +1056,17 @@ Production quality. Premium brand studio output.`;
     }
   }
 
-  // ─── Save ─────────────────────────────────────────────────────────────────
+  // ── Step 11: Save with Feature Data ────────────────────────────────────────
+  const styleFeatures: FeatureVector = {
+    format: decision.format,
+    visualType: decision.visualType,
+    composition: decision.composition,
+    textDensity: decision.textDensity,
+    contentType: decision.contentType,
+    angleId: angle.id,
+    angleIndex,
+  };
+
   await base44.asServiceRole.entities.CampaignAsset.update(assetId, {
     headline: creativeDirection.headline,
     ad_copy: creativeDirection.subheadline,
@@ -642,12 +1076,16 @@ Production quality. Premium brand studio output.`;
     preview_image: images[0],
     carousel_images: assetType === 'carousel' ? images : [],
     status: 'ready',
+    style_features: JSON.stringify(styleFeatures),
   });
 
-  console.log(`Asset ${assetId} done — archetype: ${archetype}, angle: ${angle.name}, style: ${visualStyle}`);
+  console.log(`[Engine] Asset ${assetId} done — ${brandStyle.archetype}/${angle.name}/${decision.format}/${decision.composition}`);
 }
 
-// ─── Handler ──────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 12: HTTP HANDLER
+// ═══════════════════════════════════════════════════════════════════════════════
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me();
@@ -660,12 +1098,13 @@ Deno.serve(async (req) => {
   const backgroundTone = option?.background_tone || 'brand';
   const creativeIntent = option?.creative_intent || 'auto';
 
-  doGenerate(base44, assetId, option, campaign, brand, postContent, forcedVisualStyle, backgroundStyle, backgroundTone, creativeIntent).catch(async (error) => {
-    console.error('Generation failed:', error.message);
-    try {
-      await base44.asServiceRole.entities.CampaignAsset.update(assetId, { status: 'error' });
-    } catch (_) { /* ignore */ }
-  });
+  run(base44, assetId, option, campaign, brand, postContent, forcedVisualStyle, backgroundStyle, backgroundTone, creativeIntent)
+    .catch(async (error) => {
+      console.error('[Engine] Generation failed:', error.message);
+      try {
+        await base44.asServiceRole.entities.CampaignAsset.update(assetId, { status: 'error' });
+      } catch (_) { /* ignore */ }
+    });
 
   return Response.json({ success: true, message: 'Generation started' });
 });

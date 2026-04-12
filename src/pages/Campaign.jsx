@@ -12,6 +12,7 @@ import AssetEditorPanel from '../components/campaign/AssetEditorPanel';
 import CampaignEditPanel from '../components/campaign/CampaignEditPanel';
 import BrandEditPanel from '../components/campaign/BrandEditPanel';
 import CanvasEditor from '../components/campaign/CanvasEditor';
+import { recordFeedback } from '../lib/brand-preferences';
 
 const PLATFORM_ORDER = ['instagram', 'facebook', 'linkedin', 'tiktok', 'youtube', 'twitter', 'general'];
 const PLATFORM_LABELS = { instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'X / Twitter', general: 'Display' };
@@ -83,7 +84,12 @@ export default function Campaign() {
     if (!asset) return;
     await base44.entities.CampaignAsset.update(assetId, { status: 'generating' });
     qc.invalidateQueries({ queryKey: ['assets', campaignId] });
-    generateAsset(assetId, { platform: asset.platform, asset_type: asset.asset_type, format: asset.format, label: `${asset.platform} ${asset.asset_type}` }, campaign, brand);
+    generateAsset(assetId, {
+      platform: asset.platform,
+      asset_type: asset.asset_type,
+      format: asset.format,
+      label: `${asset.platform} ${asset.asset_type}`
+    }, campaign, brand);
     toast.success('Regenerating...');
   };
 
@@ -115,6 +121,20 @@ export default function Campaign() {
     qc.setQueryData(['campaign', campaignId], updated);
     setEditingCampaign(false);
     refetchCampaign();
+  };
+
+  const handleFeedback = async (asset, action) => {
+    if (!brandId) return;
+    // Update local state immediately
+    qc.setQueryData(['assets', campaignId], prev =>
+      prev?.map(a => a.id === asset.id ? { ...a, feedback: action } : a)
+    );
+    // Persist feedback and update brand preferences
+    try {
+      await recordFeedback(brandId, asset, action);
+    } catch (e) {
+      console.error('Failed to record feedback:', e);
+    }
   };
 
   const grouped = {};
@@ -182,6 +202,7 @@ export default function Campaign() {
                     onCanvas={setCanvasAsset}
                     onRegenerate={handleRegenerate}
                     onDuplicate={handleDuplicate}
+                    onFeedback={handleFeedback}
                   />
                 ))}
               </div>
