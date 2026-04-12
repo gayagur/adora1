@@ -203,6 +203,13 @@ CONTENT ANGLE: ${angle.name} — ${angle.visualFocus}
 BRAND PALETTE: warm beige, cream, terracotta, natural linen, warm oak wood
 FORMAT: ${formatInstruction}
 
+COMPOSITION RULES — CRITICAL:
+- Leave at least 40-50% of the frame as clean, empty negative space — solid or gradient background with no elements
+- Place the main subject (object, person, scene) to ONE SIDE (right or bottom preferred) — NOT centered
+- The empty area should be smooth, uncluttered, and suitable for placing large text over it
+- Think like an ad photographer: subject fills one side, clean space fills the other
+- Wide breathing room around all edges — no tight cropping
+
 ABSOLUTE REQUIREMENTS:
 - ZERO text, words, labels, or captions anywhere in the image
 - ZERO editor UI, canvas borders, toolbars, or chrome
