@@ -198,8 +198,7 @@ All rules must come from the actual brand analysis. DO NOT default to generic "n
 
 STEP 3 — CHOOSE CREATIVE DIRECTION (must follow brand rules):
 
-Decide:
-- Visual Type: Realistic OR Graphic (pick one, no mixing)
+${forcedVisualStyle ? `IMPORTANT: The user has explicitly chosen visual type = "${forcedVisualStyle.toUpperCase()}". You MUST use this type. Do not override it.` : 'Decide: Visual Type = Realistic OR Graphic (pick one, no mixing)'}
 - Text Strategy: A (Text-Heavy: 40-50% empty space for headline) OR B (Visual-First: image dominates)
 - Composition: pick exactly one:
   • Left text / right image
@@ -355,6 +354,7 @@ Deno.serve(async (req) => {
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { assetId, option, campaign, brand } = await req.json();
+  const forcedVisualStyle = option?.visual_style || null; // 'realistic' | 'graphic' | null
 
   // Fire-and-forget: return immediately so frontend never times out.
   // The backend continues running and updates the entity when done.
