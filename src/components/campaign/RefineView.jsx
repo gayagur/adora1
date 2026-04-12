@@ -114,6 +114,31 @@ function useFreeDrag(canvasRef) {
   return [offset, setOffset, onPointerDown];
 }
 
+// Resize hook — drag a corner to scale an element (% of canvas width)
+function useFreeResize(canvasRef, initial = 50) {
+  const [size, setSize] = useState(initial);
+  const resizing = useRef(false);
+  const start = useRef({ mx: 0, sz: 0 });
+
+  const onPointerDown = useCallback((e) => {
+    e.stopPropagation(); e.preventDefault();
+    resizing.current = true;
+    start.current = { mx: e.clientX, sz: size };
+    const onMove = (ev) => {
+      if (!resizing.current) return;
+      const r = canvasRef.current?.getBoundingClientRect();
+      if (!r) return;
+      const delta = ((ev.clientX - start.current.mx) / r.width) * 100;
+      setSize(Math.max(15, Math.min(95, start.current.sz + delta)));
+    };
+    const onUp = () => { resizing.current = false; window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }, [canvasRef, size]);
+
+  return [size, setSize, onPointerDown];
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // FONT LOADER
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -184,6 +209,8 @@ export default function RefineView({ asset, brand, onClose, onSave }) {
   const [sOff,, sDrag] = useFreeDrag(canvasRef);
   const [cOff,, cDrag] = useFreeDrag(canvasRef);
   const [lOff,, lDrag] = useFreeDrag(canvasRef);
+  const [imgOff,, imgDrag] = useFreeDrag(canvasRef);
+  const [imgSize, setImgSize, imgResize] = useFreeResize(canvasRef, 50);
 
   // UI
   const [saving, setSaving] = useState(false);
@@ -277,17 +304,31 @@ export default function RefineView({ asset, brand, onClose, onSave }) {
               style={{ paddingBottom: '100%', backgroundColor: S.bg, boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 8px 40px rgba(0,0,0,0.08)' }}>
               <div className="absolute inset-0">
 
-                {/* Image */}
+                {/* Image — draggable + resizable */}
                 {image && L.imageZone && (
-                  <div className="absolute" style={{ left: L.imageZone.left, top: L.imageZone.top, width: L.imageZone.width, height: L.imageZone.height, overflow: fc?.device ? 'visible' : 'hidden' }}>
+                  <div className="absolute cursor-grab active:cursor-grabbing touch-none select-none group/img"
+                    onPointerDown={imgDrag}
+                    style={{
+                      left: `calc(${L.imageZone.left} + ${imgOff.x}%)`,
+                      top: `calc(${L.imageZone.top} + ${imgOff.y}%)`,
+                      width: frame === 'none' ? L.imageZone.width : `${imgSize}%`,
+                      height: frame === 'none' ? L.imageZone.height : 'auto',
+                    }}>
                     {fc?.device ? (
-                      <DeviceFrame type={fc.device} imgSrc={image} imgFilter={imgFilter} imgOpacity={imgOpacity} imgRadius={imgRadius} />
+                      <DeviceFrame type={fc.device} imgSrc={image} imgFilter={imgFilter} imgOpacity={imgOpacity} />
                     ) : fc?.css ? (
-                      <div className="w-full h-full" style={fc.css}>
-                        <img src={image} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" style={{ filter: imgFilter, opacity: imgOpacity, borderRadius: fc.css.borderRadius || imgRadius }} />
+                      <div style={{ ...fc.css, overflow: 'hidden' }}>
+                        <img src={image} alt="" className="w-full object-cover" crossOrigin="anonymous"
+                          style={{ filter: imgFilter, opacity: imgOpacity, aspectRatio: frame === 'none' ? undefined : '1', display: 'block' }} />
                       </div>
                     ) : (
-                      <img src={image} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" style={{ filter: imgFilter, opacity: imgOpacity, borderRadius: imgRadius }} />
+                      <img src={image} alt="" className="w-full h-full object-cover" crossOrigin="anonymous"
+                        style={{ filter: imgFilter, opacity: imgOpacity, borderRadius: imgRadius, display: 'block' }} />
+                    )}
+                    {/* Resize handle — bottom-right corner */}
+                    {frame !== 'none' && (
+                      <div className="absolute -bottom-1.5 -right-1.5 w-4 h-4 rounded-full bg-white border-2 border-[#6c5ce7] cursor-se-resize opacity-0 group-hover/img:opacity-100 transition-opacity z-10"
+                        onPointerDown={imgResize} />
                     )}
                   </div>
                 )}
@@ -541,24 +582,25 @@ export default function RefineView({ asset, brand, onClose, onSave }) {
 // SUB-COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function DeviceFrame({ type, imgSrc, imgFilter, imgOpacity, imgRadius }) {
+function DeviceFrame({ type, imgSrc, imgFilter, imgOpacity }) {
   if (type === 'iphone') return (
-    <div className="w-[65%] mx-auto" style={{ marginTop: '8%' }}>
-      <div className="relative rounded-[22px] bg-[#1a1a1a] overflow-visible" style={{ padding: '4px', boxShadow: '0 8px 32px rgba(0,0,0,0.15)' }}>
-        {/* Outer shell */}
-        <div className="relative rounded-[20px] border-[2.5px] border-[#3a3a3a] bg-[#1a1a1a] overflow-hidden">
-          {/* Notch */}
-          <div className="relative w-full flex justify-center" style={{ height: '6%' }}>
-            <div className="w-[30%] h-full bg-[#1a1a1a] rounded-b-xl" />
+    <div className="w-full pointer-events-none" style={{ padding: '3%' }}>
+      <div style={{
+        borderRadius: 28, background: '#1a1a1a', padding: 4,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(255,255,255,0.05)',
+      }}>
+        <div style={{ borderRadius: 24, overflow: 'hidden', background: '#000', position: 'relative' }}>
+          {/* Dynamic Island */}
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 4px', background: '#000' }}>
+            <div style={{ width: '28%', height: 12, background: '#1a1a1a', borderRadius: 20, border: '1px solid #2a2a2a' }} />
           </div>
           {/* Screen */}
-          <div className="relative w-full overflow-hidden" style={{ aspectRatio: '9/19.5' }}>
-            <img src={imgSrc} alt="" className="w-full h-full object-cover" crossOrigin="anonymous"
-              style={{ filter: imgFilter, opacity: imgOpacity }} />
+          <div style={{ aspectRatio: '9 / 17', overflow: 'hidden' }}>
+            <img src={imgSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: imgFilter, opacity: imgOpacity }} crossOrigin="anonymous" />
           </div>
-          {/* Bottom bar */}
-          <div className="relative w-full flex justify-center py-[2%]">
-            <div className="w-[30%] h-[4px] bg-[#3a3a3a] rounded-full" />
+          {/* Home bar */}
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '6px 0 8px', background: '#000' }}>
+            <div style={{ width: '35%', height: 4, background: '#3a3a3a', borderRadius: 4 }} />
           </div>
         </div>
       </div>
@@ -566,23 +608,29 @@ function DeviceFrame({ type, imgSrc, imgFilter, imgOpacity, imgRadius }) {
   );
 
   if (type === 'laptop') return (
-    <div className="w-[88%] mx-auto" style={{ marginTop: '4%' }}>
-      {/* Screen */}
-      <div className="relative rounded-t-xl bg-[#2a2a2a] overflow-hidden" style={{ padding: '3px 3px 0 3px', boxShadow: '0 4px 24px rgba(0,0,0,0.12)' }}>
-        <div className="relative rounded-t-lg overflow-hidden bg-[#1a1a1a]" style={{ aspectRatio: '16/10' }}>
-          <img src={imgSrc} alt="" className="w-full h-full object-cover" crossOrigin="anonymous"
-            style={{ filter: imgFilter, opacity: imgOpacity }} />
+    <div className="w-full pointer-events-none" style={{ padding: '2% 4%' }}>
+      {/* Lid */}
+      <div style={{
+        background: '#e0e0de', borderRadius: '10px 10px 0 0', padding: '3px 3px 0',
+        boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
+      }}>
+        {/* Bezel top */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 0 2px', background: '#2a2a2a', borderRadius: '8px 8px 0 0' }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#1a1a1a', border: '1px solid #3a3a3a' }} />
+        </div>
+        {/* Screen */}
+        <div style={{ aspectRatio: '16 / 10', overflow: 'hidden', background: '#1a1a1a' }}>
+          <img src={imgSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: imgFilter, opacity: imgOpacity }} crossOrigin="anonymous" />
         </div>
       </div>
-      {/* Base / keyboard */}
-      <div className="relative w-[108%] -ml-[4%]">
-        <div className="h-[6px] bg-[#c8c8c6] rounded-b-lg" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }} />
-        <div className="w-[15%] h-[3px] bg-[#b5b5b3] rounded-b mx-auto" />
+      {/* Base */}
+      <div style={{ width: '104%', marginLeft: '-2%', height: 8, background: 'linear-gradient(to bottom, #d4d4d2, #c0c0be)', borderRadius: '0 0 6px 6px' }}>
+        <div style={{ width: '18%', height: 3, background: '#b0b0ae', borderRadius: '0 0 3px 3px', margin: '0 auto' }} />
       </div>
     </div>
   );
 
-  return <img src={imgSrc} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" style={{ filter: imgFilter, opacity: imgOpacity, borderRadius: imgRadius }} />;
+  return null;
 }
 
 function FontPicker({ value, onChange, search, onSearch }) {
