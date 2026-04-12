@@ -229,18 +229,31 @@ EVERY IMAGE — REGARDLESS OF STYLE — MUST HAVE:
 If Visual Type = Graphic:
 - You have full creative freedom. Each graphic asset must be DISTINCT and UNEXPECTED.
 - Think like a world-class art director at a top creative agency — surprise, don't template.
-- Pick ONE of these directions (rotate — never use the same one twice for the same brand):
-  • Floating 3D product/UI mockup hovering above a real blurred environment (office, studio, nature)
-  • Bold typographic poster with one oversized word and a single supporting visual element
-  • Abstract 3D composition — geometric forms, materials, depth — that emotionally represents the brand
-  • Isometric or architectural 3D illustration of the brand's product/service in action
-  • Cinematic split: one half photographic, one half graphic/illustrated — seamlessly blended
-  • Data/product visualization — numbers, charts, or flows rendered as a beautiful 3D sculpture
-  • Surreal product scene — the brand's core concept made literal and visual in an unexpected way
+- Pick ONE of these directions based on the brand, campaign, and asset index — rotate through them, never repeat for the same campaign:
+  1. Floating 3D product/UI mockup hovering above a softly blurred real-world environment
+  2. Bold typographic poster — one oversized word, one supporting minimal visual element
+  3. Abstract 3D material composition — geometric forms, textures, depth that embody the brand emotionally
+  4. Isometric 3D illustration of the brand's service or product in use
+  5. Cinematic split — half photographic reality, half graphic illustration, seamlessly merged
+  6. Data/product visualization rendered as a beautiful 3D sculpture or landscape
+  7. Surreal brand scene — the brand's core concept made literal in an unexpected, poetic visual
+  8. Exploded view — a product or concept broken apart mid-air, components floating in formation
+  9. Macro close-up — extreme zoom on a single material, texture, or brand element, rendered in hyper-detail
+  10. Portal / window composition — a frame within the frame revealing the brand's world inside
+  11. Motion blur narrative — a single subject captured in implied motion, speed-streak effect, editorial feel
+  12. Duality mirror — two opposing worlds reflected against each other (before/after, analog/digital, chaos/order)
+  13. Neon-on-dark — deep dark background with a single luminous glowing element as hero, minimal and striking
+  14. Overhead flat-lay — carefully arranged brand-relevant objects from directly above, clean surface, intentional negative space
+  15. Environmental portrait — a person deeply embedded in their environment, the space tells the story
+  16. Blueprint / technical — architectural or technical drawing aesthetic, precise lines, one element rendered in full color as contrast
+  17. Gradient atmosphere — a strong color gradient environment with a single 3D object or silhouette as the focal point
+  18. Film still — a single cinematic frame that looks extracted from a high-budget film, the brand implied not shown
+  19. Infinite depth — repeating elements receding into the background, creating tunnel or corridor perspective
+  20. Material study — a premium close-up of layered brand-relevant materials (fabric, wood, metal, glass) lit like a luxury campaign
 - Whatever direction you choose: it must be PREMIUM, PRECISE, and BRAND-AUTHENTIC
 - It must have ONE clear hero element — not a collage, not random shapes
 - The visual must communicate something REAL about the brand — not just look pretty
-- Reference quality: Stripe, Apple, Linear, Airbnb, Figma campaign visuals
+- Reference quality: Stripe, Apple, Linear, Airbnb, Figma, Loewe, Bottega Veneta campaign visuals
 - NEVER: cartoon, clipart, flat generic illustration, random abstract geometry with no meaning
 
 If Visual Type = Realistic:
