@@ -32,9 +32,31 @@ const VISUAL_STYLES = [
   },
 ];
 
+const BACKGROUND_OPTIONS = [
+  {
+    id: 'rich',
+    label: 'Full Background',
+    sub: 'Scene, environment, or rich backdrop fills the frame',
+    icon: '🖼',
+  },
+  {
+    id: 'minimal',
+    label: 'Minimal Background',
+    sub: 'Clean, simple, or soft neutral background',
+    icon: '⬜',
+  },
+  {
+    id: 'none',
+    label: 'No Background',
+    sub: 'Subject isolated on white or transparent background',
+    icon: '✂️',
+  },
+];
+
 export default function AddAssetPanel({ onAdd, onClose }) {
   const [selectedOption, setSelectedOption] = React.useState(null);
   const [selectedStyle, setSelectedStyle] = React.useState(null);
+  const [selectedBackground, setSelectedBackground] = React.useState(null);
   const [postContent, setPostContent] = React.useState('');
 
   const handleSelectAsset = (opt) => {
@@ -45,8 +67,12 @@ export default function AddAssetPanel({ onAdd, onClose }) {
     setSelectedStyle(style);
   };
 
+  const handleSelectBackground = (bg) => {
+    setSelectedBackground(bg);
+  };
+
   const handleConfirm = () => {
-    onAdd({ ...selectedOption, visual_style: selectedStyle.id, post_content: postContent.trim() || null });
+    onAdd({ ...selectedOption, visual_style: selectedStyle.id, background: selectedBackground?.id || 'rich', post_content: postContent.trim() || null });
     onClose();
   };
 
@@ -69,11 +95,17 @@ export default function AddAssetPanel({ onAdd, onClose }) {
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
           <div>
-            {selectedStyle ? (
+            {selectedBackground ? (
               <>
-                <button onClick={() => setSelectedStyle(null)} className="text-xs text-violet-500 hover:text-violet-700 font-medium mb-0.5">← Back</button>
+                <button onClick={() => setSelectedBackground(null)} className="text-xs text-violet-500 hover:text-violet-700 font-medium mb-0.5">← Back</button>
                 <h3 className="font-semibold text-gray-900">Add a Post or Idea</h3>
                 <p className="text-xs text-gray-400 mt-0.5">Optional — helps the AI match your message</p>
+              </>
+            ) : selectedStyle ? (
+              <>
+                <button onClick={() => setSelectedStyle(null)} className="text-xs text-violet-500 hover:text-violet-700 font-medium mb-0.5">← Back</button>
+                <h3 className="font-semibold text-gray-900">Background Style</h3>
+                <p className="text-xs text-gray-400 mt-0.5">{selectedOption?.label}</p>
               </>
             ) : selectedOption ? (
               <>
@@ -93,7 +125,7 @@ export default function AddAssetPanel({ onAdd, onClose }) {
           </button>
         </div>
 
-        {selectedStyle ? (
+        {selectedBackground ? (
           <div className="flex-1 p-5 flex flex-col gap-4">
             <div className="flex items-start gap-3 p-4 rounded-xl bg-violet-50 border border-violet-100">
               <FileText className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
@@ -114,18 +146,18 @@ export default function AddAssetPanel({ onAdd, onClose }) {
               {postContent.trim() ? 'Generate from Post' : 'Generate without Post'}
             </button>
           </div>
-        ) : !selectedOption ? (
-          <div className="overflow-y-auto flex-1 p-5 grid grid-cols-2 gap-2.5">
-            {ASSET_OPTIONS.map((opt, i) => (
+        ) : selectedStyle ? (
+          <div className="flex-1 p-5 flex flex-col gap-3 justify-center">
+            {BACKGROUND_OPTIONS.map((bg) => (
               <button
-                key={i}
-                onClick={() => handleSelectAsset(opt)}
-                className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 hover:bg-violet-50 hover:border-violet-200 border border-transparent text-left transition-all group"
+                key={bg.id}
+                onClick={() => handleSelectBackground(bg)}
+                className="flex items-center gap-4 p-5 rounded-2xl bg-gray-50 hover:bg-violet-50 hover:border-violet-200 border border-transparent text-left transition-all group"
               >
-                <span className="text-2xl shrink-0">{opt.icon}</span>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-800 group-hover:text-violet-700 transition-colors">{opt.label}</p>
-                  <p className="text-xs text-gray-400">{opt.sub}</p>
+                <span className="text-3xl shrink-0">{bg.icon}</span>
+                <div>
+                  <p className="text-base font-semibold text-gray-900 group-hover:text-violet-700 transition-colors">{bg.label}</p>
+                  <p className="text-sm text-gray-400 mt-0.5">{bg.sub}</p>
                 </div>
               </button>
             ))}

@@ -99,7 +99,7 @@ function hashString(str) {
 }
 
 // ─── Core generation ─────────────────────────────────────────────────────────
-async function doGenerate(base44, assetId, option, campaign, brand, postContent, forcedVisualStyle) {
+async function doGenerate(base44, assetId, option, campaign, brand, postContent, forcedVisualStyle, backgroundStyle) {
   const assetType = option.asset_type;
   const platform = option.platform;
 
@@ -307,6 +307,9 @@ COMPOSITION RULES — CRITICAL:
 - NEVER add external margins, white cards, design frames, or canvas-style layouts around the image
 - The final result must look like a real photograph or real graphic — not a mockup or design template
 
+BACKGROUND REQUIREMENT (user explicitly selected — MUST follow):
+${backgroundStyle === 'none' ? 'ISOLATED SUBJECT: Pure white or transparent background. No scene, no environment, no backdrop whatsoever. The subject appears alone, cleanly cut out.' : backgroundStyle === 'minimal' ? 'MINIMAL BACKGROUND: Soft, clean, neutral background only. Solid color, subtle gradient, or very light texture. No busy environment or scene.' : 'FULL BACKGROUND: Rich environment, scene, or setting fills the entire frame. The subject exists within a real, atmospheric place.'}
+
 ABSOLUTE REQUIREMENTS:
 - ZERO text, words, labels, or captions anywhere in the image
 - ZERO editor UI, canvas borders, toolbars, or chrome
@@ -370,11 +373,12 @@ Deno.serve(async (req) => {
   const { assetId, option, campaign, brand } = await req.json();
   const forcedVisualStyle = option?.visual_style || null; // 'realistic' | 'graphic' | null
   const postContent = option?.post_content || null;
+  const backgroundStyle = option?.background || 'rich'; // 'rich' | 'minimal' | 'none'
 
   // Fire-and-forget: return immediately so frontend never times out.
   // The backend continues running and updates the entity when done.
   // The frontend discovers the result via polling (refetchInterval).
-  doGenerate(base44, assetId, option, campaign, brand, postContent, forcedVisualStyle).catch(async (error) => {
+  doGenerate(base44, assetId, option, campaign, brand, postContent, forcedVisualStyle, backgroundStyle).catch(async (error) => {
     console.error('Generation failed:', error.message);
     try {
       await base44.asServiceRole.entities.CampaignAsset.update(assetId, { status: 'error' });
