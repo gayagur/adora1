@@ -227,16 +227,21 @@ EVERY IMAGE — REGARDLESS OF STYLE — MUST HAVE:
 - "Minimal" means clean and uncluttered, NOT empty or subject-less
 
 If Visual Type = Graphic:
-- Style: floating 3D product/UI mockup — like high-end SaaS brand visuals (think Stripe, Linear, Loom, Notion)
-- The HERO element is a product interface, dashboard, or device screen rendered in 3D perspective (slight tilt/rotation — not flat)
-- The UI/screen content must reflect the brand's actual product or service — real interface elements, not random shapes
-- The mockup floats slightly above the background with a soft drop shadow and subtle glow
-- Background: a real-world environment (office, desk, room) softly blurred (heavy bokeh) — NOT a solid color, NOT abstract geometry
-- The contrast between the sharp crisp UI in the foreground and the soft blurred real-world background is the key visual tension
-- Lighting: directional soft studio light hitting the device/UI from top-left, creating subtle reflections on screen edges
-- Optional: 1-2 secondary floating panels or cards behind/beside the hero UI, slightly more blurred, adding depth
-- Color: clean whites and brand colors on the UI elements; background should feel warm and real (office light, natural light)
-- Premium and precise — NOT cartoon, NOT flat illustration, NOT random geometric shapes
+- You have full creative freedom. Each graphic asset must be DISTINCT and UNEXPECTED.
+- Think like a world-class art director at a top creative agency — surprise, don't template.
+- Pick ONE of these directions (rotate — never use the same one twice for the same brand):
+  • Floating 3D product/UI mockup hovering above a real blurred environment (office, studio, nature)
+  • Bold typographic poster with one oversized word and a single supporting visual element
+  • Abstract 3D composition — geometric forms, materials, depth — that emotionally represents the brand
+  • Isometric or architectural 3D illustration of the brand's product/service in action
+  • Cinematic split: one half photographic, one half graphic/illustrated — seamlessly blended
+  • Data/product visualization — numbers, charts, or flows rendered as a beautiful 3D sculpture
+  • Surreal product scene — the brand's core concept made literal and visual in an unexpected way
+- Whatever direction you choose: it must be PREMIUM, PRECISE, and BRAND-AUTHENTIC
+- It must have ONE clear hero element — not a collage, not random shapes
+- The visual must communicate something REAL about the brand — not just look pretty
+- Reference quality: Stripe, Apple, Linear, Airbnb, Figma campaign visuals
+- NEVER: cartoon, clipart, flat generic illustration, random abstract geometry with no meaning
 
 If Visual Type = Realistic:
 - Natural lighting, intentional composition
