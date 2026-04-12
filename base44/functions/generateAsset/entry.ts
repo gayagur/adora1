@@ -1,158 +1,237 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// ─── Content Angle Library ────────────────────────────────────────────────────
+const CONTENT_ANGLES = [
+  {
+    id: 'interior_inspiration',
+    name: 'Interior Inspiration',
+    concept: 'A beautifully designed space that feels aspirational and warm',
+    visualFocus: 'wide editorial shot of a stunning interior — warm lighting, natural textures, curated objects, soft shadows',
+    moodKeywords: 'aspirational, warm, serene, premium, lifestyle',
+    forbid: 'people, tech, UI, text, posters',
+  },
+  {
+    id: 'before_after',
+    name: 'Before / After',
+    concept: 'Visual transformation of a space — cluttered chaos vs designed calm',
+    visualFocus: 'split-panel composition: left side dim chaotic room, right side the same room transformed — warm minimal elegant',
+    moodKeywords: 'contrast, transformation, dramatic, editorial',
+    forbid: 'text overlays, labels, arrows, UI elements',
+  },
+  {
+    id: 'product_in_use',
+    name: 'Product in Use',
+    concept: 'A real person interacting with the platform from their home or studio',
+    visualFocus: 'close-up of hands holding a phone or laptop with a clean minimal interior design app UI visible on screen, warm home environment in the background',
+    moodKeywords: 'human, relatable, premium, editorial, tech-meets-home',
+    forbid: 'fake UI, cluttered screens, stock photo feel, harsh lighting',
+  },
+  {
+    id: 'creator_side',
+    name: 'Creator / Craftsman',
+    concept: 'The human behind the design — a craftsman, architect, or designer at work',
+    visualFocus: 'workshop or studio scene — hands working on a wooden scale model, architectural sketches, or material swatches. Warm studio light, dust particles in beam',
+    moodKeywords: 'authentic, crafted, warm, cinematic, artisan',
+    forbid: 'tech, screens, UI, digital elements',
+  },
+  {
+    id: 'ai_tech',
+    name: 'AI / Tech Visualization',
+    concept: 'Abstract visualization of intelligence meets interior design',
+    visualFocus: 'clean dark surface with glowing abstract network nodes forming a room floor plan, or a split showing raw data becoming a beautifully lit 3D room — minimal, modern, tech-forward',
+    moodKeywords: 'futuristic, minimal, precise, modern, abstract',
+    forbid: 'cluttered interfaces, generic sci-fi, harsh neons, clichéd AI imagery',
+  },
+  {
+    id: 'lifestyle',
+    name: 'Lifestyle',
+    concept: 'People genuinely enjoying their designed space — emotional and warm',
+    visualFocus: 'candid lifestyle moment — couple reading on a linen sofa, child playing on a warm rug, person having morning coffee in a sun-lit designed room. Golden hour light.',
+    moodKeywords: 'emotional, warm, authentic, slow living, aspirational',
+    forbid: 'posed stock photography, fake smiles, generic setups',
+  },
+  {
+    id: 'typography',
+    name: 'Graphic / Typography',
+    concept: 'A bold typographic ad creative with a single powerful message',
+    visualFocus: 'ultra-clean cream or warm neutral background, one large editorial serif or sans-serif headline, generous whitespace, a single thin geometric accent line. No photography.',
+    moodKeywords: 'bold, minimal, editorial, Apple-like, premium',
+    forbid: 'photography, busy backgrounds, decorative elements, clip art',
+  },
+  {
+    id: 'process_journey',
+    name: 'Process / Journey',
+    concept: 'Visual storytelling of the design journey from idea to delivered space',
+    visualFocus: 'four-panel or sequential grid showing: a rough sketch → a 3D room render → a material swatch selection → the finished real room. Clean editorial style, warm tones.',
+    moodKeywords: 'narrative, process, transformation, craft, journey',
+    forbid: 'text labels, arrows with words, infographic style, UI screenshots',
+  },
+];
+
+const VISUAL_STYLES = [
+  'minimal premium — generous white space, one focal element, editorial clarity',
+  'editorial magazine — asymmetric composition, rich detail, magazine-quality lighting',
+  'bold typography — strong typographic hierarchy, minimal imagery, graphic design focus',
+  'cinematic lifestyle — wide angle, film-like color grade, golden hour, emotional depth',
+  'product-focused — clean background, product hero, sharp detail',
+  'soft neutral aesthetic — beige, cream, warm grays, gentle shadows, spa-like calm',
+  'modern tech — dark background, precise grid, glowing accents, clean interface feel',
+  'collage / layered — overlapping elements, textural richness, editorial depth',
+];
+
+// Deterministically rotate angles + styles so every batch is diverse
+function pickAngleAndStyle(assetIndex, campaignSeed) {
+  const angleIdx = (assetIndex + campaignSeed) % CONTENT_ANGLES.length;
+  const styleIdx = (assetIndex * 3 + campaignSeed) % VISUAL_STYLES.length;
+  return {
+    angle: CONTENT_ANGLES[angleIdx],
+    visualStyle: VISUAL_STYLES[styleIdx],
+  };
+}
+
+function hashString(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+// ─── Core generation ─────────────────────────────────────────────────────────
 async function doGenerate(base44, assetId, option, campaign, brand) {
-  const isCarousel = option.asset_type === 'carousel';
   const assetType = option.asset_type;
   const platform = option.platform;
 
   const formatInstruction = assetType === 'story' || assetType === 'reel'
-    ? 'Vertical 9:16 format. Mobile-first. Top-to-bottom visual hierarchy.'
+    ? 'Vertical 9:16 format. Mobile-first. Top-to-bottom visual flow.'
     : assetType === 'banner'
     ? 'Wide 16:9 horizontal banner. Left-to-right reading flow.'
-    : 'Square 1:1 format. Centered composition. Mobile-optimized.';
+    : 'Square 1:1 format. Centered or asymmetric composition. Mobile-optimized.';
 
-  const brandColors = brand?.brand_colors?.join(', ') || '#6366f1, #1e1e2e';
-  const primaryColor = brand?.brand_colors?.[0] || '#6366f1';
-  const secondaryColor = brand?.brand_colors?.[1] || '#1e1e2e';
-  const existingRefs = brand?.image_assets?.length > 0 ? brand.image_assets.slice(0, 2) : undefined;
+  const brandColors = brand?.brand_colors?.join(', ') || 'warm beige, cream, terracotta, warm white';
+  const primaryColor = brand?.brand_colors?.[0] || '#C8A882';
 
-  // ─── STAGE A: Creative Direction ────────────────────────────────────────────
-  // Think like an ad creative director, not a content writer.
-  // Produce a full creative brief before touching any image generation.
+  // Seed from campaign+brand so same campaign always cycles the same way
+  const campaignSeed = hashString((campaign?.id || '') + (brand?.id || ''));
+
+  // Pull existing assets to know how many have been made → determine angle index
+  let existingCount = 0;
+  try {
+    const existing = await base44.asServiceRole.entities.CampaignAsset.filter({ campaign_id: campaign?.id || '' });
+    existingCount = existing.filter(a => a.id !== assetId).length;
+  } catch (_) { /* ignore */ }
+
+  const { angle, visualStyle } = pickAngleAndStyle(existingCount, campaignSeed);
+
+  console.log(`Asset ${assetId}: angle="${angle.name}", style="${visualStyle}"`);
+
+  // ─── STAGE A: Creative Direction ──────────────────────────────────────────
   const creativeDirection = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt: `You are a world-class performance marketing creative director at a top-tier startup studio.
-Your job is to create a REAL paid social ad — not a website screenshot, not a template, not a poster.
+    prompt: `You are a world-class performance creative director for a premium interior design brand.
 
-You will analyze the brand and campaign below, then produce a complete creative brief for a single high-converting ad asset.
-
----
-BRAND:
-- Name: ${brand?.brand_name || 'Unknown Brand'}
-- Description: ${brand?.description || ''}
-- Industry: ${brand?.industry || ''}
-- Target Audience: ${brand?.target_audience || campaign?.target_audience || ''}
-- Tone of Voice: ${brand?.tone_of_voice || ''}
-- Key Messages: ${brand?.key_messages?.join(', ') || ''}
+BRAND CONTEXT:
+- Brand: ${brand?.brand_name || 'DEXO Interior Studio'}
+- Description: ${brand?.description || 'AI-powered interior design platform'}
+- Industry: ${brand?.industry || 'Interior Design / Home Tech'}
+- Target Audience: ${brand?.target_audience || 'Design-conscious homeowners and architects'}
+- Tone: ${brand?.tone_of_voice || 'warm, premium, calm, editorial'}
 - Brand Colors: ${brandColors}
 
 CAMPAIGN:
 - Title: ${campaign?.title || ''}
-- Strategy Angle: ${campaign?.strategy_angle || ''}
+- Strategy: ${campaign?.strategy_angle || ''}
 - Key Message: ${campaign?.key_message || ''}
-- Tone: ${campaign?.tone || ''}
-- Target Audience: ${campaign?.target_audience || ''}
 - Visual Direction: ${campaign?.visual_direction || ''}
 
-AD FORMAT:
-- Platform: ${platform}
-- Type: ${assetType}
-- Format: ${formatInstruction}
+THIS ASSET'S CREATIVE BRIEF:
+- Content Angle: ${angle.name}
+- Angle Concept: ${angle.concept}
+- Visual Focus: ${angle.visualFocus}
+- Mood: ${angle.moodKeywords}
+- Forbidden Elements: ${angle.forbid}
+
+VISUAL STYLE FOR THIS IMAGE: ${visualStyle}
+
+AD FORMAT: ${platform} ${assetType} — ${formatInstruction}
+
 ---
 
-Now produce a creative brief with:
+Your job: write the COMPLETE creative brief for ONE high-converting ad in this angle.
 
-1. ad_angle: The ONE strategic angle for this ad (e.g. "pain-point relief", "social proof", "aspirational outcome", "product demo moment")
-2. headline: A short, punchy hook. Max 8 words. Must stop the scroll. No generic SaaS clichés.
-3. subheadline: One supporting sentence (10–15 words). Adds clarity or tension to the headline.
-4. cta: The call-to-action button text. Short, action-oriented (e.g. "Try Free", "See How It Works", "Get Started")
-5. full_caption: Complete social caption — hook, value prop, CTA, 3-5 hashtags.
-6. focal_point: What is the SINGLE dominant visual element? (e.g. "abstract network of glowing nodes", "clean floating product card on dark background", "3D icon of a shield", "bold typographic poster")
-7. composition_plan: Describe the spatial layout. Where is the focal point? Where does the eye travel? What's in the background?
-8. visual_style: Describe the visual style in detail — colors, lighting, mood, texture, finish (e.g. "dark glass morphism with violet glow", "minimal white with editorial typography", "bold flat color blocks with geometric shapes")
-9. image_generation_prompt: The FINAL detailed prompt for the image AI. This must produce a REAL finished ad visual — not a screenshot, not a template, not an editor UI. Think: Apple ad, Stripe launch visual, Linear product moment.
-
-CRITICAL RULES FOR image_generation_prompt:
-- The image must look like a FINISHED, PRODUCTION-READY paid social ad
-- ${formatInstruction}
-- Use brand colors: ${brandColors}
-- ZERO text, labels, or words in the image
-- ZERO browser chrome, editor chrome, resize handles, canvas toolbars, pointer cursors
-- ZERO "screenshot inside poster" effect — no raw website pasted in the center
-- ZERO slide-deck or PowerPoint look
-- ZERO generic stock photo aesthetics
-- If showing product UI: show only the most powerful, cropped, enlarged, visually refined fragment — treated as hero art, not a screenshot
-- The visual must be immediately readable and impactful in under 1 second
-- Premium, modern, scroll-stopping — like a real ad from a VC-backed startup with a top design team`,
+Return:
+1. headline: max 7 words, scroll-stopping, honest to the angle
+2. subheadline: 10-14 words supporting the headline
+3. cta: short action-oriented button text
+4. full_caption: complete social caption with hook, value, CTA, 3-5 hashtags
+5. image_generation_prompt: The final image AI prompt. Must produce a FINISHED premium ad visual.
+   - Visual style: ${visualStyle}
+   - Content angle: ${angle.visualFocus}
+   - Format: ${formatInstruction}
+   - Brand palette: warm beige, cream, terracotta, natural wood tones
+   - ABSOLUTE RULES for the image prompt:
+     * NO text, labels, words, or captions in the image
+     * NO editor UI, canvas chrome, resize handles, selection boxes
+     * NO screenshot-in-poster effect
+     * NO stock photo feel — must look like real editorial photography or premium CGI
+     * NO generic AI poster aesthetic
+     * Forbidden in this angle: ${angle.forbid}
+     * Must feel: ${angle.moodKeywords}
+     * The image must look like it was shot by a professional photographer or rendered by a top design studio`,
     response_json_schema: {
-      type: "object",
+      type: 'object',
       properties: {
-        ad_angle: { type: "string" },
-        headline: { type: "string" },
-        subheadline: { type: "string" },
-        cta: { type: "string" },
-        full_caption: { type: "string" },
-        focal_point: { type: "string" },
-        composition_plan: { type: "string" },
-        visual_style: { type: "string" },
-        image_generation_prompt: { type: "string" }
+        headline: { type: 'string' },
+        subheadline: { type: 'string' },
+        cta: { type: 'string' },
+        full_caption: { type: 'string' },
+        image_generation_prompt: { type: 'string' },
       },
-      required: ["headline", "subheadline", "cta", "full_caption", "image_generation_prompt"]
-    }
+      required: ['headline', 'subheadline', 'cta', 'full_caption', 'image_generation_prompt'],
+    },
   });
 
-  console.log(`Creative direction for ${assetId}:`, JSON.stringify({
-    angle: creativeDirection.ad_angle,
-    headline: creativeDirection.headline,
-    focal_point: creativeDirection.focal_point,
-  }));
+  console.log(`Creative: angle=${angle.name}, headline="${creativeDirection.headline}"`);
 
-  // ─── STAGE B: Final Image Render ─────────────────────────────────────────────
-  // Use the creative brief to render a real finished ad image.
-  const finalImagePrompt = `${creativeDirection.image_generation_prompt}
+  // ─── STAGE B: Image Render ────────────────────────────────────────────────
+  const existingRefs = brand?.image_assets?.length > 0 ? brand.image_assets.slice(0, 2) : undefined;
 
-COMPOSITION: ${creativeDirection.composition_plan || ''}
-VISUAL STYLE: ${creativeDirection.visual_style || ''}
-FOCAL POINT: ${creativeDirection.focal_point || ''}
-BRAND COLORS: Primary ${primaryColor}, Secondary ${secondaryColor}
+  const finalPrompt = `${creativeDirection.image_generation_prompt}
+
+VISUAL STYLE: ${visualStyle}
+CONTENT ANGLE: ${angle.name} — ${angle.visualFocus}
+BRAND PALETTE: warm beige, cream, terracotta, natural linen, warm oak wood
 FORMAT: ${formatInstruction}
 
-ABSOLUTE RULES — VIOLATIONS WILL RUIN THE OUTPUT:
-- NO text of any kind in the image — no labels, no captions, no UI text, no words
-- NO editor UI, canvas borders, resize handles, drag handles, selection boxes, or tooltips
-- NO browser frames unless intentionally stylized as a product moment (e.g., floating browser card with blur)
-- NO screenshot-inside-poster layout — no raw full-page website pasted in the center
-- NO slideshow, PowerPoint, or presentation template feel
-- NO tiny unreadable interface clutter
-- NO generic stock photography
-- NO awkward empty dead space
-- If showing UI: crop aggressively, zoom in, show only the most compelling fragment, rendered beautifully
-- Output must look like a REAL paid social advertisement created by a world-class design team
-- Premium, intentional, production-ready`;
+ABSOLUTE REQUIREMENTS:
+- ZERO text, words, labels, or captions anywhere in the image
+- ZERO editor UI, canvas borders, toolbars, or chrome
+- ZERO screenshot-in-poster layout
+- ZERO generic stock photo or AI-generated poster feel
+- ZERO harsh colors — only warm, premium, editorial tones
+- ZERO of these forbidden elements: ${angle.forbid}
+- The image must feel: ${angle.moodKeywords}
+- Production quality: looks like it was made by a top-tier brand studio`;
 
-  const firstImageResult = await base44.asServiceRole.integrations.Core.GenerateImage({
-    prompt: finalImagePrompt,
-    existing_image_urls: existingRefs
+  const imageResult = await base44.asServiceRole.integrations.Core.GenerateImage({
+    prompt: finalPrompt,
+    existing_image_urls: existingRefs,
   });
 
-  const images = [firstImageResult.url];
-
-  // ─── CAROUSEL: Additional slides ─────────────────────────────────────────────
-  if (isCarousel) {
-    const carouselSlides = [
-      {
-        role: "Problem slide",
-        direction: `Show the PAIN or PROBLEM the audience faces. Dark, tense mood. Abstract visual metaphor. Same style: ${creativeDirection.visual_style}. Brand colors: ${brandColors}. No text. No editor UI.`
-      },
-      {
-        role: "Solution/benefit slide",
-        direction: `Show the TRANSFORMATION or BENEFIT after using the product. Hopeful, elevated mood. Same focal point style: ${creativeDirection.focal_point}. Brand colors: ${brandColors}. No text. No editor UI.`
-      },
-      {
-        role: "Proof/CTA slide",
-        direction: `Show CONFIDENCE and OUTCOME — a moment of success, social proof, or decisive action. Strong, premium visual. Same style: ${creativeDirection.visual_style}. Brand colors: ${brandColors}. No text. No editor UI.`
-      }
-    ];
-
-    for (const slide of carouselSlides) {
+  // ─── Carousel extra slides ────────────────────────────────────────────────
+  const images = [imageResult.url];
+  if (assetType === 'carousel') {
+    const carouselAngles = CONTENT_ANGLES.filter(a => a.id !== angle.id).slice(0, 3);
+    for (const slideAngle of carouselAngles) {
       const res = await base44.asServiceRole.integrations.Core.GenerateImage({
-        prompt: `${slide.role}: ${slide.direction}\n\nFormat: ${formatInstruction}\nAbsolutely NO text, NO editor chrome, NO screenshot-in-poster. Finished premium ad visual.`,
-        existing_image_urls: existingRefs
+        prompt: `${slideAngle.visualFocus}. Brand palette: warm beige, cream, terracotta, natural wood. ${formatInstruction}. Style: ${visualStyle}. ZERO text, ZERO editor UI, ZERO stock photo feel. Forbidden: ${slideAngle.forbid}. Must feel: ${slideAngle.moodKeywords}. Premium, editorial, production-quality.`,
+        existing_image_urls: existingRefs,
       });
       images.push(res.url);
     }
   }
 
-  // ─── Save result ──────────────────────────────────────────────────────────────
+  // ─── Save ─────────────────────────────────────────────────────────────────
   await base44.asServiceRole.entities.CampaignAsset.update(assetId, {
     headline: creativeDirection.headline,
     ad_copy: creativeDirection.subheadline,
@@ -160,13 +239,14 @@ ABSOLUTE RULES — VIOLATIONS WILL RUIN THE OUTPUT:
     cta: creativeDirection.cta,
     visual_prompt: creativeDirection.image_generation_prompt,
     preview_image: images[0],
-    carousel_images: isCarousel ? images : [],
+    carousel_images: assetType === 'carousel' ? images : [],
     status: 'ready',
   });
 
-  console.log(`Asset ${assetId} generated successfully — angle: ${creativeDirection.ad_angle}`);
+  console.log(`Asset ${assetId} done — angle: ${angle.name}, style: ${visualStyle}`);
 }
 
+// ─── Handler ──────────────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me();
