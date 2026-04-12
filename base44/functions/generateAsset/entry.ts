@@ -227,10 +227,16 @@ EVERY IMAGE — REGARDLESS OF STYLE — MUST HAVE:
 - "Minimal" means clean and uncluttered, NOT empty or subject-less
 
 If Visual Type = Graphic:
-- Clean 3D illustration or modern UI-style graphics
-- Think Stripe / Linear / Notion product visuals — always with a REAL product or interface as the hero
-- Elements: a rendered object, UI dashboard, 3D device, or product in context
-- Premium and minimal — NOT childish, NOT cartoon, NOT random geometric shapes with no meaning
+- Style: floating 3D product/UI mockup — like high-end SaaS brand visuals (think Stripe, Linear, Loom, Notion)
+- The HERO element is a product interface, dashboard, or device screen rendered in 3D perspective (slight tilt/rotation — not flat)
+- The UI/screen content must reflect the brand's actual product or service — real interface elements, not random shapes
+- The mockup floats slightly above the background with a soft drop shadow and subtle glow
+- Background: a real-world environment (office, desk, room) softly blurred (heavy bokeh) — NOT a solid color, NOT abstract geometry
+- The contrast between the sharp crisp UI in the foreground and the soft blurred real-world background is the key visual tension
+- Lighting: directional soft studio light hitting the device/UI from top-left, creating subtle reflections on screen edges
+- Optional: 1-2 secondary floating panels or cards behind/beside the hero UI, slightly more blurred, adding depth
+- Color: clean whites and brand colors on the UI elements; background should feel warm and real (office light, natural light)
+- Premium and precise — NOT cartoon, NOT flat illustration, NOT random geometric shapes
 
 If Visual Type = Realistic:
 - Natural lighting, intentional composition
@@ -309,6 +315,14 @@ COMPOSITION RULES — CRITICAL:
 
 BACKGROUND REQUIREMENT (user explicitly selected — MUST follow):
 ${backgroundStyle === 'none' ? 'ISOLATED SUBJECT: Pure white or transparent background. No scene, no environment, no backdrop whatsoever. The subject appears alone, cleanly cut out.' : backgroundStyle === 'minimal' ? 'MINIMAL BACKGROUND: Soft, clean, neutral background only. Solid color, subtle gradient, or very light texture. No busy environment or scene.' : 'FULL BACKGROUND: Rich environment, scene, or setting fills the entire frame. The subject exists within a real, atmospheric place.'}
+
+${forcedVisualStyle === 'graphic' ? `GRAPHIC STYLE RENDERING RULES (CRITICAL):
+- The main subject (UI/product/device) must be rendered in sharp 3D perspective — slightly rotated, floating above the background
+- Apply a realistic drop shadow beneath the floating element
+- Background must be a real blurred environment — heavy bokeh, f/1.4 look, not a solid color or gradient
+- Secondary floating panels behind the hero add depth — render them at ~30% opacity or more blurred
+- Screen content on the UI must look like a real, functional interface — not placeholder wireframes
+- The result must feel like a premium SaaS product launch visual from a top design studio` : ''}
 
 ABSOLUTE REQUIREMENTS:
 - ZERO text, words, labels, or captions anywhere in the image
