@@ -213,9 +213,20 @@ ABSOLUTE REQUIREMENTS:
 - The image must feel: ${angle.moodKeywords}
 - Production quality: looks like it was made by a top-tier brand studio`;
 
+  // For angles that show a screen/device — inject real website screenshots as reference
+  const screenAngles = ['product_in_use', 'process_journey', 'ai_tech'];
+  const useScreenshots = screenAngles.includes(angle.id) && brand?.image_assets?.length > 0;
+  const imageRefs = useScreenshots
+    ? brand.image_assets.slice(0, 2)  // real website screenshots from onboarding
+    : existingRefs;
+
+  const screenPromptAddition = useScreenshots
+    ? `\n\nIMPORTANT: The reference images provided are REAL screenshots of the brand's actual website. Use them as the UI/screen content shown on the device in the image. The screen should show these actual pages — not fabricated UI. Integrate them naturally into the scene.`
+    : '';
+
   const imageResult = await base44.asServiceRole.integrations.Core.GenerateImage({
-    prompt: finalPrompt,
-    existing_image_urls: existingRefs,
+    prompt: finalPrompt + screenPromptAddition,
+    existing_image_urls: imageRefs,
   });
 
   // ─── Carousel extra slides ────────────────────────────────────────────────
