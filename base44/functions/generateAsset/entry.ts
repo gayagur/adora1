@@ -127,16 +127,34 @@ async function doGenerate(base44, assetId, option, campaign, brand) {
   console.log(`Asset ${assetId}: angle="${angle.name}", style="${visualStyle}"`);
 
   // ─── STAGE A: Creative Direction ──────────────────────────────────────────
-  const creativeDirection = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt: `You are a world-class performance creative director for a premium interior design brand.
+  // Build brand search query from available brand data
+  const brandSearchQuery = [
+    brand?.brand_name,
+    brand?.social_instagram ? `instagram ${brand.social_instagram}` : '',
+    brand?.social_facebook ? `facebook ${brand.social_facebook}` : '',
+    brand?.url,
+    brand?.industry,
+  ].filter(Boolean).join(' ');
 
-BRAND CONTEXT:
-- Brand: ${brand?.brand_name || 'DEXO Interior Studio'}
+  const creativeDirection = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    prompt: `You are a world-class brand strategist and performance creative director.
+
+YOU MUST COMPLETE ALL 4 STEPS BEFORE WRITING THE IMAGE PROMPT.
+
+---
+
+BRAND INFORMATION:
+- Brand Name: ${brand?.brand_name || 'DEXO Interior Studio'}
+- Website: ${brand?.url || ''}
+- Instagram: ${brand?.social_instagram || ''}
+- Facebook: ${brand?.social_facebook || ''}
+- LinkedIn: ${brand?.social_linkedin || ''}
 - Description: ${brand?.description || 'AI-powered interior design platform'}
 - Industry: ${brand?.industry || 'Interior Design / Home Tech'}
 - Target Audience: ${brand?.target_audience || 'Design-conscious homeowners and architects'}
-- Tone: ${brand?.tone_of_voice || 'warm, premium, calm, editorial'}
+- Tone of Voice: ${brand?.tone_of_voice || 'warm, premium, calm, editorial'}
 - Brand Colors: ${brandColors}
+- Visual Style Notes: ${brand?.visual_style_notes || 'not available'}
 
 CAMPAIGN:
 - Title: ${campaign?.title || ''}
@@ -144,83 +162,105 @@ CAMPAIGN:
 - Key Message: ${campaign?.key_message || ''}
 - Visual Direction: ${campaign?.visual_direction || ''}
 
-THIS ASSET'S CREATIVE BRIEF:
-- Content Angle: ${angle.name}
-- Angle Concept: ${angle.concept}
+THIS ASSET BRIEF:
+- Content Angle: ${angle.name} — ${angle.concept}
 - Visual Focus: ${angle.visualFocus}
 - Mood: ${angle.moodKeywords}
-- Forbidden Elements: ${angle.forbid}
+- Forbidden: ${angle.forbid}
+- Platform: ${platform} ${assetType} — ${formatInstruction}
 
-AD FORMAT: ${platform} ${assetType} — ${formatInstruction}
+===
 
----
+STEP 1 — ANALYZE THE BRAND (use internet context provided):
 
-You MUST follow this 4-step creative process BEFORE writing the image prompt:
+Based on the brand information above AND what you know from the internet about this brand, analyze:
+1. Visual Style: Is it realistic (photography/lifestyle) or graphic (UI/illustration/3D)?
+2. Color Palette: dominant colors, background tones, accent colors
+3. Composition Patterns: text-heavy or visual-heavy? centered / split / minimal?
+4. Content Type: people / product / UI dashboards / abstract / interior?
+5. Emotional Tone: premium / playful / technical / creative / warm / cool?
 
-STEP 1 — CHOOSE VISUAL TYPE:
-Decide: Realistic (photo/lifestyle/interior/people) OR Graphic (3D illustration/abstract/UI-style/icon-based)
-Do NOT mix styles. Pick one definitively.
+If no external data is available, infer from the industry and brand description.
 
-STEP 2 — CHOOSE TEXT STRATEGY:
-Option A — Text-Heavy: leave large clean empty area for headline. Background simple or blurred. Subject pushed to one side.
-Option B — Visual-First: image dominates. Minimal text space needed. No large empty areas.
+===
 
-STEP 3 — CHOOSE COMPOSITION (pick exactly one):
-- Left text / right image
-- Right text / left image  
-- Centered image with surrounding space
-- Full-bleed with soft overlay zone
-- Minimal poster layout
-- Asymmetrical editorial layout
+STEP 2 — BUILD BRAND RULES (MANDATORY — write 6-10 rules):
 
-STEP 4 — GENERATE based on your decisions.
+Convert analysis into strict rules. Example format:
+- NEVER use [X]
+- ALWAYS use [Y]
+- Prefer [Z] layouts
+- Colors must be [palette]
 
-GRAPHIC STYLE RULES (if chosen):
+All rules must come from the actual brand analysis. DO NOT default to generic "nice aesthetic".
+
+===
+
+STEP 3 — CHOOSE CREATIVE DIRECTION (must follow brand rules):
+
+Decide:
+- Visual Type: Realistic OR Graphic (pick one, no mixing)
+- Text Strategy: A (Text-Heavy: 40-50% empty space for headline) OR B (Visual-First: image dominates)
+- Composition: pick exactly one:
+  • Left text / right image
+  • Right text / left image
+  • Centered image with surrounding space
+  • Full-bleed with soft overlay zone
+  • Minimal poster layout
+  • Asymmetrical editorial layout
+
+Validate: do your decisions match the brand rules? If not — revise.
+
+===
+
+STEP 4 — GENERATE:
+
+Write the final image prompt based on ALL decisions above.
+
+If Visual Type = Graphic:
 - Clean 3D illustration or modern UI-style graphics
-- Elements like: charts, icons, abstract UI components, clean 3D objects
-- Premium and minimal — NOT childish or cartoon
 - Think Stripe / Linear / Notion product visuals
+- Elements: charts, icons, abstract UI components, clean 3D objects
+- Premium and minimal — NOT childish or cartoon
 
-REALISTIC STYLE RULES (if chosen):
-- Natural lighting, warm tones
+If Visual Type = Realistic:
+- Natural lighting, intentional composition
 - Premium interior / lifestyle scenes
-- Clean, intentional composition
+- Warm or cool tones per brand rules
 
-TEXT SAFETY (if Text-Heavy chosen):
-- At least 40-50% of frame = clean, uncluttered, smooth background area
-- Subject placed to ONE side (not centered)
-- Empty area must be flat enough for large white or dark text
-- No busy textures or objects in the text zone
+If Text Strategy = A (Text-Heavy):
+- Subject placed to ONE side, NOT centered
+- Opposite side = clean flat area for text
+- No busy textures in empty zone
 
-STRICTLY FORBIDDEN:
-- Generating image first and hoping text fits
-- Crowded backgrounds when text is needed
-- Mixing graphic + realistic styles
-- No clear composition decision
-- Generic AI poster feel
-- Any text, labels, or words IN the image
+ABSOLUTE FORBIDDEN IN IMAGE:
+- Any text, words, labels, captions
 - Editor UI, canvas borders, toolbars
-- Forbidden angle elements: ${angle.forbid}
+- Mixing graphic + realistic styles
+- Crowded backgrounds with no breathing room
+- Generic AI poster feel
+- ${angle.forbid}
 
----
+Format: ${formatInstruction}
 
-Return:
-1. visual_decision: exactly one line: [Type: Graphic/Realistic] [Text: Heavy/Minimal] [Layout: ___]
-2. headline: max 7 words, scroll-stopping
-3. subheadline: 10-14 words supporting the headline
-4. cta: short action-oriented button text
-5. full_caption: complete social caption with hook, value, CTA, 3-5 hashtags
-6. image_generation_prompt: The final image AI prompt. Must:
-   - Open with the visual_decision line
-   - Precisely describe composition, subject placement, and empty zones
-   - Specify exact style (Realistic or Graphic) with no ambiguity
-   - Brand palette: warm beige, cream, terracotta, natural linen, warm oak wood
-   - Format: ${formatInstruction}
-   - Must feel: ${angle.moodKeywords}
-   - Production quality: top-tier brand studio or agency`,
+===
+
+RETURN JSON:
+1. brand_summary: 2-3 sentence brand analysis
+2. brand_rules: array of 6-10 rule strings
+3. visual_decision: one line: [Type: Graphic/Realistic] [Text: Heavy/Minimal] [Layout: ___]
+4. headline: max 7 words, scroll-stopping
+5. subheadline: 10-14 words
+6. cta: short action button text
+7. full_caption: social caption with hook, value, CTA, 3-5 hashtags
+8. image_generation_prompt: final prompt — opens with visual_decision, describes composition precisely, specifies exact style, no ambiguity`,
+    add_context_from_internet: true,
+    model: 'gemini_3_flash',
     response_json_schema: {
       type: 'object',
       properties: {
+        brand_summary: { type: 'string' },
+        brand_rules: { type: 'array', items: { type: 'string' } },
         visual_decision: { type: 'string' },
         headline: { type: 'string' },
         subheadline: { type: 'string' },
@@ -228,10 +268,12 @@ Return:
         full_caption: { type: 'string' },
         image_generation_prompt: { type: 'string' },
       },
-      required: ['visual_decision', 'headline', 'subheadline', 'cta', 'full_caption', 'image_generation_prompt'],
+      required: ['brand_summary', 'brand_rules', 'visual_decision', 'headline', 'subheadline', 'cta', 'full_caption', 'image_generation_prompt'],
     },
   });
 
+  console.log('Brand summary:', creativeDirection.brand_summary);
+  console.log('Brand rules:', creativeDirection.brand_rules?.join(' | '));
   console.log('Creative decision:', creativeDirection.visual_decision);
   console.log(`Creative: angle=${angle.name}, headline="${creativeDirection.headline}"`);
 
