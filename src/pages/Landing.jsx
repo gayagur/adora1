@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import logoImg from '@/assets/logo.png';
 
@@ -15,26 +15,38 @@ export default function Landing() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8F8F7', color: '#0A0A0A', fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(180deg, #F2E8DE 0%, #E8D5C8 30%, #D4A990 65%, #C08B72 100%)',
+      fontFamily: "'Inter', -apple-system, sans-serif",
+      color: '#1A1612',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
 
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
       <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-        height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 32px', background: 'rgba(248,248,247,0.85)', backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(0,0,0,0.04)',
+        position: 'relative', zIndex: 10,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '20px 40px',
       }}>
         <Link to="/Landing" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <img src={logoImg} alt="Adora" style={{ width: 30, height: 30, objectFit: 'contain' }} />
-          <span style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', letterSpacing: '-0.01em' }}>Adora</span>
+          <img src={logoImg} alt="Adora" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+          <span style={{ fontSize: 17, fontWeight: 600, color: '#1A1612', letterSpacing: '-0.01em' }}>Adora</span>
         </Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <Link to="/Dashboard" style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontWeight: 500, textDecoration: 'none' }}>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+          <Link to="/Dashboard" style={{ fontSize: 14, color: 'rgba(26,22,18,0.5)', fontWeight: 500, textDecoration: 'none' }}>
             Dashboard
           </Link>
+          <Link to="/Gallery" style={{ fontSize: 14, color: 'rgba(26,22,18,0.5)', fontWeight: 500, textDecoration: 'none' }}>
+            Gallery
+          </Link>
           <Link to="/Onboarding" style={{
-            height: 36, padding: '0 20px', borderRadius: 999, background: '#0A0A0A', color: '#fff',
-            fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', textDecoration: 'none',
+            height: 40, padding: '0 24px', borderRadius: 999,
+            background: '#1A1612', color: '#fff',
+            fontSize: 14, fontWeight: 600,
+            display: 'flex', alignItems: 'center', textDecoration: 'none',
           }}>
             Get started
           </Link>
@@ -43,73 +55,54 @@ export default function Landing() {
 
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
       <section style={{
-        minHeight: '100vh', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', padding: '0 24px',
-        position: 'relative', overflow: 'hidden',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', textAlign: 'center',
+        padding: '100px 24px 60px',
+        position: 'relative', zIndex: 1,
       }}>
-        {/* Ambient glow */}
-        <div style={{
-          position: 'absolute', top: '35%', left: '50%', transform: 'translate(-50%, -50%)',
-          width: 600, height: 400, borderRadius: '50%', pointerEvents: 'none',
-          background: 'radial-gradient(ellipse, rgba(108,92,231,0.05) 0%, transparent 70%)',
-        }} />
-
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          style={{ maxWidth: 560, textAlign: 'center', position: 'relative', zIndex: 1 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          style={{ maxWidth: 700 }}
         >
-          {/* Badge */}
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '5px 14px', borderRadius: 999,
-            background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.06)',
-            fontSize: 11, fontWeight: 500, color: 'rgba(10,10,10,0.4)',
-            marginBottom: 32,
-          }}>
-            <Sparkles style={{ width: 12, height: 12, color: 'rgba(108,92,231,0.5)' }} />
-            AI Creative Engine
-          </div>
-
           {/* Headline */}
           <h1 style={{
-            fontSize: 64, fontWeight: 750, lineHeight: 1.05,
-            letterSpacing: '-0.04em', margin: 0,
-            color: '#0A0A0A',
+            fontSize: 72,
+            fontWeight: 700,
+            lineHeight: 1.05,
+            letterSpacing: '-0.035em',
+            color: '#1A1612',
+            margin: 0,
           }}>
-            Brand to campaign
-          </h1>
-          <h1 style={{
-            fontSize: 64, fontWeight: 750, lineHeight: 1.05,
-            letterSpacing: '-0.04em', margin: 0,
-            background: 'linear-gradient(135deg, #6c5ce7 0%, #a29bfe 50%, #6c5ce7 100%)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>
-            in one click
+            Navigating Brands,
+            <br />
+            Discovering Creatives
           </h1>
 
           {/* Subtext */}
           <p style={{
-            marginTop: 20, fontSize: 16, lineHeight: 1.6,
-            color: 'rgba(10,10,10,0.35)', maxWidth: 380, marginLeft: 'auto', marginRight: 'auto',
+            marginTop: 24, fontSize: 16, lineHeight: 1.65,
+            color: 'rgba(26,22,18,0.45)', maxWidth: 480,
+            marginLeft: 'auto', marginRight: 'auto',
             fontWeight: 400,
           }}>
-            Paste any URL. Get strategic campaigns and production-ready creatives — automatically.
+            Stay ahead, stay informed, and transform insights into action
+            with Adora — where brands are not just discovered, they're transformed.
           </p>
 
-          {/* Input */}
-          <form onSubmit={go} style={{ marginTop: 32, maxWidth: 440, marginLeft: 'auto', marginRight: 'auto' }}>
+          {/* Input bar */}
+          <form onSubmit={go} style={{ marginTop: 36, maxWidth: 460, marginLeft: 'auto', marginRight: 'auto' }}>
             <div style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              padding: 5, borderRadius: 16,
-              background: focused ? '#fff' : 'rgba(255,255,255,0.8)',
-              border: focused ? '1px solid rgba(108,92,231,0.25)' : '1px solid rgba(0,0,0,0.07)',
+              padding: 5, borderRadius: 999,
+              background: focused ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.6)',
+              border: focused ? '1px solid rgba(26,22,18,0.12)' : '1px solid rgba(26,22,18,0.08)',
               boxShadow: focused
-                ? '0 0 0 4px rgba(108,92,231,0.06), 0 2px 8px rgba(0,0,0,0.04)'
-                : '0 1px 3px rgba(0,0,0,0.04)',
+                ? '0 0 0 3px rgba(26,22,18,0.04), 0 4px 16px rgba(0,0,0,0.06)'
+                : '0 2px 8px rgba(0,0,0,0.04)',
               transition: 'all 0.2s ease',
+              backdropFilter: 'blur(12px)',
             }}>
               <input
                 type="text" value={url} onChange={e => setUrl(e.target.value)}
@@ -117,37 +110,74 @@ export default function Landing() {
                 placeholder="https://yourbrand.com"
                 style={{
                   flex: 1, background: 'transparent', border: 'none', outline: 'none',
-                  padding: '10px 14px', fontSize: 14, color: '#0A0A0A',
+                  padding: '11px 18px', fontSize: 14, color: '#1A1612',
                   fontFamily: 'inherit',
                 }}
               />
               <button type="submit" style={{
                 display: 'flex', alignItems: 'center', gap: 6,
-                height: 42, padding: '0 22px', borderRadius: 12, border: 'none', cursor: 'pointer',
-                background: 'linear-gradient(135deg, #7c6cf0, #6c5ce7)',
-                color: '#fff', fontSize: 14, fontWeight: 600, fontFamily: 'inherit',
-                boxShadow: '0 2px 8px rgba(108,92,231,0.25)',
+                height: 44, padding: '0 26px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                background: '#1A1612', color: '#fff',
+                fontSize: 14, fontWeight: 600, fontFamily: 'inherit',
                 transition: 'all 0.15s ease',
               }}>
-                Analyze <ArrowRight style={{ width: 15, height: 15 }} />
+                Start exploring
               </button>
             </div>
           </form>
-
-          {/* Trust */}
-          <p style={{ marginTop: 16, fontSize: 11, color: 'rgba(10,10,10,0.15)', fontWeight: 500 }}>
-            Works with any website · No sign-up required
-          </p>
         </motion.div>
       </section>
 
+      {/* ── Decorative wave / abstract visual at bottom ────────────────────── */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+        width: '110%', maxWidth: 900, zIndex: 0,
+        pointerEvents: 'none',
+      }}>
+        <svg viewBox="0 0 900 320" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', display: 'block' }}>
+          <defs>
+            <linearGradient id="wave1" x1="0" y1="0" x2="900" y2="320" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#E85D75" />
+              <stop offset="25%" stopColor="#D94F8A" />
+              <stop offset="50%" stopColor="#C74BA0" />
+              <stop offset="75%" stopColor="#9B59B6" />
+              <stop offset="100%" stopColor="#6C5CE7" />
+            </linearGradient>
+            <linearGradient id="wave2" x1="100" y1="50" x2="800" y2="300" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#F39C6B" />
+              <stop offset="30%" stopColor="#E8756B" />
+              <stop offset="60%" stopColor="#D95B8A" />
+              <stop offset="100%" stopColor="#B855A0" />
+            </linearGradient>
+            <linearGradient id="wave3" x1="200" y1="100" x2="700" y2="320" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#FDCB6E" />
+              <stop offset="35%" stopColor="#F0A05E" />
+              <stop offset="70%" stopColor="#E07858" />
+              <stop offset="100%" stopColor="#D65D6E" />
+            </linearGradient>
+          </defs>
+          {/* Layer 3 — back */}
+          <path d="M0 280 Q150 120 350 180 Q500 220 650 140 Q800 80 900 160 L900 320 L0 320 Z" fill="url(#wave1)" opacity="0.7" />
+          {/* Layer 2 — mid */}
+          <path d="M0 300 Q200 160 400 220 Q550 260 700 180 Q820 130 900 200 L900 320 L0 320 Z" fill="url(#wave2)" opacity="0.8" />
+          {/* Layer 1 — front */}
+          <path d="M0 310 Q180 220 380 260 Q520 280 680 220 Q800 180 900 240 L900 320 L0 320 Z" fill="url(#wave3)" opacity="0.9" />
+          {/* Accent lines */}
+          <path d="M50 290 Q200 180 400 230 Q560 260 720 200 Q830 160 900 210" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" fill="none" />
+          <path d="M0 295 Q180 200 380 245 Q540 270 700 210 Q820 170 900 220" stroke="rgba(255,255,255,0.1)" strokeWidth="1" fill="none" />
+        </svg>
+      </div>
+
       {/* ── How it works ───────────────────────────────────────────────────── */}
-      <section style={{ padding: '100px 24px', maxWidth: 880, margin: '0 auto' }}>
+      <section style={{
+        padding: '120px 24px 100px', maxWidth: 880, margin: '0 auto',
+        position: 'relative', zIndex: 2,
+      }}>
         <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(108,92,231,0.45)', marginBottom: 10 }}>
+          <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(26,22,18,0.3)', marginBottom: 10 }}>
             How it works
           </p>
-          <h2 style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.03em', color: '#0A0A0A', margin: 0 }}>
+          <h2 style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.03em', color: '#1A1612', margin: 0 }}>
             From URL to campaign in minutes
           </h2>
         </div>
@@ -163,37 +193,37 @@ export default function Landing() {
               initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }} transition={{ delay: i * 0.07, duration: 0.4 }}
               style={{
-                padding: 24, borderRadius: 16, background: '#fff',
-                border: '1px solid rgba(0,0,0,0.04)',
+                padding: 24, borderRadius: 16,
+                background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.4)',
               }}>
-              <span style={{ fontSize: 11, fontFamily: 'monospace', fontWeight: 700, color: 'rgba(108,92,231,0.35)' }}>{s.n}</span>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', marginTop: 12, marginBottom: 6 }}>{s.t}</h3>
-              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.3)', lineHeight: 1.6, margin: 0 }}>{s.d}</p>
+              <span style={{ fontSize: 11, fontFamily: 'monospace', fontWeight: 700, color: 'rgba(26,22,18,0.2)' }}>{s.n}</span>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: '#1A1612', marginTop: 12, marginBottom: 6 }}>{s.t}</h3>
+              <p style={{ fontSize: 12, color: 'rgba(26,22,18,0.35)', lineHeight: 1.6, margin: 0 }}>{s.d}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* ── CTA ────────────────────────────────────────────────────────────── */}
-      <section style={{ padding: '80px 24px', textAlign: 'center' }}>
-        <h2 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 12 }}>Ready to start?</h2>
-        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.3)', marginBottom: 28 }}>
+      <section style={{ padding: '60px 24px 100px', textAlign: 'center', position: 'relative', zIndex: 2 }}>
+        <h2 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 12, color: '#1A1612' }}>Ready to start?</h2>
+        <p style={{ fontSize: 14, color: 'rgba(26,22,18,0.35)', marginBottom: 28 }}>
           Paste a URL and get a full campaign system in seconds.
         </p>
         <Link to="/Onboarding" style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
-          height: 44, padding: '0 28px', borderRadius: 999,
-          background: '#0A0A0A', color: '#fff', fontSize: 14, fontWeight: 600,
-          textDecoration: 'none',
+          height: 46, padding: '0 30px', borderRadius: 999,
+          background: '#1A1612', color: '#fff', fontSize: 14, fontWeight: 600, textDecoration: 'none',
         }}>
           Get started <ArrowRight style={{ width: 15, height: 15 }} />
         </Link>
       </section>
 
-      {/* ── Footer ─────────────────────────────────────────────────────────── */}
       <footer style={{
-        padding: '24px 0', textAlign: 'center', fontSize: 11,
-        color: 'rgba(10,10,10,0.1)', borderTop: '1px solid rgba(0,0,0,0.04)',
+        padding: '20px 0', textAlign: 'center', fontSize: 11,
+        color: 'rgba(26,22,18,0.15)',
+        position: 'relative', zIndex: 2,
       }}>
         Adora · AI Creative Engine
       </footer>
