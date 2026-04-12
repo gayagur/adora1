@@ -1,314 +1,205 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
-import { Download, Type, Image as ImageIcon, Layers, Upload, Save, Loader2, Settings } from 'lucide-react';
+import { Download, Save, Loader2, X, ChevronDown, Upload, Check } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from '@/components/ui/drawer';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// ─── Professional Font Library ────────────────────────────────────────────────
-const FONT_CATEGORIES = {
-  modern: {
-    label: 'Modern / SaaS',
-    fonts: [
-      { label: 'Plus Jakarta Sans', value: 'Plus Jakarta Sans' },
-      { label: 'Sora', value: 'Sora' },
-      { label: 'Manrope', value: 'Manrope' },
-      { label: 'DM Sans', value: 'DM Sans' },
-      { label: 'Outfit', value: 'Outfit' },
-      { label: 'Urbanist', value: 'Urbanist' },
-      { label: 'Nunito', value: 'Nunito' },
-      { label: 'Figtree', value: 'Figtree' },
-    ]
+// ─── Layout System ───────────────────────────────────────────────────────────
+// Each layout defines structural zones, NOT pixel positions.
+// The user chooses a layout; the system enforces composition.
+
+const LAYOUTS = {
+  split_left: {
+    label: 'Split — Text Left',
+    description: 'Text on left, image fills right',
+    preview: '◧',
+    textZone: { left: '0', top: '0', width: '48%', height: '100%', padding: '10%', align: 'left', justify: 'center' },
+    imageZone: { left: '48%', top: '0', width: '52%', height: '100%' },
+    ctaAlign: 'left',
+    logoPos: 'top-left',
+  },
+  split_right: {
+    label: 'Split — Text Right',
+    description: 'Image fills left, text on right',
+    preview: '◨',
+    textZone: { left: '52%', top: '0', width: '48%', height: '100%', padding: '10%', align: 'left', justify: 'center' },
+    imageZone: { left: '0', top: '0', width: '52%', height: '100%' },
+    ctaAlign: 'left',
+    logoPos: 'top-right',
+  },
+  hero_overlay: {
+    label: 'Hero Overlay',
+    description: 'Full-bleed image with text overlay',
+    preview: '▣',
+    textZone: { left: '0', top: '0', width: '100%', height: '100%', padding: '10%', align: 'center', justify: 'center' },
+    imageZone: { left: '0', top: '0', width: '100%', height: '100%' },
+    overlay: true,
+    ctaAlign: 'center',
+    logoPos: 'top-left',
   },
   editorial: {
-    label: 'Editorial / Luxury',
-    fonts: [
-      { label: 'Fraunces', value: 'Fraunces' },
-      { label: 'Libre Baskerville', value: 'Libre Baskerville' },
-      { label: 'Cormorant Garamond', value: 'Cormorant Garamond' },
-      { label: 'Bodoni Moda', value: 'Bodoni Moda' },
-      { label: 'Playfair Display', value: 'Playfair Display' },
-      { label: 'Prata', value: 'Prata' },
-      { label: 'Lora', value: 'Lora' },
-      { label: 'Merriweather', value: 'Merriweather' },
-      { label: 'EB Garamond', value: 'EB Garamond' },
-    ]
+    label: 'Editorial',
+    description: 'Asymmetric offset text over image',
+    preview: '⊿',
+    textZone: { left: '0', top: '0', width: '60%', height: '100%', padding: '8%', align: 'left', justify: 'flex-end', paddingBottom: '14%' },
+    imageZone: { left: '0', top: '0', width: '100%', height: '100%' },
+    overlay: true,
+    overlayStyle: 'gradient-left',
+    ctaAlign: 'left',
+    logoPos: 'top-left',
   },
-  bold: {
-    label: 'Bold Headlines',
-    fonts: [
-      { label: 'Bebas Neue', value: 'Bebas Neue' },
-      { label: 'Anton', value: 'Anton' },
-      { label: 'Archivo Black', value: 'Archivo Black' },
-      { label: 'League Spartan', value: 'League Spartan' },
-      { label: 'Space Grotesk', value: 'Space Grotesk' },
-      { label: 'Oswald', value: 'Oswald' },
-      { label: 'Righteous', value: 'Righteous' },
-      { label: 'Barlow Condensed', value: 'Barlow Condensed' },
-      { label: 'Black Han Sans', value: 'Black Han Sans' },
-    ]
+  minimal: {
+    label: 'Minimal Poster',
+    description: 'Clean space, centered content, no image',
+    preview: '◻',
+    textZone: { left: '0', top: '0', width: '100%', height: '100%', padding: '16%', align: 'center', justify: 'center' },
+    imageZone: null,
+    ctaAlign: 'center',
+    logoPos: 'top-center',
   },
-  geometric: {
-    label: 'Clean Geometric',
-    fonts: [
-      { label: 'Syne', value: 'Syne' },
-      { label: 'Poppins', value: 'Poppins' },
-      { label: 'Montserrat', value: 'Montserrat' },
-      { label: 'Rubik', value: 'Rubik' },
-      { label: 'Inter', value: 'Inter' },
-      { label: 'Roboto', value: 'Roboto' },
-      { label: 'Work Sans', value: 'Work Sans' },
-      { label: 'Mulish', value: 'Mulish' },
-      { label: 'Jost', value: 'Jost' },
-    ]
-  },
-  handwritten: {
-    label: 'Handwritten / Creative',
-    fonts: [
-      { label: 'Caveat', value: 'Caveat' },
-      { label: 'Pacifico', value: 'Pacifico' },
-      { label: 'Dancing Script', value: 'Dancing Script' },
-      { label: 'Satisfy', value: 'Satisfy' },
-      { label: 'Kalam', value: 'Kalam' },
-    ]
+  product_top: {
+    label: 'Product Focus',
+    description: 'Headline top, image dominant below',
+    preview: '⊞',
+    textZone: { left: '0', top: '0', width: '100%', height: '35%', padding: '8%', align: 'center', justify: 'center' },
+    imageZone: { left: '5%', top: '32%', width: '90%', height: '62%' },
+    ctaAlign: 'center',
+    logoPos: 'top-center',
   },
 };
 
-// Font pair presets for ad creatives
-const FONT_PRESETS = [
-  {
-    id: 'modern-saas',
-    label: 'Modern SaaS',
-    description: 'Clean & contemporary',
-    headline: 'Sora',
-    body: 'Inter'
+// ─── Creative Modes ──────────────────────────────────────────────────────────
+// Each mode configures typography scale, colors, and spacing density.
+
+const CREATIVE_MODES = {
+  minimal: {
+    label: 'Minimal',
+    headlineSize: 'text-3xl',
+    headlineSizePx: 30,
+    subtextSizePx: 14,
+    headlineWeight: 'font-medium',
+    headlineTracking: 'tracking-tight',
+    bgClass: 'bg-white',
+    textColor: '#111111',
+    subtextColor: 'rgba(0,0,0,0.45)',
+    ctaBg: '#111111',
+    ctaText: '#ffffff',
   },
-  {
-    id: 'premium-luxury',
-    label: 'Premium / Luxury',
-    description: 'Elegant & refined',
-    headline: 'Playfair Display',
-    body: 'DM Sans'
+  bold: {
+    label: 'Bold',
+    headlineSize: 'text-5xl',
+    headlineSizePx: 48,
+    subtextSizePx: 16,
+    headlineWeight: 'font-black',
+    headlineTracking: 'tracking-tighter',
+    bgClass: 'bg-[#0a0a0f]',
+    textColor: '#ffffff',
+    subtextColor: 'rgba(255,255,255,0.5)',
+    ctaBg: '#7c3aed',
+    ctaText: '#ffffff',
   },
-  {
-    id: 'bold-marketing',
-    label: 'Bold Marketing',
-    description: 'Impact & energy',
-    headline: 'Bebas Neue',
-    body: 'Manrope'
+  editorial: {
+    label: 'Editorial',
+    headlineSize: 'text-4xl',
+    headlineSizePx: 36,
+    subtextSizePx: 15,
+    headlineWeight: 'font-semibold',
+    headlineTracking: 'tracking-tight',
+    bgClass: 'bg-[#f5f0eb]',
+    textColor: '#1a1a1a',
+    subtextColor: 'rgba(0,0,0,0.4)',
+    ctaBg: '#1a1a1a',
+    ctaText: '#ffffff',
   },
-  {
-    id: 'editorial-premium',
-    label: 'Editorial Premium',
-    description: 'Magazine style',
-    headline: 'Fraunces',
-    body: 'Libre Baskerville'
+  product: {
+    label: 'Product',
+    headlineSize: 'text-3xl',
+    headlineSizePx: 30,
+    subtextSizePx: 14,
+    headlineWeight: 'font-bold',
+    headlineTracking: 'tracking-tight',
+    bgClass: 'bg-gradient-to-br from-gray-50 to-gray-100',
+    textColor: '#111111',
+    subtextColor: 'rgba(0,0,0,0.5)',
+    ctaBg: '#7c3aed',
+    ctaText: '#ffffff',
   },
-  {
-    id: 'geometric-modern',
-    label: 'Geometric Modern',
-    description: 'Tech & minimal',
-    headline: 'Space Grotesk',
-    body: 'Syne'
+  soft: {
+    label: 'Soft',
+    headlineSize: 'text-3xl',
+    headlineSizePx: 32,
+    subtextSizePx: 14,
+    headlineWeight: 'font-medium',
+    headlineTracking: 'tracking-normal',
+    bgClass: 'bg-[#faf8f5]',
+    textColor: '#2a2a2a',
+    subtextColor: 'rgba(0,0,0,0.35)',
+    ctaBg: '#8b6b4a',
+    ctaText: '#ffffff',
   },
+};
+
+// ─── Font Pairings ───────────────────────────────────────────────────────────
+const FONT_PAIRS = [
+  { id: 'modern', label: 'Modern', headline: 'Inter', body: 'Inter', description: 'Clean & versatile' },
+  { id: 'editorial', label: 'Editorial', headline: 'Playfair Display', body: 'DM Sans', description: 'Magazine feel' },
+  { id: 'bold', label: 'Impact', headline: 'Sora', body: 'Inter', description: 'Strong & clear' },
+  { id: 'luxury', label: 'Luxury', headline: 'Playfair Display', body: 'Inter', description: 'Elegant & refined' },
+  { id: 'tech', label: 'Tech', headline: 'Space Grotesk', body: 'Inter', description: 'Precise & modern' },
 ];
 
-// Flatten fonts for injection
-const ALL_FONTS = Object.values(FONT_CATEGORIES).flatMap(cat => cat.fonts);
-const UNIQUE_FONTS = [...new Map(ALL_FONTS.map(f => [f.value, f])).values()];
+const ASPECT_RATIOS = [
+  { id: '1:1', label: '1:1', pad: 100 },
+  { id: '16:9', label: '16:9', pad: 56.25 },
+  { id: '9:16', label: '9:16', pad: 177.78 },
+  { id: '4:5', label: '4:5', pad: 125 },
+];
 
-// Inject Google Fonts link once
+// ─── Google Fonts loader ─────────────────────────────────────────────────────
 function useGoogleFonts() {
   useEffect(() => {
-    const id = 'canvas-editor-gfonts';
+    const id = 'structured-canvas-fonts';
     if (document.getElementById(id)) return;
     const link = document.createElement('link');
     link.id = id;
     link.rel = 'stylesheet';
-    const families = UNIQUE_FONTS.map(f => f.value.replace(/ /g, '+')).join('&family=');
-    link.href = `https://fonts.googleapis.com/css2?family=${families}:wght@400;600;700;800&display=swap`;
+    link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap';
     document.head.appendChild(link);
   }, []);
 }
 
-// ─── Draggable hook (supports both mouse and touch) ───────────────────────────
-function useDrag(initialPos, canvasRef) {
-  const [pos, setPos] = useState(initialPos);
-  const dragging = useRef(false);
-  const start = useRef({ mx: 0, my: 0, px: 0, py: 0 });
-
-  const startDrag = useCallback((clientX, clientY) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    dragging.current = true;
-    start.current = { mx: clientX, my: clientY, px: pos.x, py: pos.y };
-  }, [pos, canvasRef]);
-
-  const onDragMove = useCallback((clientX, clientY) => {
-    if (!dragging.current) return;
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const dx = ((clientX - start.current.mx) / rect.width) * 100;
-    const dy = ((clientY - start.current.my) / rect.height) * 100;
-    setPos({ x: Math.max(0, Math.min(95, start.current.px + dx)), y: Math.max(0, Math.min(95, start.current.py + dy)) });
-  }, [canvasRef]);
-
-  const onDragEnd = useCallback(() => {
-    dragging.current = false;
-  }, []);
-
-  const onMouseDown = useCallback((e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    startDrag(e.clientX, e.clientY);
-    const onMove = (ev) => onDragMove(ev.clientX, ev.clientY);
-    const onUp = () => { onDragEnd(); window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-  }, [startDrag, onDragMove, onDragEnd]);
-
-  const onTouchStart = useCallback((e) => {
-    e.stopPropagation();
-    const touch = e.touches[0];
-    if (!touch) return;
-    startDrag(touch.clientX, touch.clientY);
-    const onMove = (ev) => {
-      const t = ev.touches[0];
-      if (t) onDragMove(t.clientX, t.clientY);
-    };
-    const onUp = () => { onDragEnd(); window.removeEventListener('touchmove', onMove); window.removeEventListener('touchend', onUp); };
-    window.addEventListener('touchmove', onMove);
-    window.addEventListener('touchend', onUp);
-  }, [startDrag, onDragMove, onDragEnd]);
-
-  return [pos, setPos, onMouseDown, onTouchStart];
-}
-
-// ─── Resize hook (supports both mouse and touch) ───────────────────────────
-function useResize(initialWidth, canvasRef) {
-  const [width, setWidth] = useState(initialWidth);
-  const resizing = useRef(false);
-  const startX = useRef(0);
-  const startW = useRef(0);
-
-  const startResize = useCallback((clientX) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    resizing.current = true;
-    startX.current = clientX;
-    startW.current = width;
-  }, [width, canvasRef]);
-
-  const onResizeMove = useCallback((clientX) => {
-    if (!resizing.current) return;
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const dx = ((clientX - startX.current) / rect.width) * 100;
-    setWidth(Math.max(10, Math.min(95, startW.current + dx)));
-  }, [canvasRef]);
-
-  const onResizeEnd = useCallback(() => {
-    resizing.current = false;
-  }, []);
-
-  const onResizeMouseDown = useCallback((e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    startResize(e.clientX);
-    const onMove = (ev) => onResizeMove(ev.clientX);
-    const onUp = () => { onResizeEnd(); window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-  }, [startResize, onResizeMove, onResizeEnd]);
-
-  const onResizeTouchStart = useCallback((e) => {
-    e.stopPropagation();
-    const touch = e.touches[0];
-    if (!touch) return;
-    startResize(touch.clientX);
-    const onMove = (ev) => {
-      const t = ev.touches[0];
-      if (t) onResizeMove(t.clientX);
-    };
-    const onUp = () => { onResizeEnd(); window.removeEventListener('touchmove', onMove); window.removeEventListener('touchend', onUp); };
-    window.addEventListener('touchmove', onMove);
-    window.addEventListener('touchend', onUp);
-  }, [startResize, onResizeMove, onResizeEnd]);
-
-  return [width, setWidth, onResizeMouseDown, onResizeTouchStart];
-}
-
-const BACKGROUNDS = {
-  dark:    { background: 'linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)' },
-  light:   { background: 'linear-gradient(160deg, #f8f9ff 0%, #eef0ff 50%, #e8ebff 100%)' },
-  white:   { background: '#ffffff' },
-  brand:   null,
-  overlay: { background: 'linear-gradient(135deg,#1e1e2e,#2d1b6e)' },
-};
-
-const ASPECT_RATIOS = [
-  { id: '1/1',  label: 'Square',    pad: 100 },
-  { id: '16/9', label: 'Landscape', pad: 56.25 },
-  { id: '9/16', label: 'Story',     pad: 177.78 },
-  { id: '4/5',  label: '4:5',       pad: 125 },
-];
-
-const HIGHLIGHT_STYLES = [
-  { id: 'none',     label: 'None' },
-  { id: 'soft_box', label: 'Soft Box' },
-  { id: 'marker',   label: 'Marker' },
-  { id: 'blur',     label: 'Blur Strip' },
-  { id: 'gradient', label: 'Gradient' },
-];
-
-function getHighlightStyle(style, color, opacity, padding, radius) {
-  if (style === 'none') return {};
-  const hex2 = Math.round(opacity * 255).toString(16).padStart(2, '0');
-  const base = { padding: `${padding}px ${padding * 2}px`, borderRadius: radius, display: 'inline-block' };
-  if (style === 'soft_box') return { ...base, backgroundColor: `${color}${hex2}` };
-  if (style === 'marker')   return { ...base, backgroundColor: `${color}${hex2}`, borderRadius: 2 };
-  if (style === 'blur')     return { ...base, backdropFilter: 'blur(8px)', backgroundColor: `${color}${Math.round(opacity * 0.6 * 255).toString(16).padStart(2, '0')}` };
-  if (style === 'gradient') return { ...base, background: `linear-gradient(90deg, ${color}${hex2}, transparent)` };
-  return {};
-}
-
-// ─── Remove white background from logo using canvas ──────────────────────────
-function useWhiteRemovedLogo(logoUrl) {
-  const [processedUrl, setProcessedUrl] = useState(null);
-
+// ─── White background removal for logos ──────────────────────────────────────
+function useProcessedLogo(logoUrl) {
+  const [url, setUrl] = useState(null);
   useEffect(() => {
-    if (!logoUrl) { setProcessedUrl(null); return; }
-
+    if (!logoUrl) { setUrl(null); return; }
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
+      const c = document.createElement('canvas');
+      c.width = img.width; c.height = img.height;
+      const ctx = c.getContext('2d');
       ctx.drawImage(img, 0, 0);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imageData.data;
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i], g = data[i + 1], b = data[i + 2];
-        // Make near-white pixels transparent
-        if (r > 220 && g > 220 && b > 220) {
-          const brightness = (r + g + b) / 3;
-          data[i + 3] = Math.round(Math.max(0, (255 - brightness) * 2));
+      const d = ctx.getImageData(0, 0, c.width, c.height);
+      for (let i = 0; i < d.data.length; i += 4) {
+        if (d.data[i] > 220 && d.data[i+1] > 220 && d.data[i+2] > 220) {
+          d.data[i+3] = Math.round(Math.max(0, (255 - (d.data[i] + d.data[i+1] + d.data[i+2]) / 3) * 2));
         }
       }
-      ctx.putImageData(imageData, 0, 0);
-      setProcessedUrl(canvas.toDataURL('image/png'));
+      ctx.putImageData(d, 0, 0);
+      setUrl(c.toDataURL('image/png'));
     };
-    img.onerror = () => setProcessedUrl(logoUrl); // fallback
+    img.onerror = () => setUrl(logoUrl);
     img.src = logoUrl;
   }, [logoUrl]);
-
-  return processedUrl;
+  return url;
 }
 
-// ─── Main CanvasEditor ────────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ═════════════════════════════════════════════════════════════════════════════
+
 export default function CanvasEditor({
   initialHeadline = '', initialSubtext = '', initialCta = '',
   initialImage = null, logoUrl = null, brandColors = [],
@@ -317,808 +208,534 @@ export default function CanvasEditor({
   useGoogleFonts();
   const canvasRef = useRef(null);
 
+  // Content state
   const [headline, setHeadline] = useState(initialHeadline);
   const [subtext, setSubtext] = useState(initialSubtext);
   const [cta, setCta] = useState(initialCta);
   const [bgImage, setBgImage] = useState(initialImage);
-  const [bgStyle, setBgStyle] = useState('dark');
-  const [accentColor, setAccentColor] = useState(brandColors[0] || '#7c3aed');
-  const [headlineColor, setHeadlineColor] = useState('#ffffff');
-  const [headlineSize, setHeadlineSize] = useState(44);
-  const [subtextSize, setSubtextSize] = useState(18);
-  const [headlineFont, setHeadlineFont] = useState('Sora');
-  const [bodyFont, setBodyFont] = useState('Inter');
-  const [showFontPresets, setShowFontPresets] = useState(false);
+
+  // Structure state
+  const [layout, setLayout] = useState('hero_overlay');
+  const [mode, setMode] = useState('bold');
+  const [fontPair, setFontPair] = useState(FONT_PAIRS[0]);
   const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIOS[0]);
-  const [activeLogo, setActiveLogo] = useState(logoUrl || null);
+  const [accentColor, setAccentColor] = useState(brandColors[0] || '#7c3aed');
   const [showLogo, setShowLogo] = useState(!!logoUrl);
-  const processedLogoUrl = useWhiteRemovedLogo(activeLogo);
-  const [logoOpacity, setLogoOpacity] = useState(1);
-  const [logoScale, setLogoScale] = useState(20);
-  const [bgOverlay, setBgOverlay] = useState(0.45);
-  const [selectedLayer, setSelectedLayer] = useState(null);
+  const [activeLogo, setActiveLogo] = useState(logoUrl);
+
+  // UI state
   const [exporting, setExporting] = useState(false);
-  const [editingText, setEditingText] = useState(null);
-  const [imgScale, setImgScale] = useState(48);
   const [saving, setSaving] = useState(false);
-  const [showDrawer, setShowDrawer] = useState(false);
+  const [editingField, setEditingField] = useState(null);
+  const [activePanel, setActivePanel] = useState('layout');
 
-  // Text Shadow
-  const [textShadowEnabled, setTextShadowEnabled] = useState(false);
-  const [textShadowColor, setTextShadowColor] = useState('#000000');
-  const [textShadowBlur, setTextShadowBlur] = useState(8);
-  const [textShadowOffsetX, setTextShadowOffsetX] = useState(2);
-  const [textShadowOffsetY, setTextShadowOffsetY] = useState(2);
+  const processedLogo = useProcessedLogo(activeLogo);
+  const modeConfig = CREATIVE_MODES[mode];
+  const layoutConfig = LAYOUTS[layout];
 
-  // Text Stroke
-  const [textStrokeEnabled, setTextStrokeEnabled] = useState(false);
-  const [textStrokeColor, setTextStrokeColor] = useState('#000000');
-  const [textStrokeWidth, setTextStrokeWidth] = useState(1);
+  // Derived colors — mode drives defaults, but image overlay overrides
+  const hasOverlay = layoutConfig.overlay && bgImage;
+  const textColor = hasOverlay ? '#ffffff' : modeConfig.textColor;
+  const subtextColor = hasOverlay ? 'rgba(255,255,255,0.6)' : modeConfig.subtextColor;
+  const ctaBg = accentColor || modeConfig.ctaBg;
 
-  // Highlight
-  const [highlightStyle, setHighlightStyle] = useState('none');
-  const [highlightColor, setHighlightColor] = useState('#000000');
-  const [highlightOpacity, setHighlightOpacity] = useState(0.5);
-  const [highlightPadding, setHighlightPadding] = useState(6);
-  const [highlightRadius, setHighlightRadius] = useState(6);
+  // Background style
+  const canvasBg = bgImage && layoutConfig.imageZone
+    ? {} // Image handles background
+    : { background: modeConfig.bgClass.includes('gradient')
+        ? 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)'
+        : modeConfig.bgClass.includes('#') ? modeConfig.bgClass.match(/#[0-9a-fA-F]+/)?.[0] || '#ffffff' : '#ffffff'
+      };
 
-  // Drag positions
-  const [headlinePos, setHeadlinePos, headlineDrag, headlineTouch] = useDrag({ x: 5, y: 38 }, canvasRef);
-  const [subtextPos, setSubtextPos, subtextDrag, subtextTouch] = useDrag({ x: 5, y: 62 }, canvasRef);
-  const [ctaPos, setCtaPos, ctaDrag, ctaTouch] = useDrag({ x: 5, y: 78 }, canvasRef);
-  const [logoPos, setLogoPos, logoDrag, logoTouch] = useDrag({ x: 4, y: 4 }, canvasRef);
-  const [imgPos, setImgPos, imgDrag, imgTouchDrag] = useDrag({ x: 50, y: 2 }, canvasRef);
-
-  // Resize widths (% of canvas)
-  const [headlineWidth, setHeadlineWidth, headlineResize, headlineResizeTouch] = useResize(42, canvasRef);
-  const [subtextWidth, setSubtextWidth, subtextResize, subtextResizeTouch] = useResize(38, canvasRef);
-  const [imgWidth, setImgWidth, imgResize, imgResizeTouch] = useResize(48, canvasRef);
-
-  const computedTextShadow = textShadowEnabled
-    ? `${textShadowOffsetX}px ${textShadowOffsetY}px ${textShadowBlur}px ${textShadowColor}`
-    : 'none';
-
-  const computedStroke = textStrokeEnabled
-    ? { WebkitTextStroke: `${textStrokeWidth}px ${textStrokeColor}` }
-    : {};
-
-  const bgObj = bgStyle === 'brand'
-    ? { background: `linear-gradient(135deg, ${accentColor}cc, ${accentColor}44)` }
-    : BACKGROUNDS[bgStyle] || BACKGROUNDS.dark;
-
-  const highlightCss = getHighlightStyle(highlightStyle, highlightColor, highlightOpacity, highlightPadding, highlightRadius);
-
-  const applyLayout = (preset) => {
-    if (preset === 'hero') {
-      setHeadlinePos({ x: 5, y: 30 }); setSubtextPos({ x: 5, y: 50 }); setCtaPos({ x: 5, y: 64 });
-      setImgPos({ x: 50, y: 0 }); setImgScale(50); setLogoPos({ x: 4, y: 4 });
-      setBgStyle('dark'); setHeadlineColor('#ffffff');
-    } else if (preset === 'split') {
-      setHeadlinePos({ x: 5, y: 38 }); setSubtextPos({ x: 5, y: 56 }); setCtaPos({ x: 5, y: 68 });
-      setImgPos({ x: 50, y: 0 }); setImgScale(50);
-      setBgStyle('white'); setHeadlineColor('#111111');
-    } else if (preset === 'centered') {
-      setHeadlinePos({ x: 50, y: 35 }); setSubtextPos({ x: 50, y: 52 }); setCtaPos({ x: 50, y: 64 });
-      setImgPos({ x: 20, y: 5 }); setImgScale(60);
-      setBgStyle('overlay'); setHeadlineColor('#ffffff'); setBgOverlay(0.55);
-    } else if (preset === 'product') {
-      setHeadlinePos({ x: 50, y: 8 }); setSubtextPos({ x: 50, y: 22 }); setImgPos({ x: 10, y: 30 });
-      setImgScale(80); setCtaPos({ x: 50, y: 88 });
-      setBgStyle('light'); setHeadlineColor('#111111');
-    }
+  const bgColorMap = {
+    'bg-white': '#ffffff',
+    'bg-[#0a0a0f]': '#0a0a0f',
+    'bg-[#f5f0eb]': '#f5f0eb',
+    'bg-[#faf8f5]': '#faf8f5',
   };
 
+  const resolvedBg = bgColorMap[modeConfig.bgClass] || '#ffffff';
+
+  // Export
   const handleExport = async () => {
     if (!canvasRef.current) return;
     setExporting(true);
-    setSelectedLayer(null);
-    setEditingText(null);
-    await new Promise(r => setTimeout(r, 150));
-    
-    const families = UNIQUE_FONTS.map(f => f.value.replace(/ /g, '+')).join('&family=');
-    const fontUrl = `https://fonts.googleapis.com/css2?family=${families}:wght@400;600;700;800&display=swap`;
-    
+    setEditingField(null);
+    await new Promise(r => setTimeout(r, 100));
     const canvas = await html2canvas(canvasRef.current, {
-      useCORS: true,
-      allowTaint: true,
-      scale: 2,
-      logging: false,
-      backgroundColor: null,
-      imageTimeout: 30000,
-      onclone: (clonedDoc) => {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = fontUrl;
-        clonedDoc.head.appendChild(link);
-        
-        const style = document.createElement('style');
-        style.textContent = `
-          * { outline: none !important; border: none !important; }
-          [class*="outline"] { outline: none !important; }
-        `;
-        clonedDoc.head.appendChild(style);
-      }
+      useCORS: true, allowTaint: true, scale: 2, logging: false, backgroundColor: null, imageTimeout: 30000,
     });
-    
     const url = canvas.toDataURL('image/png');
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'ad-creative.png';
-    a.click();
-    URL.revokeObjectURL(url);
+    a.href = url; a.download = 'creative.png'; a.click();
     setExporting(false);
   };
 
-  const colorSwatches = [...new Set([...brandColors, '#ffffff', '#111111', '#000000', '#7c3aed', '#2563eb', '#059669', '#ef4444'])].slice(0, 8);
-  const headlineFontStyle = { fontFamily: `'${headlineFont}', sans-serif` };
-  const bodyFontStyle = { fontFamily: `'${bodyFont}', sans-serif` };
-
-  const applyFontPreset = (preset) => {
-    setHeadlineFont(preset.headline);
-    setBodyFont(preset.body);
-    setShowFontPresets(false);
+  const handleSave = async () => {
+    if (!onSave) return;
+    setSaving(true);
+    await onSave({ headline, ad_copy: subtext, cta, preview_image: bgImage });
+    setSaving(false);
+    toast.success('Saved');
   };
 
+  const allImages = [
+    ...(screenshots || []).map((url, i) => ({ url, label: `Screenshot ${i + 1}` })),
+    ...(initialImage && !screenshots?.includes(initialImage) ? [{ url: initialImage, label: 'AI Generated' }] : []),
+  ];
+
+  const colorSwatches = [...new Set([...brandColors, '#7c3aed', '#2563eb', '#059669', '#ef4444', '#111111', '#ffffff'])].slice(0, 8);
+
+  // Logo position based on layout
+  const logoPositionClass = {
+    'top-left': 'top-[6%] left-[6%]',
+    'top-right': 'top-[6%] right-[6%]',
+    'top-center': 'top-[6%] left-1/2 -translate-x-1/2',
+  }[layoutConfig.logoPos] || 'top-[6%] left-[6%]';
+
   return (
-    <div className="fixed inset-0 z-50 bg-[#111318] flex flex-col" onClick={() => { setSelectedLayer(null); setEditingText(null); }}>
-      {/* Settings button - mobile only */}
-      <button
-        onClick={() => setShowDrawer(true)}
-        className="lg:hidden fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-violet-600 hover:bg-violet-700 text-white flex items-center justify-center shadow-lg"
-      >
-        <Settings className="w-5 h-5" />
-      </button>
-
-      {/* Drawer - mobile tools */}
-      <Drawer open={showDrawer} onOpenChange={setShowDrawer}>
-        <DrawerContent className="bg-[#111318] border-white/10">
-          <DrawerHeader className="text-white border-b border-white/10">
-            <DrawerTitle className="text-white">Design Tools</DrawerTitle>
-          </DrawerHeader>
-          <ScrollArea className="h-[70vh]">
-            <div className="p-4 space-y-4">
-              <SideSection label="Background">
-                <div className="grid grid-cols-3 gap-1">
-                  {Object.keys(BACKGROUNDS).map(k => (
-                    <button key={k} onClick={() => setBgStyle(k)}
-                      className={`px-2 py-1.5 rounded-md text-[10px] font-semibold capitalize transition-colors ${bgStyle === k ? 'bg-violet-600 text-white' : 'bg-white/5 text-white/50 hover:bg-white/15 hover:text-white'}`}>
-                      {k}
-                    </button>
-                  ))}
-                </div>
-              </SideSection>
-
-              <SideSection label="Headline">
-                <SliderControl label="Font size" min={18} max={80} value={headlineSize} onChange={setHeadlineSize} unit="px" />
-                <p className="text-[10px] text-white/40 mt-2 mb-1">Color</p>
-                <ColorSwatches colors={colorSwatches} selected={headlineColor} onSelect={setHeadlineColor} />
-              </SideSection>
-
-              <SideSection label="Text Shadow">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] text-white/50">Enable</span>
-                  <button onClick={() => setTextShadowEnabled(v => !v)}
-                    className={`w-8 h-4 rounded-full transition-colors ${textShadowEnabled ? 'bg-violet-600' : 'bg-white/20'} flex items-center px-0.5`}>
-                    <div className={`w-3 h-3 rounded-full bg-white transition-transform ${textShadowEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
-                  </button>
-                </div>
-                {textShadowEnabled && (
-                  <>
-                    <p className="text-[10px] text-white/40 mb-1">Color</p>
-                    <ColorSwatches colors={['#000000', '#ffffff', '#1e1e1e', ...brandColors]} selected={textShadowColor} onSelect={setTextShadowColor} />
-                    <SliderControl label="Blur" min={0} max={30} value={textShadowBlur} onChange={setTextShadowBlur} unit="px" />
-                    <SliderControl label="Offset X" min={-20} max={20} value={textShadowOffsetX} onChange={setTextShadowOffsetX} unit="px" />
-                    <SliderControl label="Offset Y" min={-20} max={20} value={textShadowOffsetY} onChange={setTextShadowOffsetY} unit="px" />
-                  </>
-                )}
-              </SideSection>
-
-              <SideSection label="Text Stroke">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] text-white/50">Enable</span>
-                  <button onClick={() => setTextStrokeEnabled(v => !v)}
-                    className={`w-8 h-4 rounded-full transition-colors ${textStrokeEnabled ? 'bg-violet-600' : 'bg-white/20'} flex items-center px-0.5`}>
-                    <div className={`w-3 h-3 rounded-full bg-white transition-transform ${textStrokeEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
-                  </button>
-                </div>
-                {textStrokeEnabled && (
-                  <>
-                    <p className="text-[10px] text-white/40 mb-1">Color</p>
-                    <ColorSwatches colors={['#000000', '#ffffff', '#1e1e1e', ...brandColors]} selected={textStrokeColor} onSelect={setTextStrokeColor} />
-                    <SliderControl label="Width" min={0.5} max={8} step={0.5} value={textStrokeWidth} onChange={setTextStrokeWidth} unit="px" />
-                  </>
-                )}
-              </SideSection>
-
-              <SideSection label="Subtext">
-                <SliderControl label="Font size" min={10} max={36} value={subtextSize} onChange={setSubtextSize} unit="px" />
-              </SideSection>
-
-              <SideSection label="CTA / Accent">
-                <ColorSwatches colors={colorSwatches} selected={accentColor} onSelect={setAccentColor} />
-              </SideSection>
-
-              <SideSection label="Logo">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] text-white/50">Visible</span>
-                  <button onClick={() => setShowLogo(v => !v)}
-                    className={`w-8 h-4 rounded-full transition-colors ${showLogo ? 'bg-violet-600' : 'bg-white/20'} flex items-center px-0.5`}>
-                    <div className={`w-3 h-3 rounded-full bg-white transition-transform ${showLogo ? 'translate-x-4' : 'translate-x-0'}`} />
-                  </button>
-                </div>
-                {showLogo && activeLogo && (
-                  <>
-                    <SliderControl label="Width %" min={5} max={50} value={logoScale} onChange={setLogoScale} />
-                    <SliderControl label="Opacity" min={0.1} max={1} step={0.05} value={logoOpacity} onChange={setLogoOpacity} />
-                  </>
-                )}
-              </SideSection>
-            </div>
-          </ScrollArea>
-        </DrawerContent>
-      </Drawer>
-
-      {/* Top Bar */}
-      <div className="h-12 flex items-center justify-between px-4 border-b border-white/10 shrink-0" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 bg-[#0e0f13] flex flex-col">
+      {/* ── Top Bar ─────────────────────────────────────────────────────────── */}
+      <div className="h-[52px] flex items-center justify-between px-5 border-b border-white/[0.06] shrink-0">
         <div className="flex items-center gap-3">
-          <button onClick={onClose} className="text-white/50 hover:text-white text-sm font-medium transition-colors">← Back</button>
-          <div className="w-px h-4 bg-white/10" />
-          <span className="text-white/70 text-sm font-medium">Canvas Editor</span>
+          <button onClick={onClose} className="text-white/40 hover:text-white text-[13px] font-medium transition-colors">
+            ← Back
+          </button>
+          <div className="w-px h-4 bg-white/[0.08]" />
+          <span className="text-white/60 text-[13px] font-medium">Creative Studio</span>
         </div>
-        <div className="flex items-center gap-1 bg-white/10 rounded-lg p-0.5">
+
+        {/* Aspect ratio pills */}
+        <div className="flex items-center gap-0.5 bg-white/[0.04] rounded-lg p-0.5">
           {ASPECT_RATIOS.map(ar => (
             <button key={ar.id} onClick={() => setAspectRatio(ar)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${aspectRatio.id === ar.id ? 'bg-white text-gray-900' : 'text-white/60 hover:text-white'}`}>
+              className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all ${
+                aspectRatio.id === ar.id ? 'bg-white text-gray-900' : 'text-white/40 hover:text-white/70'
+              }`}>
               {ar.label}
             </button>
           ))}
         </div>
+
         <div className="flex items-center gap-2">
           {onSave && (
-            <button onClick={async () => {
-              setSaving(true);
-              await onSave({
-                headline,
-                ad_copy: subtext,
-                cta,
-                preview_image: bgImage,
-              });
-              setSaving(false);
-              toast.success('Changes saved');
-            }} disabled={saving}
-              className="flex items-center gap-1.5 h-8 px-4 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-medium transition-colors disabled:opacity-50">
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-              {saving ? 'Saving…' : 'Save'}
+            <button onClick={handleSave} disabled={saving}
+              className="flex items-center gap-1.5 h-[32px] px-4 rounded-[8px] bg-white/[0.08] hover:bg-white/[0.12] text-white text-[12px] font-medium transition-colors disabled:opacity-50">
+              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+              Save
             </button>
           )}
           <button onClick={handleExport} disabled={exporting}
-            className="flex items-center gap-1.5 h-8 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors disabled:opacity-50">
-            <Download className="w-3.5 h-3.5" />
-            {exporting ? 'Exporting…' : 'Export PNG'}
+            className="flex items-center gap-1.5 h-[32px] px-4 rounded-[8px] bg-violet-600 hover:bg-violet-500 text-white text-[12px] font-medium transition-colors disabled:opacity-50">
+            <Download className="w-3 h-3" />
+            Export
           </button>
         </div>
       </div>
 
-      {/* 3-column */}
-      <div className="flex flex-1 overflow-hidden" onClick={e => e.stopPropagation()}>
+      {/* ── Main Area ───────────────────────────────────────────────────────── */}
+      <div className="flex flex-1 overflow-hidden">
 
-        {/* LEFT SIDEBAR */}
-        <div className="hidden lg:flex w-52 shrink-0 border-r border-white/10 overflow-y-auto p-3 space-y-4 flex-col">
-          <SideSection label="Templates">
-            {[
-              { id: 'hero', label: 'Hero', emoji: '◧' },
-              { id: 'split', label: 'Split', emoji: '◫' },
-              { id: 'centered', label: 'Centered', emoji: '◼' },
-              { id: 'product', label: 'Product', emoji: '⊞' },
-            ].map(t => (
-              <button key={t.id} onClick={() => applyLayout(t.id)}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs font-medium transition-colors text-left">
-                <span>{t.emoji}</span>{t.label}
-              </button>
-            ))}
-          </SideSection>
-
-          <SideSection label="Visual Source">
-            {[
-              ...(screenshots || []).map((url, i) => ({ url, label: `Screenshot ${i + 1}` })),
-              ...(initialImage && !screenshots?.includes(initialImage) ? [{ url: initialImage, label: 'AI Image' }] : []),
-            ].map(({ url, label }) => (
-              <button key={url} onClick={() => setBgImage(url)}
-                className={`relative w-full rounded-lg overflow-hidden border-2 transition-all ${bgImage === url ? 'border-violet-400' : 'border-transparent'}`}
-                style={{ paddingBottom: '56%' }}>
-                <img src={url} alt={label} className="absolute inset-0 w-full h-full object-cover object-top" crossOrigin="anonymous" />
-                <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-0.5">
-                  <p className="text-[9px] text-white/90 truncate">{label}</p>
-                </div>
-              </button>
-            ))}
-            <button onClick={() => setBgImage(null)}
-              className="w-full px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white/80 text-xs transition-colors">
-              No Image
-            </button>
-          </SideSection>
-        </div>
-
-        {/* CENTER — Canvas */}
-        <div className="flex-1 flex items-center justify-center overflow-auto p-8 bg-[#16181d]"
-          onClick={() => { setSelectedLayer(null); setEditingText(null); }}>
-          <div className="relative" style={{ width: '100%', maxWidth: `${80 / (aspectRatio.pad / 100)}vh`, maxHeight: '80vh' }}
-            onClick={e => e.stopPropagation()}>
-            <div ref={canvasRef}
-              className="relative w-full overflow-hidden rounded-xl shadow-2xl select-none"
-              style={{ paddingBottom: `${aspectRatio.pad}%`, ...bgObj }}>
+        {/* ── Canvas Preview ──────────────────────────────────────────────── */}
+        <div className="flex-1 flex items-center justify-center p-10 bg-[#131419]">
+          <div className="relative w-full" style={{ maxWidth: aspectRatio.pad > 120 ? '340px' : '560px' }}>
+            <div
+              ref={canvasRef}
+              className="relative w-full overflow-hidden rounded-xl shadow-2xl shadow-black/40"
+              style={{ paddingBottom: `${aspectRatio.pad}%`, backgroundColor: resolvedBg }}
+            >
               <div className="absolute inset-0">
 
-                {/* BG Image */}
-                {bgImage && (
-                  <ResizableDraggableLayer
-                    x={imgPos.x} y={imgPos.y}
-                    width={imgWidth}
-                    onDragMouseDown={imgDrag}
-                    onDragTouchStart={imgTouchDrag}
-                    onResizeMouseDown={imgResize}
-                    onResizeTouchStart={imgResizeTouch}
-                    selected={selectedLayer === 'img'}
-                    onSelect={() => setSelectedLayer('img')}
-                    onRemove={() => setBgImage(null)}
-                    noBorder={exporting}
-                  >
-                    <img src={bgImage} alt=""
-                      className="w-full rounded-lg shadow-2xl block"
-                      style={{ objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
-                  </ResizableDraggableLayer>
+                {/* Image Zone */}
+                {bgImage && layoutConfig.imageZone && (
+                  <div className="absolute overflow-hidden" style={{
+                    left: layoutConfig.imageZone.left,
+                    top: layoutConfig.imageZone.top,
+                    width: layoutConfig.imageZone.width,
+                    height: layoutConfig.imageZone.height,
+                  }}>
+                    <img src={bgImage} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                  </div>
                 )}
 
                 {/* Overlay */}
-                {bgStyle === 'overlay' && (
-                  <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${bgOverlay})`, pointerEvents: 'none' }} />
+                {hasOverlay && (
+                  <div className="absolute" style={{
+                    left: layoutConfig.textZone.left,
+                    top: layoutConfig.textZone.top,
+                    width: layoutConfig.textZone.width,
+                    height: layoutConfig.textZone.height,
+                    background: layoutConfig.overlayStyle === 'gradient-left'
+                      ? 'linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)'
+                      : 'rgba(0,0,0,0.4)',
+                    pointerEvents: 'none',
+                  }} />
                 )}
 
-                {/* Headline */}
-                {headline && (
-                  <ResizableDraggableLayer
-                    x={headlinePos.x} y={headlinePos.y}
-                    width={headlineWidth}
-                    onDragMouseDown={headlineDrag}
-                    onDragTouchStart={headlineTouch}
-                    onResizeMouseDown={headlineResize}
-                    onResizeTouchStart={headlineResizeTouch}
-                    selected={selectedLayer === 'headline'}
-                    onSelect={() => setSelectedLayer('headline')}
-                    onRemove={() => setHeadline('')}
-                    noBorder={exporting}
-                  >
-                    <div style={highlightCss}>
-                      {editingText === 'headline' ? (
-                        <textarea autoFocus
-                          className="bg-transparent outline-none resize-none font-bold leading-tight w-full"
-                          style={{ color: headlineColor, fontSize: headlineSize, lineHeight: 1.2, ...headlineFontStyle }}
-                          value={headline}
-                          onChange={e => setHeadline(e.target.value)}
-                          onBlur={() => setEditingText(null)}
-                          onClick={e => e.stopPropagation()}
-                          rows={2}
-                        />
-                      ) : (
-                        <p className="font-bold leading-tight cursor-text w-full"
-                          style={{ color: headlineColor, fontSize: headlineSize, lineHeight: 1.2, ...headlineFontStyle, ...computedStroke,
-                            textShadow: textShadowEnabled ? computedTextShadow : (highlightStyle === 'none' && (bgStyle === 'dark' || bgStyle === 'overlay') ? '0 2px 16px rgba(0,0,0,0.6)' : 'none') }}
-                          onDoubleClick={(e) => { e.stopPropagation(); setEditingText('headline'); setSelectedLayer('headline'); }}
-                        >{headline}</p>
-                      )}
-                    </div>
-                  </ResizableDraggableLayer>
-                )}
+                {/* Text Zone */}
+                <div className="absolute flex flex-col" style={{
+                  left: layoutConfig.textZone.left,
+                  top: layoutConfig.textZone.top,
+                  width: layoutConfig.textZone.width,
+                  height: layoutConfig.textZone.height,
+                  padding: layoutConfig.textZone.padding,
+                  paddingBottom: layoutConfig.textZone.paddingBottom || layoutConfig.textZone.padding,
+                  alignItems: layoutConfig.textZone.align === 'center' ? 'center' : 'flex-start',
+                  justifyContent: layoutConfig.textZone.justify || 'center',
+                  textAlign: layoutConfig.textZone.align,
+                }}>
+                  {/* Headline */}
+                  {headline && (
+                    <h2
+                      className="leading-[1.1] mb-2 cursor-text"
+                      style={{
+                        color: textColor,
+                        fontSize: modeConfig.headlineSizePx,
+                        fontFamily: `'${fontPair.headline}', sans-serif`,
+                        fontWeight: mode === 'bold' ? 800 : mode === 'minimal' ? 500 : 700,
+                        letterSpacing: mode === 'bold' ? '-0.04em' : '-0.02em',
+                        textShadow: hasOverlay ? '0 2px 20px rgba(0,0,0,0.4)' : 'none',
+                        maxWidth: '100%',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word',
+                      }}
+                      onClick={() => setEditingField('headline')}
+                    >
+                      {headline}
+                    </h2>
+                  )}
 
-                {/* Subtext */}
-                {subtext && (
-                  <ResizableDraggableLayer
-                    x={subtextPos.x} y={subtextPos.y}
-                    width={subtextWidth}
-                    onDragMouseDown={subtextDrag}
-                    onDragTouchStart={subtextTouch}
-                    onResizeMouseDown={subtextResize}
-                    onResizeTouchStart={subtextResizeTouch}
-                    selected={selectedLayer === 'subtext'}
-                    onSelect={() => setSelectedLayer('subtext')}
-                    onRemove={() => setSubtext('')}
-                    noBorder={exporting}
-                  >
-                    {editingText === 'subtext' ? (
-                      <textarea autoFocus
-                        className="bg-transparent outline-none resize-none leading-snug w-full"
-                        style={{ color: headlineColor === '#ffffff' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)', fontSize: subtextSize, ...bodyFontStyle }}
-                        value={subtext}
-                        onChange={e => setSubtext(e.target.value)}
-                        onBlur={() => setEditingText(null)}
-                        onClick={e => e.stopPropagation()}
-                        rows={2}
-                      />
-                    ) : (
-                      <p className="leading-snug cursor-text w-full"
-                        style={{ color: headlineColor === '#ffffff' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)', fontSize: subtextSize, ...bodyFontStyle }}
-                        onDoubleClick={(e) => { e.stopPropagation(); setEditingText('subtext'); setSelectedLayer('subtext'); }}
-                      >{subtext}</p>
-                    )}
-                  </ResizableDraggableLayer>
-                )}
+                  {/* Subtext */}
+                  {subtext && (
+                    <p
+                      className="leading-relaxed mb-4 cursor-text"
+                      style={{
+                        color: subtextColor,
+                        fontSize: modeConfig.subtextSizePx,
+                        fontFamily: `'${fontPair.body}', sans-serif`,
+                        fontWeight: 400,
+                        textShadow: hasOverlay ? '0 1px 8px rgba(0,0,0,0.3)' : 'none',
+                        maxWidth: layoutConfig.textZone.align === 'center' ? '80%' : '100%',
+                      }}
+                      onClick={() => setEditingField('subtext')}
+                    >
+                      {subtext}
+                    </p>
+                  )}
 
-                {/* CTA */}
-                {cta && (
-                   <DraggableLayer x={ctaPos.x} y={ctaPos.y} onMouseDown={ctaDrag} onTouchStart={ctaTouch}
-                    selected={selectedLayer === 'cta'} onSelect={() => setSelectedLayer('cta')} onRemove={() => setCta('')} noBorder={exporting}>
-                    {editingText === 'cta' ? (
-                      <input autoFocus
-                        className="outline-none bg-transparent font-semibold text-white text-center"
-                        style={{ backgroundColor: accentColor, padding: '8px 20px', borderRadius: 999, fontSize: subtextSize * 0.9, ...bodyFontStyle }}
-                        value={cta}
-                        onChange={e => setCta(e.target.value)}
-                        onBlur={() => setEditingText(null)}
-                        onClick={e => e.stopPropagation()}
-                      />
-                    ) : (
-                      <span className="inline-flex items-center font-semibold text-white cursor-text"
-                        style={{ backgroundColor: accentColor, padding: '8px 20px', borderRadius: 999, fontSize: subtextSize * 0.9, ...bodyFontStyle }}
-                        onDoubleClick={(e) => { e.stopPropagation(); setEditingText('cta'); setSelectedLayer('cta'); }}
-                      >{cta}</span>
-                    )}
-                  </DraggableLayer>
-                )}
+                  {/* CTA */}
+                  {cta && (
+                    <span
+                      className="inline-flex items-center font-semibold cursor-text"
+                      style={{
+                        backgroundColor: ctaBg,
+                        color: modeConfig.ctaText,
+                        padding: '8px 24px',
+                        borderRadius: 999,
+                        fontSize: modeConfig.subtextSizePx * 0.85,
+                        fontFamily: `'${fontPair.body}', sans-serif`,
+                      }}
+                      onClick={() => setEditingField('cta')}
+                    >
+                      {cta}
+                    </span>
+                  )}
+                </div>
 
                 {/* Logo */}
-                {activeLogo && showLogo && (
-                   <DraggableLayer x={logoPos.x} y={logoPos.y} onMouseDown={logoDrag} onTouchStart={logoTouch}
-                    selected={selectedLayer === 'logo'} onSelect={() => setSelectedLayer('logo')}
-                    onRemove={() => { setActiveLogo(null); setShowLogo(false); }}
-                    noBorder={exporting} style={{ width: `${logoScale}%`, minWidth: 40 }}>
-                    <img
-                      src={processedLogoUrl || activeLogo}
-                      alt="logo"
-                      onError={e => { e.target.style.display = 'none'; }}
-                      style={{
-                        width: '100%', height: 'auto', display: 'block', opacity: logoOpacity, objectFit: 'contain',
-                      }} />
-                  </DraggableLayer>
+                {showLogo && processedLogo && (
+                  <div className={`absolute ${logoPositionClass}`} style={{ width: '12%', minWidth: 28 }}>
+                    <img src={processedLogo} alt="Logo" className="w-full h-auto object-contain" style={{ opacity: 0.9 }} />
+                  </div>
                 )}
-
               </div>
             </div>
-            <p className="text-center text-white/25 text-xs mt-3">Double-click text to edit · Drag to move · Drag corner to resize</p>
           </div>
         </div>
 
-        {/* RIGHT SIDEBAR */}
-        <div className="hidden lg:flex w-60 shrink-0 border-l border-white/10 overflow-y-auto p-3 space-y-4 flex-col" onClick={e => e.stopPropagation()}>
+        {/* ── Right Panel ─────────────────────────────────────────────────── */}
+        <div className="w-[300px] shrink-0 border-l border-white/[0.06] bg-[#0e0f13] flex flex-col overflow-hidden">
 
-          <SideSection label="Background">
-            <div className="grid grid-cols-3 gap-1">
-              {Object.keys(BACKGROUNDS).map(k => (
-                <button key={k} onClick={() => setBgStyle(k)}
-                  className={`px-2 py-1.5 rounded-md text-[10px] font-semibold capitalize transition-colors ${bgStyle === k ? 'bg-violet-600 text-white' : 'bg-white/5 text-white/50 hover:bg-white/15 hover:text-white'}`}>
-                  {k}
-                </button>
-              ))}
-            </div>
-            {bgStyle === 'overlay' && (
-              <div className="mt-2">
-                <p className="text-[10px] text-white/40 mb-1">Overlay opacity</p>
-                <input type="range" min={0} max={0.85} step={0.05} value={bgOverlay}
-                  onChange={e => setBgOverlay(Number(e.target.value))} className="w-full accent-violet-500" />
-              </div>
-            )}
-          </SideSection>
-
-          {bgImage && (
-            <SideSection label="Image Layer">
-              <SliderControl label="Width %" min={10} max={100} value={imgWidth} onChange={setImgWidth} />
-            </SideSection>
-          )}
-
-          {/* Font Presets */}
-          <SideSection label="Font Pairings">
-            {!showFontPresets ? (
-              <button onClick={() => setShowFontPresets(true)}
-                className="w-full px-2.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 text-xs font-medium transition-colors text-left">
-                {FONT_PRESETS.find(p => p.headline === headlineFont && p.body === bodyFont)?.label || 'View Presets'} →
-              </button>
-            ) : (
-              <div className="space-y-1.5">
-                {FONT_PRESETS.map(preset => (
-                  <button key={preset.id} onClick={() => applyFontPreset(preset)}
-                    className="w-full px-2.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-left text-xs transition-colors group">
-                    <p className="text-white font-medium group-hover:text-violet-300">{preset.label}</p>
-                    <p className="text-white/40 text-[10px] mt-0.5">{preset.headline} + {preset.body}</p>
-                  </button>
-                ))}
-                <button onClick={() => setShowFontPresets(false)}
-                  className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 text-xs transition-colors">
-                  Custom fonts
-                </button>
-              </div>
-            )}
-          </SideSection>
-
-          {/* Font Picker (Custom) */}
-          {showFontPresets === false && (
-            <>
-              <SideSection label="Headline Font">
-                <div className="space-y-2">
-                  {Object.entries(FONT_CATEGORIES).map(([key, cat]) => (
-                    <div key={key}>
-                      <p className="text-[10px] text-white/40 mb-1">{cat.label}</p>
-                      <div className="space-y-0.5">
-                        {cat.fonts.map(f => (
-                          <button key={f.value} onClick={() => setHeadlineFont(f.value)}
-                            className={`w-full text-left px-2 py-1.5 rounded text-[11px] transition-colors ${headlineFont === f.value ? 'bg-violet-600 text-white' : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'}`}
-                            style={{ fontFamily: `'${f.value}', sans-serif` }}>
-                            {f.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </SideSection>
-
-              <SideSection label="Body Font">
-                <div className="space-y-2">
-                  {Object.entries(FONT_CATEGORIES).map(([key, cat]) => (
-                    <div key={key}>
-                      <p className="text-[10px] text-white/40 mb-1">{cat.label}</p>
-                      <div className="space-y-0.5">
-                        {cat.fonts.map(f => (
-                          <button key={f.value} onClick={() => setBodyFont(f.value)}
-                            className={`w-full text-left px-2 py-1.5 rounded text-[11px] transition-colors ${bodyFont === f.value ? 'bg-violet-600 text-white' : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'}`}
-                            style={{ fontFamily: `'${f.value}', sans-serif` }}>
-                            {f.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </SideSection>
-            </>
-          )}
-
-          <SideSection label="Headline">
-            <SliderControl label="Font size" min={18} max={80} value={headlineSize} onChange={setHeadlineSize} unit="px" />
-            <p className="text-[10px] text-white/40 mt-2 mb-1">Color</p>
-            <ColorSwatches colors={colorSwatches} selected={headlineColor} onSelect={setHeadlineColor} />
-          </SideSection>
-
-          <SideSection label="Text Highlight">
-            <div className="grid grid-cols-2 gap-1 mb-2">
-              {HIGHLIGHT_STYLES.map(s => (
-                <button key={s.id} onClick={() => setHighlightStyle(s.id)}
-                  className={`px-2 py-1.5 rounded-md text-[10px] font-semibold transition-colors ${highlightStyle === s.id ? 'bg-violet-600 text-white' : 'bg-white/5 text-white/50 hover:bg-white/15 hover:text-white'}`}>
-                  {s.label}
-                </button>
-              ))}
-            </div>
-            {highlightStyle !== 'none' && (
-              <>
-                <p className="text-[10px] text-white/40 mb-1">Color</p>
-                <ColorSwatches colors={['#000000', '#ffffff', '#1e1e1e', ...brandColors]} selected={highlightColor} onSelect={setHighlightColor} />
-                <SliderControl label="Opacity" min={0.05} max={1} step={0.05} value={highlightOpacity} onChange={setHighlightOpacity} />
-                <SliderControl label="Padding" min={0} max={24} value={highlightPadding} onChange={setHighlightPadding} unit="px" />
-                <SliderControl label="Radius" min={0} max={20} value={highlightRadius} onChange={setHighlightRadius} unit="px" />
-              </>
-            )}
-          </SideSection>
-
-          <SideSection label="Text Shadow">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] text-white/50">Enable</span>
-              <button onClick={() => setTextShadowEnabled(v => !v)}
-                className={`w-8 h-4 rounded-full transition-colors ${textShadowEnabled ? 'bg-violet-600' : 'bg-white/20'} flex items-center px-0.5`}>
-                <div className={`w-3 h-3 rounded-full bg-white transition-transform ${textShadowEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
-              </button>
-            </div>
-            {textShadowEnabled && (
-              <>
-                <p className="text-[10px] text-white/40 mb-1">Color</p>
-                <ColorSwatches colors={['#000000', '#ffffff', '#1e1e1e', ...brandColors]} selected={textShadowColor} onSelect={setTextShadowColor} />
-                <SliderControl label="Blur" min={0} max={30} value={textShadowBlur} onChange={setTextShadowBlur} unit="px" />
-                <SliderControl label="Offset X" min={-20} max={20} value={textShadowOffsetX} onChange={setTextShadowOffsetX} unit="px" />
-                <SliderControl label="Offset Y" min={-20} max={20} value={textShadowOffsetY} onChange={setTextShadowOffsetY} unit="px" />
-              </>
-            )}
-          </SideSection>
-
-          <SideSection label="Text Stroke">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] text-white/50">Enable</span>
-              <button onClick={() => setTextStrokeEnabled(v => !v)}
-                className={`w-8 h-4 rounded-full transition-colors ${textStrokeEnabled ? 'bg-violet-600' : 'bg-white/20'} flex items-center px-0.5`}>
-                <div className={`w-3 h-3 rounded-full bg-white transition-transform ${textStrokeEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
-              </button>
-            </div>
-            {textStrokeEnabled && (
-              <>
-                <p className="text-[10px] text-white/40 mb-1">Color</p>
-                <ColorSwatches colors={['#000000', '#ffffff', '#1e1e1e', ...brandColors]} selected={textStrokeColor} onSelect={setTextStrokeColor} />
-                <SliderControl label="Width" min={0.5} max={8} step={0.5} value={textStrokeWidth} onChange={setTextStrokeWidth} unit="px" />
-              </>
-            )}
-          </SideSection>
-
-          <SideSection label="Subtext">
-            <SliderControl label="Font size" min={10} max={36} value={subtextSize} onChange={setSubtextSize} unit="px" />
-          </SideSection>
-
-          <SideSection label="CTA / Accent">
-            <ColorSwatches colors={colorSwatches} selected={accentColor} onSelect={setAccentColor} />
-          </SideSection>
-
-          <SideSection label="Logo">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] text-white/50">Visible</span>
-                <button onClick={() => setShowLogo(v => !v)}
-                  className={`w-8 h-4 rounded-full transition-colors ${showLogo ? 'bg-violet-600' : 'bg-white/20'} flex items-center px-0.5`}>
-                  <div className={`w-3 h-3 rounded-full bg-white transition-transform ${showLogo ? 'translate-x-4' : 'translate-x-0'}`} />
-                </button>
-              </div>
-              <label className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs cursor-pointer transition-colors mb-2">
-                <Upload className="w-3.5 h-3.5 shrink-0" />
-                {activeLogo ? 'Replace Logo' : 'Upload Logo'}
-                <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  const { file_url } = await base44.integrations.Core.UploadFile({ file });
-                  setActiveLogo(file_url);
-                  setShowLogo(true);
-                  e.target.value = '';
-                }} />
-              </label>
-              {showLogo && activeLogo && (
-                <>
-                  <SliderControl label="Width %" min={5} max={50} value={logoScale} onChange={setLogoScale} />
-                  <SliderControl label="Opacity" min={0.1} max={1} step={0.05} value={logoOpacity} onChange={setLogoOpacity} />
-                </>
-              )}
-            </SideSection>
-
-          <SideSection label="Layers">
+          {/* Panel tabs */}
+          <div className="flex border-b border-white/[0.06] shrink-0">
             {[
-              { id: 'img', label: 'Screenshot', icon: ImageIcon },
-              { id: 'headline', label: 'Headline', icon: Type },
-              { id: 'subtext', label: 'Subtext', icon: Type },
-              { id: 'cta', label: 'CTA Button', icon: Layers },
-              { id: 'logo', label: 'Logo', icon: Layers },
-            ].map(({ id, label, icon: Icon }) => (
-              <button key={id} onClick={() => setSelectedLayer(id)}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${selectedLayer === id ? 'bg-violet-600/30 text-violet-300' : 'text-white/40 hover:bg-white/5 hover:text-white/70'}`}>
-                <Icon className="w-3.5 h-3.5 shrink-0" />
-                {label}
+              { id: 'layout', label: 'Layout' },
+              { id: 'style', label: 'Style' },
+              { id: 'content', label: 'Content' },
+            ].map(tab => (
+              <button key={tab.id} onClick={() => setActivePanel(tab.id)}
+                className={`flex-1 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors ${
+                  activePanel === tab.id ? 'text-white border-b-2 border-violet-500' : 'text-white/30 hover:text-white/50'
+                }`}>
+                {tab.label}
               </button>
             ))}
-          </SideSection>
+          </div>
 
+          <div className="flex-1 overflow-y-auto p-4 space-y-5">
+
+            {/* ── LAYOUT PANEL ─────────────────────────────────────────────── */}
+            {activePanel === 'layout' && (
+              <>
+                <PanelSection label="Composition">
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {Object.entries(LAYOUTS).map(([key, cfg]) => (
+                      <button key={key} onClick={() => setLayout(key)}
+                        className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all ${
+                          layout === key
+                            ? 'border-violet-500/50 bg-violet-500/10 text-white'
+                            : 'border-white/[0.06] bg-white/[0.02] text-white/40 hover:border-white/[0.12] hover:text-white/60'
+                        }`}>
+                        <span className="text-lg">{cfg.preview}</span>
+                        <span className="text-[10px] font-medium">{cfg.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </PanelSection>
+
+                <PanelSection label="Creative Mode">
+                  <div className="space-y-1">
+                    {Object.entries(CREATIVE_MODES).map(([key, cfg]) => (
+                      <button key={key} onClick={() => setMode(key)}
+                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg transition-all ${
+                          mode === key
+                            ? 'bg-violet-500/15 text-white border border-violet-500/30'
+                            : 'text-white/40 hover:bg-white/[0.04] hover:text-white/60 border border-transparent'
+                        }`}>
+                        <span className="text-[12px] font-medium">{cfg.label}</span>
+                        {mode === key && <Check className="w-3.5 h-3.5 text-violet-400" />}
+                      </button>
+                    ))}
+                  </div>
+                </PanelSection>
+
+                <PanelSection label="Aspect Ratio">
+                  <div className="flex gap-1">
+                    {ASPECT_RATIOS.map(ar => (
+                      <button key={ar.id} onClick={() => setAspectRatio(ar)}
+                        className={`flex-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${
+                          aspectRatio.id === ar.id
+                            ? 'bg-white/[0.1] text-white'
+                            : 'text-white/30 hover:text-white/50'
+                        }`}>
+                        {ar.label}
+                      </button>
+                    ))}
+                  </div>
+                </PanelSection>
+              </>
+            )}
+
+            {/* ── STYLE PANEL ──────────────────────────────────────────────── */}
+            {activePanel === 'style' && (
+              <>
+                <PanelSection label="Font Pairing">
+                  <div className="space-y-1">
+                    {FONT_PAIRS.map(fp => (
+                      <button key={fp.id} onClick={() => setFontPair(fp)}
+                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg transition-all ${
+                          fontPair.id === fp.id
+                            ? 'bg-violet-500/15 text-white border border-violet-500/30'
+                            : 'text-white/40 hover:bg-white/[0.04] hover:text-white/60 border border-transparent'
+                        }`}>
+                        <div>
+                          <p className="text-[12px] font-medium text-left" style={{ fontFamily: `'${fp.headline}', sans-serif` }}>{fp.label}</p>
+                          <p className="text-[10px] text-white/25 mt-0.5">{fp.headline} + {fp.body}</p>
+                        </div>
+                        {fontPair.id === fp.id && <Check className="w-3.5 h-3.5 text-violet-400 shrink-0" />}
+                      </button>
+                    ))}
+                  </div>
+                </PanelSection>
+
+                <PanelSection label="Accent Color">
+                  <div className="flex flex-wrap gap-2">
+                    {colorSwatches.map(c => (
+                      <button key={c} onClick={() => setAccentColor(c)}
+                        className={`w-7 h-7 rounded-lg transition-all ${
+                          accentColor === c ? 'ring-2 ring-violet-400 ring-offset-2 ring-offset-[#0e0f13] scale-110' : 'hover:scale-105'
+                        }`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
+                </PanelSection>
+
+                <PanelSection label="Logo">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] text-white/40">Show Logo</span>
+                    <ToggleSwitch on={showLogo} onChange={setShowLogo} />
+                  </div>
+                  {showLogo && (
+                    <label className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.06] text-white/50 hover:text-white/70 text-[11px] cursor-pointer transition-colors border border-white/[0.06]">
+                      <Upload className="w-3.5 h-3.5 shrink-0" />
+                      {activeLogo ? 'Replace Logo' : 'Upload Logo'}
+                      <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                        setActiveLogo(file_url);
+                        setShowLogo(true);
+                        e.target.value = '';
+                      }} />
+                    </label>
+                  )}
+                </PanelSection>
+              </>
+            )}
+
+            {/* ── CONTENT PANEL ────────────────────────────────────────────── */}
+            {activePanel === 'content' && (
+              <>
+                <PanelSection label="Headline">
+                  <textarea
+                    className="w-full px-3 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white text-[13px] placeholder-white/20 outline-none focus:border-violet-500/40 resize-none transition-colors"
+                    rows={2}
+                    value={headline}
+                    onChange={e => setHeadline(e.target.value)}
+                    placeholder="Enter headline..."
+                    maxLength={80}
+                  />
+                  <p className="text-[10px] text-white/20 mt-1">{headline.length}/80 characters</p>
+                </PanelSection>
+
+                <PanelSection label="Subtext">
+                  <textarea
+                    className="w-full px-3 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white text-[13px] placeholder-white/20 outline-none focus:border-violet-500/40 resize-none transition-colors"
+                    rows={3}
+                    value={subtext}
+                    onChange={e => setSubtext(e.target.value)}
+                    placeholder="Supporting text..."
+                    maxLength={200}
+                  />
+                </PanelSection>
+
+                <PanelSection label="Call to Action">
+                  <input
+                    className="w-full px-3 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white text-[13px] placeholder-white/20 outline-none focus:border-violet-500/40 transition-colors"
+                    value={cta}
+                    onChange={e => setCta(e.target.value)}
+                    placeholder="e.g. Get Started"
+                    maxLength={30}
+                  />
+                </PanelSection>
+
+                <PanelSection label="Image">
+                  {allImages.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {allImages.map(({ url, label }) => (
+                        <button key={url} onClick={() => setBgImage(url)}
+                          className={`relative w-full rounded-lg overflow-hidden border-2 transition-all ${
+                            bgImage === url ? 'border-violet-400' : 'border-white/[0.06] hover:border-white/[0.12]'
+                          }`} style={{ paddingBottom: '50%' }}>
+                          <img src={url} alt={label} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" />
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-2 py-1.5">
+                            <p className="text-[10px] text-white/80 font-medium">{label}</p>
+                          </div>
+                          {bgImage === url && (
+                            <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center">
+                              <Check className="w-3 h-3 text-white" />
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                      <button onClick={() => setBgImage(null)}
+                        className={`w-full px-3 py-2 rounded-lg text-[11px] font-medium transition-colors ${
+                          !bgImage ? 'bg-white/[0.08] text-white/60' : 'bg-white/[0.03] text-white/30 hover:bg-white/[0.06] hover:text-white/50'
+                        }`}>
+                        No Image
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-white/20">No images available</p>
+                  )}
+                </PanelSection>
+              </>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* ── Inline Edit Modal ─────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {editingField && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            onClick={() => setEditingField(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#1a1b20] rounded-2xl border border-white/[0.08] p-5 w-full max-w-md shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-white text-[14px] font-semibold capitalize">{editingField}</h3>
+                <button onClick={() => setEditingField(null)} className="w-6 h-6 rounded-lg hover:bg-white/[0.08] flex items-center justify-center transition-colors">
+                  <X className="w-3.5 h-3.5 text-white/40" />
+                </button>
+              </div>
+              {editingField === 'headline' && (
+                <textarea
+                  autoFocus
+                  className="w-full px-3 py-2.5 rounded-lg bg-white/[0.06] border border-white/[0.1] text-white text-[14px] placeholder-white/20 outline-none focus:border-violet-500/40 resize-none"
+                  rows={2}
+                  value={headline}
+                  onChange={e => setHeadline(e.target.value)}
+                  maxLength={80}
+                />
+              )}
+              {editingField === 'subtext' && (
+                <textarea
+                  autoFocus
+                  className="w-full px-3 py-2.5 rounded-lg bg-white/[0.06] border border-white/[0.1] text-white text-[14px] placeholder-white/20 outline-none focus:border-violet-500/40 resize-none"
+                  rows={3}
+                  value={subtext}
+                  onChange={e => setSubtext(e.target.value)}
+                  maxLength={200}
+                />
+              )}
+              {editingField === 'cta' && (
+                <input
+                  autoFocus
+                  className="w-full px-3 py-2.5 rounded-lg bg-white/[0.06] border border-white/[0.1] text-white text-[14px] placeholder-white/20 outline-none focus:border-violet-500/40"
+                  value={cta}
+                  onChange={e => setCta(e.target.value)}
+                  maxLength={30}
+                />
+              )}
+              <button onClick={() => setEditingField(null)}
+                className="w-full mt-3 h-9 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-[12px] font-semibold transition-colors">
+                Done
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-// ─── ResizableDraggableLayer ─────────────────────────────────────────────────
-function ResizableDraggableLayer({ x, y, width, onDragMouseDown, onDragTouchStart, onResizeMouseDown, onResizeTouchStart, children, selected, onSelect, onRemove, noBorder }) {
-  return (
-    <div
-      onMouseDown={onDragMouseDown}
-      onTouchStart={onDragTouchStart}
-      onClick={(e) => { e.stopPropagation(); onSelect?.(); }}
-      className="absolute cursor-move touch-none"
-      style={{
-        left: `${x}%`,
-        top: `${y}%`,
-        width: `${width}%`,
-        outline: (!noBorder && selected) ? '2px solid #7c3aed' : (!noBorder ? '1px dashed rgba(255,255,255,0.1)' : 'none'),
-        outlineOffset: 4,
-        borderRadius: 4,
-      }}
-    >
-      {children}
-      {!noBorder && onRemove && (
-        <div
-          onClick={(e) => { e.stopPropagation(); onRemove(); }}
-          onMouseDown={e => e.stopPropagation()}
-          onTouchStart={e => e.stopPropagation()}
-          style={{
-            position: 'absolute', top: -8, right: -8,
-            width: 16, height: 16, borderRadius: '50%',
-            background: '#ef4444', cursor: 'pointer', zIndex: 20,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            border: '1.5px solid white', fontSize: 10, color: 'white', fontWeight: 700, lineHeight: 1,
-          }}
-        >×</div>
-      )}
-      {!noBorder && (
-        <div
-          onMouseDown={onResizeMouseDown}
-          onTouchStart={onResizeTouchStart}
-          style={{
-            position: 'absolute', right: -6, bottom: -6,
-            width: 12, height: 12, borderRadius: 3,
-            background: selected ? '#7c3aed' : 'rgba(255,255,255,0.25)',
-            cursor: 'ew-resize', zIndex: 10,
-            border: '1.5px solid rgba(255,255,255,0.5)',
-            touchAction: 'none',
-          }}
-          onClick={e => e.stopPropagation()}
-        />
-      )}
-    </div>
-  );
-}
+// ─── Sub-Components ──────────────────────────────────────────────────────────
 
-// ─── Plain DraggableLayer (no resize) ────────────────────────────────────────
-function DraggableLayer({ x, y, onMouseDown, onTouchStart, children, selected, onSelect, onRemove, style = {}, noBorder = false }) {
-  return (
-    <div
-      onMouseDown={onMouseDown}
-      onTouchStart={onTouchStart}
-      onClick={(e) => { e.stopPropagation(); onSelect?.(); }}
-      className="absolute cursor-move touch-none"
-      style={{
-        left: `${x}%`,
-        top: `${y}%`,
-        outline: (!noBorder && selected) ? '2px solid #7c3aed' : (!noBorder ? '1px dashed rgba(255,255,255,0.1)' : 'none'),
-        outlineOffset: 4,
-        borderRadius: 4,
-        ...style,
-      }}
-    >
-      {children}
-      {!noBorder && onRemove && (
-        <div
-          onClick={(e) => { e.stopPropagation(); onRemove(); }}
-          onMouseDown={e => e.stopPropagation()}
-          onTouchStart={e => e.stopPropagation()}
-          style={{
-            position: 'absolute', top: -8, right: -8,
-            width: 16, height: 16, borderRadius: '50%',
-            background: '#ef4444', cursor: 'pointer', zIndex: 20,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            border: '1.5px solid white', fontSize: 10, color: 'white', fontWeight: 700, lineHeight: 1,
-          }}
-        >×</div>
-      )}
-    </div>
-  );
-}
-
-function SideSection({ label, children }) {
+function PanelSection({ label, children }) {
   return (
     <div>
-      <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-2">{label}</p>
-      <div className="space-y-1">{children}</div>
+      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/25 mb-2.5">{label}</p>
+      {children}
     </div>
   );
 }
 
-function SliderControl({ label, min, max, step = 1, value, onChange, unit = '' }) {
+function ToggleSwitch({ on, onChange }) {
   return (
-    <div>
-      <div className="flex justify-between mb-0.5">
-        <span className="text-[10px] text-white/40">{label}</span>
-        <span className="text-[10px] text-white/60 font-mono">{typeof value === 'number' && value % 1 !== 0 ? value.toFixed(2) : value}{unit}</span>
-      </div>
-      <input type="range" min={min} max={max} step={step} value={value}
-        onChange={e => onChange(Number(e.target.value))} className="w-full accent-violet-500" />
-    </div>
-  );
-}
-
-function ColorSwatches({ colors, selected, onSelect }) {
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {[...new Set(colors)].map(c => (
-        <button key={c} onClick={() => onSelect(c)}
-          className={`w-6 h-6 rounded-full border-2 transition-all shrink-0 ${selected === c ? 'border-violet-400 scale-110 shadow-md' : 'border-transparent'}`}
-          style={{ backgroundColor: c }}
-        />
-      ))}
-    </div>
+    <button onClick={() => onChange(!on)}
+      className={`w-9 h-5 rounded-full transition-colors flex items-center px-0.5 ${on ? 'bg-violet-600' : 'bg-white/[0.12]'}`}>
+      <div className={`w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${on ? 'translate-x-4' : 'translate-x-0'}`} />
+    </button>
   );
 }
