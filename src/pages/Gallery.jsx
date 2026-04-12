@@ -18,116 +18,89 @@ const ASSET_LABELS = {
 export default function Gallery() {
   const navigate = useNavigate();
   const [lightbox, setLightbox] = useState(null);
-  const [filterPlatform, setFilterPlatform] = useState('all');
+  const [filter, setFilter] = useState('all');
 
   const { data: assets = [], isLoading } = useQuery({
-    queryKey: ['all-assets-gallery'],
+    queryKey: ['gallery-assets'],
     queryFn: () => base44.entities.CampaignAsset.list('-created_date', 500),
   });
 
   const allImages = [];
-  assets.forEach(asset => {
-    if (asset.status !== 'ready') return;
-    const images = asset.carousel_images?.length > 0 ? asset.carousel_images : (asset.preview_image ? [asset.preview_image] : []);
-    images.forEach((url, i) => {
-      allImages.push({ url, asset, slideIndex: i, totalSlides: images.length });
-    });
+  assets.forEach(a => {
+    if (a.status !== 'ready') return;
+    const imgs = a.carousel_images?.length > 0 ? a.carousel_images : (a.preview_image ? [a.preview_image] : []);
+    imgs.forEach((url, i) => allImages.push({ url, asset: a, slideIndex: i, totalSlides: imgs.length }));
   });
 
   const platforms = [...new Set(assets.filter(a => a.status === 'ready').map(a => a.platform))];
-  const filtered = filterPlatform === 'all' ? allImages : allImages.filter(img => img.asset.platform === filterPlatform);
+  const filtered = filter === 'all' ? allImages : allImages.filter(img => img.asset.platform === filter);
 
-  const openLightbox = (img) => {
-    const idx = filtered.indexOf(img);
-    setLightbox({ images: filtered, index: idx });
-  };
-  const closeLightbox = () => setLightbox(null);
+  const openLB = (img) => setLightbox({ images: filtered, index: filtered.indexOf(img) });
+  const closeLB = () => setLightbox(null);
   const prev = () => setLightbox(l => ({ ...l, index: (l.index - 1 + l.images.length) % l.images.length }));
   const next = () => setLightbox(l => ({ ...l, index: (l.index + 1) % l.images.length }));
 
-  const downloadImage = async (url, asset) => {
+  const dl = async (url, asset) => {
     try {
-      const res = await fetch(url, { mode: 'cors' });
-      const blob = await res.blob();
-      const u = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = u;
-      a.download = `${asset.platform}-${asset.asset_type}.png`;
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a); URL.revokeObjectURL(u);
-    } catch {
-      window.open(url, '_blank');
-    }
+      const res = await fetch(url, { mode: 'cors' }); const blob = await res.blob();
+      const u = URL.createObjectURL(blob); const a = document.createElement('a');
+      a.href = u; a.download = `${asset.platform}-${asset.asset_type}.png`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(u);
+    } catch { window.open(url, '_blank'); }
   };
 
-  const current = lightbox ? lightbox.images[lightbox.index] : null;
+  const cur = lightbox ? lightbox.images[lightbox.index] : null;
 
   return (
     <AppShell>
-      <div className="max-w-screen-xl mx-auto px-6 py-10">
-        {/* Header */}
-        <div className="flex items-end justify-between mb-8">
+      <div className="max-w-[1200px] mx-auto px-5 py-8">
+        <div className="flex items-end justify-between mb-6">
           <div>
-            <h1 className="text-[1.625rem] font-bold text-gray-900 tracking-tight">Gallery</h1>
-            <p className="text-[13px] text-gray-400 mt-1.5">{filtered.length} image{filtered.length !== 1 ? 's' : ''}</p>
+            <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">Gallery</h1>
+            <p className="text-[12px] text-gray-400 mt-0.5">{filtered.length} image{filtered.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
 
-        {/* Platform filter */}
+        {/* Filters */}
         {platforms.length > 1 && (
-          <div className="flex flex-wrap gap-1.5 mb-8">
-            <FilterPill active={filterPlatform === 'all'} onClick={() => setFilterPlatform('all')}>All</FilterPill>
-            {platforms.map(p => (
-              <FilterPill key={p} active={filterPlatform === p} onClick={() => setFilterPlatform(p)}>
-                {PLATFORM_LABELS[p]}
-              </FilterPill>
-            ))}
+          <div className="flex gap-1 mb-6">
+            <Pill active={filter === 'all'} onClick={() => setFilter('all')}>All</Pill>
+            {platforms.map(p => <Pill key={p} active={filter === p} onClick={() => setFilter(p)}>{PLATFORM_LABELS[p]}</Pill>)}
           </div>
         )}
 
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
-            {[...Array(10)].map((_, i) => (
-              <div key={i} className="aspect-square rounded-2xl bg-gray-100/80 animate-pulse" />
-            ))}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+            {[...Array(10)].map((_, i) => <div key={i} className="aspect-square rounded-xl bg-gray-100 animate-pulse" />)}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-violet-50 flex items-center justify-center mb-5">
-              <ImageIcon className="w-7 h-7 text-violet-300" />
+          <div className="flex flex-col items-center justify-center py-28 text-center">
+            <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
+              <ImageIcon className="w-5 h-5 text-gray-300" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No images yet</h3>
-            <p className="text-[13px] text-gray-400 max-w-[260px] leading-relaxed">Generate campaign assets to see images here.</p>
+            <h3 className="text-[14px] font-semibold text-gray-900 mb-1">No images yet</h3>
+            <p className="text-[12px] text-gray-400 max-w-[220px]">Generate campaign assets to see them here.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
             {filtered.map((img, i) => (
-              <motion.div
-                key={`${img.asset.id}-${img.slideIndex}`}
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: Math.min(i * 0.02, 0.25), duration: 0.3 }}
-                className="group relative aspect-square rounded-2xl overflow-hidden bg-gray-100 cursor-pointer"
-                onClick={() => openLightbox(img)}
-              >
-                <img src={img.url} alt={img.asset.headline} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3">
-                  <p className="text-white text-[11px] font-medium line-clamp-2 mb-1.5">{img.asset.headline}</p>
+              <motion.div key={`${img.asset.id}-${img.slideIndex}`}
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: Math.min(i * 0.02, 0.2) }}
+                className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer"
+                onClick={() => openLB(img)}>
+                <img src={img.url} alt={img.asset.headline} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2.5">
+                  <p className="text-white text-[10px] font-medium line-clamp-1 mb-1">{img.asset.headline}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-white/60 text-[10px] font-medium uppercase tracking-wider">
-                      {PLATFORM_LABELS[img.asset.platform]} · {ASSET_LABELS[img.asset.asset_type]}
-                    </span>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); downloadImage(img.url, img.asset); }}
-                      className="w-7 h-7 rounded-lg bg-white/15 hover:bg-white/30 flex items-center justify-center transition-colors backdrop-blur-sm"
-                    >
+                    <span className="text-white/50 text-[9px] uppercase tracking-wider font-medium">{img.asset.platform} · {ASSET_LABELS[img.asset.asset_type]}</span>
+                    <button onClick={(e) => { e.stopPropagation(); dl(img.url, img.asset); }}
+                      className="w-6 h-6 rounded-md bg-white/15 hover:bg-white/30 flex items-center justify-center transition-colors">
                       <Download className="w-3 h-3 text-white" />
                     </button>
                   </div>
                 </div>
                 {img.totalSlides > 1 && (
-                  <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-black/40 backdrop-blur-sm text-[9px] text-white font-semibold tracking-wide">
+                  <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-black/40 text-[8px] text-white font-semibold">
                     {img.slideIndex + 1}/{img.totalSlides}
                   </div>
                 )}
@@ -139,53 +112,30 @@ export default function Gallery() {
 
       {/* Lightbox */}
       <AnimatePresence>
-        {lightbox && current && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center"
-            onClick={closeLightbox}
-          >
-            <button onClick={closeLightbox} className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10">
-              <X className="w-5 h-5" />
-            </button>
-            <button onClick={(e) => { e.stopPropagation(); prev(); }} className="absolute left-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10">
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button onClick={(e) => { e.stopPropagation(); next(); }} className="absolute right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10">
-              <ChevronRight className="w-5 h-5" />
-            </button>
-            <motion.div
-              key={lightbox.index}
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="max-w-2xl max-h-[85vh] flex flex-col items-center gap-5"
-              onClick={e => e.stopPropagation()}
-            >
-              <img src={current.url} alt={current.asset.headline} className="max-h-[70vh] max-w-full rounded-2xl object-contain shadow-2xl" />
+        {lightbox && cur && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center" onClick={closeLB}>
+            <button onClick={closeLB} className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white z-10"><X className="w-4 h-4" /></button>
+            <button onClick={(e) => { e.stopPropagation(); prev(); }} className="absolute left-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white z-10"><ChevronLeft className="w-4 h-4" /></button>
+            <button onClick={(e) => { e.stopPropagation(); next(); }} className="absolute right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white z-10"><ChevronRight className="w-4 h-4" /></button>
+            <motion.div key={lightbox.index} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
+              className="max-w-xl max-h-[85vh] flex flex-col items-center gap-4" onClick={e => e.stopPropagation()}>
+              <img src={cur.url} alt="" className="max-h-[70vh] max-w-full rounded-xl object-contain shadow-2xl" />
               <div className="text-center">
-                <p className="text-white font-semibold text-[14px] mb-1">{current.asset.headline}</p>
-                <p className="text-white/40 text-[11px] font-medium uppercase tracking-wider">
-                  {PLATFORM_LABELS[current.asset.platform]} · {ASSET_LABELS[current.asset.asset_type]}
-                </p>
+                <p className="text-white font-semibold text-[13px] mb-0.5">{cur.asset.headline}</p>
+                <p className="text-white/35 text-[10px] uppercase tracking-wider">{PLATFORM_LABELS[cur.asset.platform]} · {ASSET_LABELS[cur.asset.asset_type]}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => downloadImage(current.url, current.asset)}
-                  className="flex items-center gap-2 h-[34px] px-4 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[12px] font-medium transition-colors"
-                >
-                  <Download className="w-3.5 h-3.5" /> Download
+              <div className="flex gap-1.5">
+                <button onClick={() => dl(cur.url, cur.asset)} className="flex items-center gap-1.5 h-[30px] px-3.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-[11px] font-medium transition-colors">
+                  <Download className="w-3 h-3" /> Download
                 </button>
-                <button
-                  onClick={() => navigate(`/Campaign?id=${current.asset.campaign_id}&brand=${current.asset.brand_id}`)}
-                  className="flex items-center gap-2 h-[34px] px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-[12px] font-medium transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" /> Open Campaign
+                <button onClick={() => navigate(`/Campaign?id=${cur.asset.campaign_id}&brand=${cur.asset.brand_id}`)}
+                  className="flex items-center gap-1.5 h-[30px] px-3.5 rounded-md bg-[#6c5ce7] hover:bg-[#5f4dd6] text-white text-[11px] font-medium transition-colors">
+                  <ExternalLink className="w-3 h-3" /> Campaign
                 </button>
               </div>
             </motion.div>
-            <div className="absolute bottom-5 text-white/30 text-[11px] font-medium">{lightbox.index + 1} / {lightbox.images.length}</div>
+            <div className="absolute bottom-4 text-white/25 text-[10px]">{lightbox.index + 1} / {lightbox.images.length}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -193,17 +143,11 @@ export default function Gallery() {
   );
 }
 
-function FilterPill({ active, onClick, children }) {
+function Pill({ active, onClick, children }) {
   return (
-    <button
-      onClick={onClick}
-      className={`px-3.5 py-[6px] rounded-lg text-[12px] font-medium transition-all ${
-        active
-          ? 'bg-violet-600 text-white shadow-sm shadow-violet-200/50'
-          : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300'
-      }`}
-    >
-      {children}
-    </button>
+    <button onClick={onClick}
+      className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-colors ${
+        active ? 'bg-[#6c5ce7] text-white' : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50'
+      }`}>{children}</button>
   );
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Sparkles, LayoutGrid, Plus, Images } from 'lucide-react';
+import { Sparkles, LayoutGrid, Images, Plus } from 'lucide-react';
 
 export default function AppShell({ children }) {
   const location = useLocation();
@@ -9,56 +9,47 @@ export default function AppShell({ children }) {
   if (isLanding) return <>{children}</>;
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
-      <header className="fixed top-0 left-0 right-0 z-50 h-[56px] bg-white border-b border-black/[0.05]">
-        <div className="flex items-center h-full px-5 max-w-screen-xl mx-auto">
-          <Link to="/Landing" className="flex items-center gap-2.5 mr-8 group">
-            <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-sm shadow-violet-200/60">
-              <Sparkles className="w-4 h-4 text-white" />
+    <div className="min-h-screen bg-[#fafafa]">
+      <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-white border-b border-black/[0.04]">
+        <div className="flex items-center h-full px-4 max-w-[1400px] mx-auto">
+          {/* Logo */}
+          <Link to="/Landing" className="flex items-center gap-2 mr-6">
+            <div className="w-7 h-7 rounded-lg bg-[#6c5ce7] flex items-center justify-center">
+              <Sparkles className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="font-semibold text-[15px] text-gray-900 tracking-tight">AdForge</span>
+            <span className="text-[14px] font-semibold text-gray-900 tracking-tight">Adora</span>
           </Link>
 
+          {/* Nav */}
           <nav className="flex items-center gap-0.5">
-            <NavLink to="/Dashboard" active={location.pathname === '/Dashboard'}>
-              <LayoutGrid className="w-[15px] h-[15px]" />
-              Campaigns
-            </NavLink>
-            <NavLink to="/Gallery" active={location.pathname === '/Gallery'}>
-              <Images className="w-[15px] h-[15px]" />
-              Gallery
-            </NavLink>
+            <NavItem to="/Dashboard" active={location.pathname === '/Dashboard' || location.pathname.startsWith('/Campaign')}>
+              <LayoutGrid className="w-3.5 h-3.5" /> Campaigns
+            </NavItem>
+            <NavItem to="/Gallery" active={location.pathname === '/Gallery'}>
+              <Images className="w-3.5 h-3.5" /> Gallery
+            </NavItem>
           </nav>
 
-          <div className="ml-auto">
-            <Link
-              to="/Onboarding"
-              className="inline-flex items-center gap-1.5 h-[34px] px-4 rounded-[9px] bg-gradient-to-b from-violet-500 to-violet-600 hover:from-violet-600 hover:to-violet-700 text-white text-[13px] font-medium transition-all shadow-sm shadow-violet-200/50 active:scale-[0.97]"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              New Campaign
+          {/* Actions */}
+          <div className="ml-auto flex items-center gap-2">
+            <Link to="/Onboarding"
+              className="inline-flex items-center gap-1.5 h-[30px] px-3.5 rounded-lg bg-[#6c5ce7] hover:bg-[#5f4dd6] text-white text-[12px] font-medium transition-colors">
+              <Plus className="w-3 h-3" /> New
             </Link>
           </div>
         </div>
       </header>
-
-      <main className="pt-[56px]">
-        {children}
-      </main>
+      <main className="pt-12">{children}</main>
     </div>
   );
 }
 
-function NavLink({ to, active, children }) {
+function NavItem({ to, active, children }) {
   return (
-    <Link
-      to={to}
-      className={`inline-flex items-center gap-1.5 px-3 py-[6px] rounded-lg text-[13px] font-medium transition-all ${
-        active
-          ? 'bg-violet-50 text-violet-700'
-          : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
-      }`}
-    >
+    <Link to={to}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[12px] font-medium transition-colors ${
+        active ? 'bg-gray-100 text-gray-900' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'
+      }`}>
       {children}
     </Link>
   );

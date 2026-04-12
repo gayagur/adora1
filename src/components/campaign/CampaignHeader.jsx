@@ -1,67 +1,55 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Target, Users, Mic2, Eye, Pencil } from 'lucide-react';
+import { ArrowLeft, Pencil } from 'lucide-react';
 
 export default function CampaignHeader({ campaign, brandName, assetCount, onEdit, onEditBrand }) {
   return (
     <div className="border-b border-gray-100 bg-white">
-      <div className="max-w-screen-xl mx-auto px-6 pt-5 pb-6">
-        <Link to="/Dashboard" className="inline-flex items-center gap-1.5 text-[12px] text-gray-400 hover:text-gray-600 mb-5 transition-colors font-medium">
-          <ArrowLeft className="w-3.5 h-3.5" /> All Campaigns
+      <div className="max-w-[1200px] mx-auto px-5 py-4">
+        <Link to="/Dashboard" className="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-600 mb-3 transition-colors font-medium">
+          <ArrowLeft className="w-3 h-3" /> Campaigns
         </Link>
 
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-violet-500/80">
-                {campaign.strategy_angle}
-              </span>
-              <span className="w-1 h-1 rounded-full bg-gray-200" />
-              <span className="text-[11px] text-gray-400 font-medium">{assetCount} asset{assetCount !== 1 ? 's' : ''}</span>
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#6c5ce7]/70">{campaign.strategy_angle}</span>
+              <span className="w-0.5 h-0.5 rounded-full bg-gray-300" />
+              <span className="text-[10px] text-gray-400">{assetCount} asset{assetCount !== 1 ? 's' : ''}</span>
             </div>
-            <h1 className="text-xl sm:text-[1.625rem] font-bold text-gray-900 tracking-tight mb-0.5">{campaign.title}</h1>
-            {brandName && <p className="text-[13px] text-gray-400 font-medium">{brandName}</p>}
+            <h1 className="text-[18px] font-bold text-gray-900 tracking-tight">{campaign.title}</h1>
+            {brandName && <p className="text-[12px] text-gray-400 mt-0.5">{brandName}</p>}
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex gap-1.5 shrink-0">
             {onEditBrand && (
-              <button
-                onClick={onEditBrand}
-                className="flex items-center gap-1.5 h-[32px] px-3 rounded-[9px] border border-gray-200 text-[12px] font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
-              >
+              <button onClick={onEditBrand} className="flex items-center gap-1 h-[28px] px-2.5 rounded-md border border-gray-200 text-[11px] font-medium text-gray-500 hover:bg-gray-50 transition-colors">
                 <Pencil className="w-3 h-3" /> Brand
               </button>
             )}
             {onEdit && (
-              <button
-                onClick={onEdit}
-                className="flex items-center gap-1.5 h-[32px] px-3 rounded-[9px] border border-gray-200 text-[12px] font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
-              >
+              <button onClick={onEdit} className="flex items-center gap-1 h-[28px] px-2.5 rounded-md border border-gray-200 text-[11px] font-medium text-gray-500 hover:bg-gray-50 transition-colors">
                 <Pencil className="w-3 h-3" /> Campaign
               </button>
             )}
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          <MetaTile icon={Target} label="Key Message" value={campaign.key_message} />
-          <MetaTile icon={Users} label="Audience" value={campaign.target_audience} />
-          <MetaTile icon={Mic2} label="Tone" value={campaign.tone} />
-          <MetaTile icon={Eye} label="Visual Direction" value={campaign.visual_direction} />
+        {/* Meta tiles — compact row */}
+        <div className="flex gap-4 mt-3 pt-3 border-t border-gray-50">
+          {campaign.key_message && <MetaItem label="Message" value={campaign.key_message} />}
+          {campaign.target_audience && <MetaItem label="Audience" value={campaign.target_audience} />}
+          {campaign.tone && <MetaItem label="Tone" value={campaign.tone} />}
         </div>
       </div>
     </div>
   );
 }
 
-function MetaTile({ icon: IconComp, label, value }) {
-  if (!value) return null;
+function MetaItem({ label, value }) {
   return (
-    <div className="bg-gray-50/80 rounded-xl p-3.5 border border-gray-100/60">
-      <div className="flex items-center gap-1.5 mb-1.5">
-        <IconComp className="w-3 h-3 text-gray-400" />
-        <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-gray-400">{label}</span>
-      </div>
-      <p className="text-[12px] text-gray-600 leading-relaxed line-clamp-2">{value}</p>
+    <div className="min-w-0">
+      <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-gray-300 mb-0.5">{label}</p>
+      <p className="text-[11px] text-gray-500 line-clamp-1">{value}</p>
     </div>
   );
 }

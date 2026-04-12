@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,25 +6,25 @@
 
 @layer base {
   :root {
-    --background: 0 0% 99%;
-    --foreground: 230 25% 9%;
+    --background: 0 0% 100%;
+    --foreground: 220 20% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 230 25% 9%;
+    --card-foreground: 220 20% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 230 25% 9%;
-    --primary: 252 56% 57%;
+    --popover-foreground: 220 20% 10%;
+    --primary: 250 50% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 6% 96%;
-    --secondary-foreground: 230 12% 40%;
-    --muted: 240 6% 96%;
-    --muted-foreground: 230 8% 55%;
-    --accent: 252 56% 96%;
-    --accent-foreground: 252 56% 40%;
+    --secondary: 220 10% 96%;
+    --secondary-foreground: 220 12% 40%;
+    --muted: 220 10% 96%;
+    --muted-foreground: 220 8% 52%;
+    --accent: 250 50% 96%;
+    --accent-foreground: 250 50% 40%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 230 12% 92%;
-    --input: 230 12% 92%;
-    --ring: 252 56% 57%;
+    --border: 220 10% 93%;
+    --input: 220 10% 93%;
+    --ring: 250 50% 50%;
     --radius: 0.625rem;
   }
 }
@@ -40,13 +40,12 @@
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1, h2, h3, h4 {
+    font-family: 'Inter', sans-serif;
     letter-spacing: -0.025em;
   }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance { text-wrap: balance; }
 }
