@@ -99,7 +99,7 @@ function hashString(str) {
 }
 
 // ─── Core generation ─────────────────────────────────────────────────────────
-async function doGenerate(base44, assetId, option, campaign, brand, postContent) {
+async function doGenerate(base44, assetId, option, campaign, brand, postContent, forcedVisualStyle) {
   const assetType = option.asset_type;
   const platform = option.platform;
 
@@ -374,7 +374,7 @@ Deno.serve(async (req) => {
   // Fire-and-forget: return immediately so frontend never times out.
   // The backend continues running and updates the entity when done.
   // The frontend discovers the result via polling (refetchInterval).
-  doGenerate(base44, assetId, option, campaign, brand, postContent).catch(async (error) => {
+  doGenerate(base44, assetId, option, campaign, brand, postContent, forcedVisualStyle).catch(async (error) => {
     console.error('Generation failed:', error.message);
     try {
       await base44.asServiceRole.entities.CampaignAsset.update(assetId, { status: 'error' });
